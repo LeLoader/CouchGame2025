@@ -49,6 +49,13 @@ SourceArt/**/*.tga
 Binaries/*
 Plugins/**/Binaries/*
 
+# Don't ignore DLL
+!Binaries/Win64
+Binaries/Win64/*
+!Binaries/Win64/CouchGame2025Editor.target
+!Binaries/Win64/UnrealEditor.modules
+!Binaries/Win64/UnrealEditor-CouchGame2025.dll
+
 # Builds
 Build/*
 
