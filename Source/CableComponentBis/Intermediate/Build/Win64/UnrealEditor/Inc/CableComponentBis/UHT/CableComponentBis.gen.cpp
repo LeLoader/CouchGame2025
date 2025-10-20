@@ -172,6 +172,54 @@ DEFINE_FUNCTION(UCableComponentBis::execGetCableParticleLocations)
 }
 // End Class UCableComponentBis Function GetCableParticleLocations
 
+// Begin Class UCableComponentBis Function GetFullLength
+struct Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics
+{
+	struct CableComponentBis_eventGetFullLength_Parms
+	{
+		float ReturnValue;
+	};
+#if WITH_METADATA
+	static constexpr UECodeGen_Private::FMetaDataPairParam Function_MetaDataParams[] = {
+		{ "Category", "Cable" },
+#if !UE_BUILD_SHIPPING
+		{ "Comment", "/** Get the sum of the length of each segments */" },
+#endif
+		{ "ModuleRelativePath", "Classes/CableComponentBis.h" },
+#if !UE_BUILD_SHIPPING
+		{ "ToolTip", "Get the sum of the length of each segments" },
+#endif
+	};
+#endif // WITH_METADATA
+	static const UECodeGen_Private::FFloatPropertyParams NewProp_ReturnValue;
+	static const UECodeGen_Private::FPropertyParamsBase* const PropPointers[];
+	static const UECodeGen_Private::FFunctionParams FuncParams;
+};
+const UECodeGen_Private::FFloatPropertyParams Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::NewProp_ReturnValue = { "ReturnValue", nullptr, (EPropertyFlags)0x0010000000000580, UECodeGen_Private::EPropertyGenFlags::Float, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(CableComponentBis_eventGetFullLength_Parms, ReturnValue), METADATA_PARAMS(0, nullptr) };
+const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::PropPointers[] = {
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::NewProp_ReturnValue,
+};
+static_assert(UE_ARRAY_COUNT(Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::PropPointers) < 2048);
+const UECodeGen_Private::FFunctionParams Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::FuncParams = { (UObject*(*)())Z_Construct_UClass_UCableComponentBis, nullptr, "GetFullLength", nullptr, nullptr, Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::PropPointers, UE_ARRAY_COUNT(Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::PropPointers), sizeof(Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::CableComponentBis_eventGetFullLength_Parms), RF_Public|RF_Transient|RF_MarkAsNative, (EFunctionFlags)0x54020401, 0, 0, METADATA_PARAMS(UE_ARRAY_COUNT(Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::Function_MetaDataParams), Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::Function_MetaDataParams) };
+static_assert(sizeof(Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::CableComponentBis_eventGetFullLength_Parms) < MAX_uint16);
+UFunction* Z_Construct_UFunction_UCableComponentBis_GetFullLength()
+{
+	static UFunction* ReturnFunction = nullptr;
+	if (!ReturnFunction)
+	{
+		UECodeGen_Private::ConstructUFunction(&ReturnFunction, Z_Construct_UFunction_UCableComponentBis_GetFullLength_Statics::FuncParams);
+	}
+	return ReturnFunction;
+}
+DEFINE_FUNCTION(UCableComponentBis::execGetFullLength)
+{
+	P_FINISH;
+	P_NATIVE_BEGIN;
+	*(float*)Z_Param__Result=P_THIS->GetFullLength();
+	P_NATIVE_END;
+}
+// End Class UCableComponentBis Function GetFullLength
+
 // Begin Class UCableComponentBis Function SetAttachEndTo
 struct Z_Construct_UFunction_UCableComponentBis_SetAttachEndTo_Statics
 {
@@ -298,6 +346,7 @@ void UCableComponentBis::StaticRegisterNativesUCableComponentBis()
 		{ "GetAttachedActor", &UCableComponentBis::execGetAttachedActor },
 		{ "GetAttachedComponent", &UCableComponentBis::execGetAttachedComponent },
 		{ "GetCableParticleLocations", &UCableComponentBis::execGetCableParticleLocations },
+		{ "GetFullLength", &UCableComponentBis::execGetFullLength },
 		{ "SetAttachEndTo", &UCableComponentBis::execSetAttachEndTo },
 		{ "SetAttachEndToComponent", &UCableComponentBis::execSetAttachEndToComponent },
 	};
@@ -398,7 +447,7 @@ struct Z_Construct_UClass_UCableComponentBis_Statics
 #if !UE_BUILD_SHIPPING
 		{ "ToolTip", "How many segments the cable has" },
 #endif
-		{ "UIMax", "20" },
+		{ "UIMax", "1000" },
 		{ "UIMin", "1" },
 	};
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_SubstepTime_MetaData[] = {
@@ -424,6 +473,16 @@ struct Z_Construct_UClass_UCableComponentBis_Statics
 		{ "ModuleRelativePath", "Classes/CableComponentBis.h" },
 #if !UE_BUILD_SHIPPING
 		{ "ToolTip", "The number of solver iterations controls how 'stiff' the cable is" },
+#endif
+	};
+	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_bShowDebug_MetaData[] = {
+		{ "Category", "Cable" },
+#if !UE_BUILD_SHIPPING
+		{ "Comment", "/** Show debug sphere on particle positions. */" },
+#endif
+		{ "ModuleRelativePath", "Classes/CableComponentBis.h" },
+#if !UE_BUILD_SHIPPING
+		{ "ToolTip", "Show debug sphere on particle positions." },
 #endif
 	};
 	static constexpr UECodeGen_Private::FMetaDataPairParam NewProp_bEnableStiffness_MetaData[] = {
@@ -546,6 +605,8 @@ struct Z_Construct_UClass_UCableComponentBis_Statics
 	static const UECodeGen_Private::FIntPropertyParams NewProp_NumSegments;
 	static const UECodeGen_Private::FFloatPropertyParams NewProp_SubstepTime;
 	static const UECodeGen_Private::FIntPropertyParams NewProp_SolverIterations;
+	static void NewProp_bShowDebug_SetBit(void* Obj);
+	static const UECodeGen_Private::FBoolPropertyParams NewProp_bShowDebug;
 	static void NewProp_bEnableStiffness_SetBit(void* Obj);
 	static const UECodeGen_Private::FBoolPropertyParams NewProp_bEnableStiffness;
 	static void NewProp_bUseSubstepping_SetBit(void* Obj);
@@ -568,6 +629,7 @@ struct Z_Construct_UClass_UCableComponentBis_Statics
 		{ &Z_Construct_UFunction_UCableComponentBis_GetAttachedActor, "GetAttachedActor" }, // 3975743658
 		{ &Z_Construct_UFunction_UCableComponentBis_GetAttachedComponent, "GetAttachedComponent" }, // 3695328427
 		{ &Z_Construct_UFunction_UCableComponentBis_GetCableParticleLocations, "GetCableParticleLocations" }, // 72936830
+		{ &Z_Construct_UFunction_UCableComponentBis_GetFullLength, "GetFullLength" }, // 630289798
 		{ &Z_Construct_UFunction_UCableComponentBis_SetAttachEndTo, "SetAttachEndTo" }, // 82733471
 		{ &Z_Construct_UFunction_UCableComponentBis_SetAttachEndToComponent, "SetAttachEndToComponent" }, // 1263123618
 	};
@@ -594,6 +656,11 @@ const UECodeGen_Private::FFloatPropertyParams Z_Construct_UClass_UCableComponent
 const UECodeGen_Private::FIntPropertyParams Z_Construct_UClass_UCableComponentBis_Statics::NewProp_NumSegments = { "NumSegments", nullptr, (EPropertyFlags)0x0010000000000015, UECodeGen_Private::EPropertyGenFlags::Int, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UCableComponentBis, NumSegments), METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_NumSegments_MetaData), NewProp_NumSegments_MetaData) };
 const UECodeGen_Private::FFloatPropertyParams Z_Construct_UClass_UCableComponentBis_Statics::NewProp_SubstepTime = { "SubstepTime", nullptr, (EPropertyFlags)0x0010040000000015, UECodeGen_Private::EPropertyGenFlags::Float, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UCableComponentBis, SubstepTime), METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_SubstepTime_MetaData), NewProp_SubstepTime_MetaData) };
 const UECodeGen_Private::FIntPropertyParams Z_Construct_UClass_UCableComponentBis_Statics::NewProp_SolverIterations = { "SolverIterations", nullptr, (EPropertyFlags)0x0010000000000005, UECodeGen_Private::EPropertyGenFlags::Int, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, STRUCT_OFFSET(UCableComponentBis, SolverIterations), METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_SolverIterations_MetaData), NewProp_SolverIterations_MetaData) };
+void Z_Construct_UClass_UCableComponentBis_Statics::NewProp_bShowDebug_SetBit(void* Obj)
+{
+	((UCableComponentBis*)Obj)->bShowDebug = 1;
+}
+const UECodeGen_Private::FBoolPropertyParams Z_Construct_UClass_UCableComponentBis_Statics::NewProp_bShowDebug = { "bShowDebug", nullptr, (EPropertyFlags)0x0010040000000005, UECodeGen_Private::EPropertyGenFlags::Bool | UECodeGen_Private::EPropertyGenFlags::NativeBool, RF_Public|RF_Transient|RF_MarkAsNative, nullptr, nullptr, 1, sizeof(bool), sizeof(UCableComponentBis), &Z_Construct_UClass_UCableComponentBis_Statics::NewProp_bShowDebug_SetBit, METADATA_PARAMS(UE_ARRAY_COUNT(NewProp_bShowDebug_MetaData), NewProp_bShowDebug_MetaData) };
 void Z_Construct_UClass_UCableComponentBis_Statics::NewProp_bEnableStiffness_SetBit(void* Obj)
 {
 	((UCableComponentBis*)Obj)->bEnableStiffness = 1;
@@ -635,6 +702,7 @@ const UECodeGen_Private::FPropertyParamsBase* const Z_Construct_UClass_UCableCom
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UCableComponentBis_Statics::NewProp_NumSegments,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UCableComponentBis_Statics::NewProp_SubstepTime,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UCableComponentBis_Statics::NewProp_SolverIterations,
+	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UCableComponentBis_Statics::NewProp_bShowDebug,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UCableComponentBis_Statics::NewProp_bEnableStiffness,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UCableComponentBis_Statics::NewProp_bUseSubstepping,
 	(const UECodeGen_Private::FPropertyParamsBase*)&Z_Construct_UClass_UCableComponentBis_Statics::NewProp_bSkipCableUpdateWhenNotVisible,
@@ -688,10 +756,10 @@ UCableComponentBis::~UCableComponentBis() {}
 struct Z_CompiledInDeferFile_FID_Users_somso_Documents_Unreal_Projects_CouchGame2025_Source_CableComponentBis_Source_CableComponentBis_Classes_CableComponentBis_h_Statics
 {
 	static constexpr FClassRegisterCompiledInInfo ClassInfo[] = {
-		{ Z_Construct_UClass_UCableComponentBis, UCableComponentBis::StaticClass, TEXT("UCableComponentBis"), &Z_Registration_Info_UClass_UCableComponentBis, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UCableComponentBis), 395543610U) },
+		{ Z_Construct_UClass_UCableComponentBis, UCableComponentBis::StaticClass, TEXT("UCableComponentBis"), &Z_Registration_Info_UClass_UCableComponentBis, CONSTRUCT_RELOAD_VERSION_INFO(FClassReloadVersionInfo, sizeof(UCableComponentBis), 3388968478U) },
 	};
 };
-static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_Users_somso_Documents_Unreal_Projects_CouchGame2025_Source_CableComponentBis_Source_CableComponentBis_Classes_CableComponentBis_h_660754095(TEXT("/Script/CableComponentBis"),
+static FRegisterCompiledInInfo Z_CompiledInDeferFile_FID_Users_somso_Documents_Unreal_Projects_CouchGame2025_Source_CableComponentBis_Source_CableComponentBis_Classes_CableComponentBis_h_2864378534(TEXT("/Script/CableComponentBis"),
 	Z_CompiledInDeferFile_FID_Users_somso_Documents_Unreal_Projects_CouchGame2025_Source_CableComponentBis_Source_CableComponentBis_Classes_CableComponentBis_h_Statics::ClassInfo, UE_ARRAY_COUNT(Z_CompiledInDeferFile_FID_Users_somso_Documents_Unreal_Projects_CouchGame2025_Source_CableComponentBis_Source_CableComponentBis_Classes_CableComponentBis_h_Statics::ClassInfo),
 	nullptr, 0,
 	nullptr, 0);

@@ -15,6 +15,9 @@
 #include "StaticMeshResources.h"
 #include "RayTracingInstance.h"
 #include "SceneInterface.h"
+#include <Logging/StructuredLog.h>
+#include "Engine/EngineTypes.h"
+#include <Components/SphereComponent.h>
 
 DEFINE_RENDER_COMMAND_PIPE(Cable, ERenderCommandPipeFlags::None);
 
@@ -48,13 +51,15 @@ DECLARE_CYCLE_STAT(TEXT("Cable Solve"), STAT_Cable_SolveTime, STATGROUP_CableCom
 DECLARE_CYCLE_STAT(TEXT("Cable Collision"), STAT_Cable_CollisionTime, STATGROUP_CableComponent);
 DECLARE_CYCLE_STAT(TEXT("Cable Integrate"), STAT_Cable_IntegrateTime, STATGROUP_CableComponent);
 
+DEFINE_LOG_CATEGORY(LogCableComponentBis);
+
 static FName CableEndSocketName(TEXT("CableEnd"));
 static FName CableStartSocketName(TEXT("CableStart"));
 
 //////////////////////////////////////////////////////////////////////////
 
 /** Index Buffer */
-class FCableIndexBuffer : public FIndexBuffer 
+class FCableIndexBuffer : public FIndexBuffer
 {
 public:
 	virtual void InitRHI(FRHICommandListBase& RHICmdList) override
@@ -101,7 +106,7 @@ public:
 
 		// Grab material
 		Material = Component->GetMaterial(0);
-		if(Material == NULL)
+		if (Material == NULL)
 		{
 			Material = UMaterial::GetDefaultMaterial(MD_Surface);
 		}
@@ -112,25 +117,25 @@ public:
 #endif
 
 		ENQUEUE_RENDER_COMMAND(InitCableResources)(UE::RenderCommandPipe::Cable,
-			[this] (FRHICommandList& RHICmdList)
-		{
-			IndexBuffer.InitResource(RHICmdList);
+			[this](FRHICommandList& RHICmdList)
+			{
+				IndexBuffer.InitResource(RHICmdList);
 
 #if RHI_RAYTRACING
 
-			if (bSupportRayTracing)
-			{
-				FRayTracingGeometry& RayTracingGeometry = StaticRayTracingGeometry;
-				CreateRayTracingGeometry_RenderingThread(RayTracingGeometry, RHICmdList);
-				bNeedsToUpdateRayTracingCache = true;
-
-				if (bDynamicRayTracingGeometry)
+				if (bSupportRayTracing)
 				{
-					CreateDynamicRayTracingGeometries(RHICmdList);
+					FRayTracingGeometry& RayTracingGeometry = StaticRayTracingGeometry;
+					CreateRayTracingGeometry_RenderingThread(RayTracingGeometry, RHICmdList);
+					bNeedsToUpdateRayTracingCache = true;
+
+					if (bDynamicRayTracingGeometry)
+					{
+						CreateDynamicRayTracingGeometries(RHICmdList);
+					}
 				}
-			}
 #endif
-		});
+			});
 	}
 
 	virtual ~FCableSceneProxy()
@@ -159,28 +164,28 @@ public:
 
 	int32 GetVertIndex(int32 AlongIdx, int32 AroundIdx) const
 	{
-		return (AlongIdx * (NumSides+1)) + AroundIdx;
+		return (AlongIdx * (NumSides + 1)) + AroundIdx;
 	}
 
 	void BuildCableMesh(const TArray<FVector>& InPoints, TArray<FDynamicMeshVertex>& OutVertices, TArray<int32>& OutIndices)
 	{
-		const FColor VertexColor(255,255,255);
+		const FColor VertexColor(255, 255, 255);
 		const int32 NumPoints = InPoints.Num();
-		const int32 SegmentCount = NumPoints-1;
+		const int32 SegmentCount = NumPoints - 1;
 
 		// Build vertices
 
 		// We double up the first and last vert of the ring, because the UVs are different
-		int32 NumRingVerts = NumSides+1;
+		int32 NumRingVerts = NumSides + 1;
 
 		// For each point along spline..
-		for(int32 PointIdx=0; PointIdx<NumPoints; PointIdx++)
+		for (int32 PointIdx = 0; PointIdx < NumPoints; PointIdx++)
 		{
-			const float AlongFrac = (float)PointIdx/(float)SegmentCount; // Distance along cable
+			const float AlongFrac = (float)PointIdx / (float)SegmentCount; // Distance along cable
 
 			// Find direction of cable at this point, by averaging previous and next points
-			const int32 PrevIndex = FMath::Max(0, PointIdx-1);
-			const int32 NextIndex = FMath::Min(PointIdx+1, NumPoints-1);
+			const int32 PrevIndex = FMath::Max(0, PointIdx - 1);
+			const int32 NextIndex = FMath::Min(PointIdx + 1, NumPoints - 1);
 			const FVector ForwardDir = (InPoints[NextIndex] - InPoints[PrevIndex]).GetSafeNormal();
 
 			// Find quat from up (Z) vector to forward
@@ -191,9 +196,9 @@ public:
 			const FVector UpDir = DeltaQuat.RotateVector(FVector(1, 0, 0));
 
 			// Generate a ring of verts
-			for(int32 VertIdx = 0; VertIdx<NumRingVerts; VertIdx++)
+			for (int32 VertIdx = 0; VertIdx < NumRingVerts; VertIdx++)
 			{
-				const float AroundFrac = float(VertIdx)/float(NumSides);
+				const float AroundFrac = float(VertIdx) / float(NumSides);
 				// Find angle around the ring
 				const float RadAngle = 2.f * PI * AroundFrac;
 				// Find direction from center of cable to this vertex
@@ -209,14 +214,14 @@ public:
 		}
 
 		// Build triangles
-		for(int32 SegIdx=0; SegIdx<SegmentCount; SegIdx++)
+		for (int32 SegIdx = 0; SegIdx < SegmentCount; SegIdx++)
 		{
-			for(int32 SideIdx=0; SideIdx<NumSides; SideIdx++)
+			for (int32 SideIdx = 0; SideIdx < NumSides; SideIdx++)
 			{
 				int32 TL = GetVertIndex(SegIdx, SideIdx);
-				int32 BL = GetVertIndex(SegIdx, SideIdx+1);
-				int32 TR = GetVertIndex(SegIdx+1, SideIdx);
-				int32 BR = GetVertIndex(SegIdx+1, SideIdx+1);
+				int32 BL = GetVertIndex(SegIdx, SideIdx + 1);
+				int32 TR = GetVertIndex(SegIdx + 1, SideIdx);
+				int32 BR = GetVertIndex(SegIdx + 1, SideIdx + 1);
 
 				OutIndices.Add(TL);
 				OutIndices.Add(BL);
@@ -331,19 +336,19 @@ public:
 
 	virtual void GetDynamicMeshElements(const TArray<const FSceneView*>& Views, const FSceneViewFamily& ViewFamily, uint32 VisibilityMap, FMeshElementCollector& Collector) const override
 	{
-		QUICK_SCOPE_CYCLE_COUNTER( STAT_CableSceneProxy_GetDynamicMeshElements );
+		QUICK_SCOPE_CYCLE_COUNTER(STAT_CableSceneProxy_GetDynamicMeshElements);
 
 		const bool bWireframe = AllowDebugViewmodes() && ViewFamily.EngineShowFlags.Wireframe;
 
 		auto WireframeMaterialInstance = new FColoredMaterialRenderProxy(
 			GEngine->WireframeMaterial ? GEngine->WireframeMaterial->GetRenderProxy() : NULL,
 			FLinearColor(0, 0.5f, 1.f)
-			);
+		);
 
 		Collector.RegisterOneFrameMaterialProxy(WireframeMaterialInstance);
 
 		FMaterialRenderProxy* MaterialProxy = NULL;
-		if(bWireframe)
+		if (bWireframe)
 		{
 			MaterialProxy = WireframeMaterialInstance;
 		}
@@ -373,7 +378,7 @@ public:
 				BatchElement.PrimitiveUniformBufferResource = &DynamicPrimitiveUniformBuffer.UniformBuffer;
 
 				BatchElement.FirstIndex = 0;
-				BatchElement.NumPrimitives = GetRequiredIndexCount()/3;
+				BatchElement.NumPrimitives = GetRequiredIndexCount() / 3;
 				BatchElement.MinVertexIndex = 0;
 				BatchElement.MaxVertexIndex = GetRequiredVertexCount();
 				Mesh.ReverseCulling = IsLocalToWorldDeterminantNegative();
@@ -436,9 +441,9 @@ public:
 		return Result;
 	}
 
-	virtual uint32 GetMemoryFootprint( void ) const override { return( sizeof( *this ) + GetAllocatedSize() ); }
+	virtual uint32 GetMemoryFootprint(void) const override { return(sizeof(*this) + GetAllocatedSize()); }
 
-	uint32 GetAllocatedSize( void ) const { return( FPrimitiveSceneProxy::GetAllocatedSize() ); }
+	uint32 GetAllocatedSize(void) const { return(FPrimitiveSceneProxy::GetAllocatedSize()); }
 
 #if RHI_RAYTRACING
 	virtual void GetDynamicRayTracingInstances(FRayTracingInstanceCollector& Collector) override
@@ -456,7 +461,7 @@ public:
 		}
 
 		bool bEvaluateWPO = bDynamicRayTracingGeometry && CVarRayTracingCableMeshesWPO.GetValueOnRenderThread() == 1;
-		
+
 		if (bEvaluateWPO && CVarRayTracingCableMeshesWPOCulling.GetValueOnRenderThread() > 0)
 		{
 			const FVector ViewCenter = Collector.GetReferenceView()->ViewMatrices.GetViewOrigin();
@@ -469,7 +474,7 @@ public:
 				bEvaluateWPO = false;
 			}
 		}
-		
+
 		if (!bEvaluateWPO)
 		{
 			if (!StaticRayTracingGeometry.IsValid())
@@ -641,8 +646,8 @@ private:
 
 //////////////////////////////////////////////////////////////////////////
 
-UCableComponentBis::UCableComponentBis( const FObjectInitializer& ObjectInitializer )
-	: Super( ObjectInitializer )
+UCableComponentBis::UCableComponentBis(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 	bTickInEditor = true;
@@ -653,7 +658,7 @@ UCableComponentBis::UCableComponentBis( const FObjectInitializer& ObjectInitiali
 	CableWidth = 10.f;
 	NumSegments = 10;
 	NumSides = 4;
-	EndLocation = FVector(100.f,0,0);
+	EndLocation = FVector(100.f, 0, 0);
 	CableLength = 100.f;
 	SubstepTime = 0.02f;
 	SolverIterations = 1;
@@ -678,7 +683,7 @@ void UCableComponentBis::OnRegister()
 {
 	Super::OnRegister();
 
-	const int32 NumParticles = NumSegments+1;
+	const int32 NumParticles = NumSegments + 1;
 
 	Particles.Reset();
 	Particles.AddUninitialized(NumParticles);
@@ -688,11 +693,11 @@ void UCableComponentBis::OnRegister()
 
 	const FVector Delta = CableEnd - CableStart;
 
-	for(int32 ParticleIdx=0; ParticleIdx<NumParticles; ParticleIdx++)
+	for (int32 ParticleIdx = 0; ParticleIdx < NumParticles; ParticleIdx++)
 	{
 		FCableParticle& Particle = Particles[ParticleIdx];
 
-		const float Alpha = (float)ParticleIdx/(float)NumSegments;
+		const float Alpha = (float)ParticleIdx / (float)NumSegments;
 		const FVector InitialPosition = CableStart + (Alpha * Delta);
 
 		Particle.Position = InitialPosition;
@@ -705,13 +710,13 @@ void UCableComponentBis::VerletIntegrate(float InSubstepTime, const FVector& Gra
 {
 	SCOPE_CYCLE_COUNTER(STAT_Cable_IntegrateTime);
 
-	const int32 NumParticles = NumSegments+1;
+	const int32 NumParticles = NumSegments + 1;
 	const float SubstepTimeSqr = InSubstepTime * InSubstepTime;
 
-	for(int32 ParticleIdx=0; ParticleIdx<NumParticles; ParticleIdx++)
+	for (int32 ParticleIdx = 0; ParticleIdx < NumParticles; ParticleIdx++)
 	{
 		FCableParticle& Particle = Particles[ParticleIdx];
-		if(Particle.bFree)
+		if (Particle.bFree)
 		{
 			// Calc overall force
 			const FVector ParticleForce = Gravity + CableForce;
@@ -728,39 +733,57 @@ void UCableComponentBis::VerletIntegrate(float InSubstepTime, const FVector& Gra
 }
 
 /** Solve a single distance constraint between a pair of particles */
-static FORCEINLINE void SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance)
+FORCEINLINE void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance)
 {
 	// Find current vector between particles
 	FVector Delta = ParticleB.Position - ParticleA.Position;
 	float CurrentDistance = Delta.Size();
 
+	/*
+	float springConstant = 10000;
+	FVector force = -(Delta / CurrentDistance) * (CurrentDistance - DesiredDistance) * springConstant;
+	force += -((ParticleA.Position - ParticleA.OldPosition) - (ParticleB.Position - ParticleB.OldPosition));
+	*/
+
 	bool bNormalizedOK = Delta.Normalize();
+	bool CanStretch = CurrentDistance - DesiredDistance > FMath::Abs(DesiredDistance); // 50%
 
 	// If particles are right on top of each other, separate with an abitrarily-chosen direction
+
 	FVector CorrectionDirection = bNormalizedOK ? Delta : FVector{ 1, 0, 0 };
 	FVector VectorCorrection = (CurrentDistance - DesiredDistance) * CorrectionDirection;
 
 	// Only move free particles to satisfy constraints
-	if(ParticleA.bFree && ParticleB.bFree)
+	if (ParticleA.bFree && ParticleB.bFree)
 	{
 		ParticleA.Position += 0.5f * VectorCorrection;
 		ParticleB.Position -= 0.5f * VectorCorrection;
 	}
-	else if(ParticleA.bFree)
+	else if (ParticleA.bFree)
 	{
 		ParticleA.Position += VectorCorrection;
+		//if (AActor* EndActor = GetAttachedActor()) {
+		//	if (CanStretch) {
+		//		EndActor->SetActorLocation(EndActor->GetActorLocation() - 0.5f * VectorCorrection);
+		//	}
+		//}
 	}
-	else if(ParticleB.bFree)
+	else if (ParticleB.bFree)
 	{
 		ParticleB.Position -= VectorCorrection;
+		if (AActor* StartActor = GetOwner()) {
+			if (CanStretch) {
+				VectorCorrection.Z = 0;
+				StartActor->SetActorLocation(StartActor->GetActorLocation() + 0.5f * VectorCorrection);
+			}
+		}	
 	}
 }
 
 void UCableComponentBis::SolveConstraints()
 {
 	SCOPE_CYCLE_COUNTER(STAT_Cable_SolveTime);
-
-	const float SegmentLength = CableLength/(float)NumSegments;
+	const float SegmentLength = CableLength / (float)NumSegments;
 
 	// For each iteration..
 	for (int32 IterationIdx = 0; IterationIdx < SolverIterations; IterationIdx++)
@@ -772,21 +795,26 @@ void UCableComponentBis::SolveConstraints()
 			FCableParticle& ParticleB = Particles[SegIdx + 1];
 			// Solve for this pair of particles
 			SolveDistanceConstraint(ParticleA, ParticleB, SegmentLength);
+
+			if (bShowDebug) {
+				float distance = (ParticleB.Position - ParticleA.Position).Length();
+				FLinearColor colorFromDistance = FLinearColor::LerpUsingHSV(FLinearColor::Green, FLinearColor::Red, (distance / SegmentLength) - 1);
+				DrawDebugLine(GetWorld(), ParticleA.Position, ParticleB.Position, colorFromDistance.ToFColor(false), false, -1.f, 255, 1);
+			}
 		}
 
 		// If desired, solve stiffness constraints (distance constraints between every other particle)
 		if (bEnableStiffness)
 		{
-			for (int32 SegIdx = 0; SegIdx < NumSegments-1; SegIdx++)
+			for (int32 SegIdx = 0; SegIdx < NumSegments - 1; SegIdx++)
 			{
 				FCableParticle& ParticleA = Particles[SegIdx];
 				FCableParticle& ParticleB = Particles[SegIdx + 2];
-				SolveDistanceConstraint(ParticleA, ParticleB, 2.f*SegmentLength);
+				SolveDistanceConstraint(ParticleA, ParticleB, 2.f * SegmentLength);
 			}
 		}
 	}
 }
-
 void UCableComponentBis::PerformCableCollision()
 {
 	SCOPE_CYCLE_COUNTER(STAT_Cable_CollisionTime);
@@ -817,7 +845,6 @@ void UCableComponentBis::PerformCableCollision()
 					if (Result.bStartPenetrating)
 					{
 						Particle.Position += (Result.Normal * Result.PenetrationDepth);
-						DrawDebugSphere(GetWorld(), Particle.Position, CableWidth, 16, FColor::Cyan);
 					}
 					else
 					{
@@ -856,6 +883,12 @@ void UCableComponentBis::PerformSubstep(float InSubstepTime, const FVector& Grav
 	VerletIntegrate(InSubstepTime, Gravity);
 
 	SolveConstraints();
+
+	if (bShowDebug) {
+		for (FCableParticle Particle : Particles) {
+			DrawDebugSphere(GetWorld(), Particle.Position, 0.5 * CableWidth, 8, FColor::Red);
+		}
+	}
 
 	if (bEnableCollision)
 	{
@@ -897,6 +930,20 @@ void UCableComponentBis::GetCableParticleLocations(TArray<FVector>& Locations) c
 	}
 }
 
+float UCableComponentBis::GetFullLength() const
+{
+	float Length = 0;
+
+	for (int32 SegIdx = 0; SegIdx < NumSegments; SegIdx++)
+	{
+		FVector Delta = Particles[SegIdx].Position - Particles[SegIdx + 1].Position;
+		float CurrentDistance = Delta.Size();
+		Length += CurrentDistance;
+	}
+
+	return Length;
+}
+
 
 void UCableComponentBis::GetEndPositions(FVector& OutStartPosition, FVector& OutEndPosition)
 {
@@ -905,7 +952,7 @@ void UCableComponentBis::GetEndPositions(FVector& OutStartPosition, FVector& Out
 
 	// See if we want to attach the other end to some other component
 	USceneComponent* EndComponent = Cast<USceneComponent>(AttachEndTo.GetComponent(GetOwner()));
-	if(EndComponent == NULL)
+	if (EndComponent == NULL)
 	{
 		EndComponent = this;
 	}
@@ -932,7 +979,7 @@ void UCableComponentBis::OnVisibilityChanged()
 	}
 }
 
-void UCableComponentBis::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction *ThisTickFunction)
+void UCableComponentBis::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -1010,7 +1057,7 @@ void UCableComponentBis::CreateRenderState_Concurrent(FRegisterComponentContext*
 	FRegisterComponentContext::SendRenderDynamicData(Context, this);
 }
 
-void UCableComponentBis::ApplyWorldOffset(const FVector & InOffset, bool bWorldShift)
+void UCableComponentBis::ApplyWorldOffset(const FVector& InOffset, bool bWorldShift)
 {
 	Super::ApplyWorldOffset(InOffset, bWorldShift);
 
@@ -1023,16 +1070,16 @@ void UCableComponentBis::ApplyWorldOffset(const FVector & InOffset, bool bWorldS
 
 void UCableComponentBis::SendRenderDynamicData_Concurrent()
 {
-	if(SceneProxy)
+	if (SceneProxy)
 	{
 		// Allocate cable dynamic data
 		FCableDynamicData* DynamicData = new FCableDynamicData;
 
 		// Transform current positions from particles into component-space array
 		const FTransform& ComponentTransform = GetComponentTransform();
-		int32 NumPoints = NumSegments+1;
+		int32 NumPoints = NumSegments + 1;
 		DynamicData->CablePoints.AddUninitialized(NumPoints);
-		for(int32 PointIdx=0; PointIdx<NumPoints; PointIdx++)
+		for (int32 PointIdx = 0; PointIdx < NumPoints; PointIdx++)
 		{
 			DynamicData->CablePoints[PointIdx] = ComponentTransform.InverseTransformPosition(Particles[PointIdx].Position);
 		}
@@ -1041,9 +1088,9 @@ void UCableComponentBis::SendRenderDynamicData_Concurrent()
 		FCableSceneProxy* CableSceneProxy = (FCableSceneProxy*)SceneProxy;
 		ENQUEUE_RENDER_COMMAND(FSendCableDynamicData)(UE::RenderCommandPipe::Cable,
 			[CableSceneProxy, DynamicData](FRHICommandListBase& RHICmdList)
-		{
-			CableSceneProxy->SetDynamicData_RenderThread(RHICmdList, DynamicData);
-		});
+			{
+				CableSceneProxy->SetDynamicData_RenderThread(RHICmdList, DynamicData);
+			});
 	}
 }
 
@@ -1054,7 +1101,7 @@ FBoxSphereBounds UCableComponentBis::CalcBounds(const FTransform& LocalToWorld) 
 
 	const FTransform& ComponentTransform = GetComponentTransform();
 
-	for(int32 ParticleIdx=0; ParticleIdx<Particles.Num(); ParticleIdx++)
+	for (int32 ParticleIdx = 0; ParticleIdx < Particles.Num(); ParticleIdx++)
 	{
 		const FCableParticle& Particle = Particles[ParticleIdx];
 		CableBox += ComponentTransform.InverseTransformPosition(Particle.Position);
@@ -1064,7 +1111,7 @@ FBoxSphereBounds UCableComponentBis::CalcBounds(const FTransform& LocalToWorld) 
 	return FBoxSphereBounds(CableBox.ExpandBy(0.5f * CableWidth)).TransformBy(LocalToWorld);
 }
 
-void UCableComponentBis::QuerySupportedSockets(TArray<FComponentSocketDescription>& OutSockets) const 
+void UCableComponentBis::QuerySupportedSockets(TArray<FComponentSocketDescription>& OutSockets) const
 {
 	OutSockets.Add(FComponentSocketDescription(CableEndSocketName, EComponentSocketType::Socket));
 	OutSockets.Add(FComponentSocketDescription(CableStartSocketName, EComponentSocketType::Socket));
@@ -1098,22 +1145,22 @@ FTransform UCableComponentBis::GetSocketTransform(FName InSocketName, ERelativeT
 
 		switch (TransformSpace)
 		{
-			case RTS_World:
+		case RTS_World:
+		{
+			return WorldSocketTM;
+		}
+		case RTS_Actor:
+		{
+			if (const AActor* Actor = GetOwner())
 			{
-				return WorldSocketTM;
+				return WorldSocketTM.GetRelativeTransform(GetOwner()->GetTransform());
 			}
-			case RTS_Actor:
-			{
-				if (const AActor* Actor = GetOwner())
-				{
-					return WorldSocketTM.GetRelativeTransform(GetOwner()->GetTransform());
-				}
-				break;
-			}
-			case RTS_Component:
-			{
-				return WorldSocketTM.GetRelativeTransform(GetComponentTransform());
-			}
+			break;
+		}
+		case RTS_Component:
+		{
+			return WorldSocketTM.GetRelativeTransform(GetComponentTransform());
+		}
 		}
 	}
 

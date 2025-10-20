@@ -7,14 +7,17 @@
 #include "CableComponentBis.generated.h"
 
 class FPrimitiveSceneProxy;
+class USphereComponent;
+
+DECLARE_LOG_CATEGORY_EXTERN(LogCableComponentBis, Log, All);
 
 /** Struct containing information about a point along the cable */
 struct FCableParticle
 {
 	FCableParticle()
-	: bFree(true)
-	, Position(0,0,0)
-	, OldPosition(0,0,0)
+		: bFree(true)
+		, Position(0, 0, 0)
+		, OldPosition(0, 0, 0)
 	{}
 
 	/** If this point is free (simulating) or fixed to something */
@@ -105,12 +108,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Cable")
 	void GetCableParticleLocations(TArray<FVector>& Locations) const;
 
+	/** Get the sum of the length of each segments */
+	UFUNCTION(BlueprintCallable, Category = "Cable")
+	float GetFullLength() const;
+
 	/** Rest length of the cable */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Cable", meta=(ClampMin = "0.0", UIMin = "0.0", UIMax = "1000.0"))
 	float CableLength;
 
 	/** How many segments the cable has */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Cable", meta=(ClampMin = "1", UIMin = "1", UIMax = "20"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Cable", meta=(ClampMin = "1", UIMin = "1", UIMax = "1000"))
 	int32 NumSegments;
 
 	/** Controls the simulation substep time for the cable */
@@ -120,6 +127,10 @@ public:
 	/** The number of solver iterations controls how 'stiff' the cable is */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Cable", meta=(ClampMin = "1", ClampMax = "16"))
 	int32 SolverIterations;
+
+	/** Show debug sphere on particle positions. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Cable")
+	bool bShowDebug;
 
 	/** Add stiffness constraints to cable. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, AdvancedDisplay, Category = "Cable")
@@ -168,7 +179,7 @@ public:
 	float TileMaterial;
 
 private:
-
+	void SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance);
 	/** Solve the cable spring constraints */
 	void SolveConstraints();
 	/** Integrate cable point positions */
