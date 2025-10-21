@@ -18,6 +18,9 @@
 #include <Logging/StructuredLog.h>
 #include "Engine/EngineTypes.h"
 #include <Components/SphereComponent.h>
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "Components/CapsuleComponent.h"
 
 DEFINE_RENDER_COMMAND_PIPE(Cable, ERenderCommandPipeFlags::None);
 
@@ -738,15 +741,8 @@ FORCEINLINE void UCableComponentBis::SolveDistanceConstraint(FCableParticle& Par
 	// Find current vector between particles
 	FVector Delta = ParticleB.Position - ParticleA.Position;
 	float CurrentDistance = Delta.Size();
-
-	/*
-	float springConstant = 10000;
-	FVector force = -(Delta / CurrentDistance) * (CurrentDistance - DesiredDistance) * springConstant;
-	force += -((ParticleA.Position - ParticleA.OldPosition) - (ParticleB.Position - ParticleB.OldPosition));
-	*/
-
 	bool bNormalizedOK = Delta.Normalize();
-	bool CanStretch = CurrentDistance - DesiredDistance > FMath::Abs(DesiredDistance); // 50%
+	bool CanStretch = CurrentDistance - DesiredDistance > FMath::Abs(DesiredDistance) / 2; 
 
 	// If particles are right on top of each other, separate with an abitrarily-chosen direction
 
@@ -754,12 +750,12 @@ FORCEINLINE void UCableComponentBis::SolveDistanceConstraint(FCableParticle& Par
 	FVector VectorCorrection = (CurrentDistance - DesiredDistance) * CorrectionDirection;
 
 	// Only move free particles to satisfy constraints
-	if (ParticleA.bFree && ParticleB.bFree)
+	if (ParticleA.bFree && ParticleB.bFree) // Middle particles
 	{
 		ParticleA.Position += 0.5f * VectorCorrection;
 		ParticleB.Position -= 0.5f * VectorCorrection;
 	}
-	else if (ParticleA.bFree)
+	else if (ParticleA.bFree) // Target
 	{
 		ParticleA.Position += VectorCorrection;
 		//if (AActor* EndActor = GetAttachedActor()) {
@@ -768,15 +764,14 @@ FORCEINLINE void UCableComponentBis::SolveDistanceConstraint(FCableParticle& Par
 		//	}
 		//}
 	}
-	else if (ParticleB.bFree)
+	else if (ParticleB.bFree) // Character
 	{
-		ParticleB.Position -= VectorCorrection;
-		if (AActor* StartActor = GetOwner()) {
-			if (CanStretch) {
-				VectorCorrection.Z = 0;
-				StartActor->SetActorLocation(StartActor->GetActorLocation() + 0.5f * VectorCorrection);
+		ParticleB.Position -= 0.5 * VectorCorrection;
+		if (CanStretch && GetAttachedActor() != nullptr) {
+			if (ACharacter* Character = Cast<ACharacter>(GetOwner())) {
+				Character->GetCharacterMovement()->Velocity = Character->GetCharacterMovement()->Velocity + VectorCorrection;
 			}
-		}	
+		}
 	}
 }
 
@@ -1042,6 +1037,8 @@ void UCableComponentBis::TickComponent(float DeltaTime, enum ELevelTick TickType
 			TimeRemainder = 0.0f;
 		}
 	}
+
+	UE_LOGFMT(LogCableComponentBis, Display, "Lenght: {0}", GetFullLength());
 
 	// Need to send new data to render thread
 	MarkRenderDynamicDataDirty();
