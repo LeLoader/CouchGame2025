@@ -17,5 +17,5 @@ ACouchGame2025GameMode::ACouchGame2025GameMode()
 
 void ACouchGame2025GameMode::StartPlay()
 {
-	GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>()->CreateAndInitPlayers(ELocalMultiplayerInputMappingType::InGame);
+	// GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>()->CreateAndInitPlayers(ELocalMultiplayerInputMappingType::InGame);
 }

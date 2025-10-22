@@ -56,6 +56,7 @@ Binaries/Win64/*
 !Binaries/Win64/UnrealEditor.modules
 !Binaries/Win64/UnrealEditor-CouchGame2025.dll
 !Binaries/Win64/UnrealEditor-MultiplayerModule.dll
+!Binaries/Win64/UnrealEditor-CableComponentBis.dll
 
 # Builds
 Build/*
