@@ -3,6 +3,7 @@
 #include "CouchGame2025/Runtime/Public/Global/CouchGame2025GameMode.h"
 #include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
 #include "UObject/ConstructorHelpers.h"
+#include "MultiplayerModule/Public/LocalMultiplayerSubsystem.h"
 
 ACouchGame2025GameMode::ACouchGame2025GameMode()
 {
@@ -12,4 +13,9 @@ ACouchGame2025GameMode::ACouchGame2025GameMode()
 	{
 		DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
+}
+
+void ACouchGame2025GameMode::StartPlay()
+{
+	GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>()->CreateAndInitPlayers(ELocalMultiplayerInputMappingType::InGame);
 }

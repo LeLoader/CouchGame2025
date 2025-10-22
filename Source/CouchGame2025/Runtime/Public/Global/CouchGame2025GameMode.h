@@ -13,6 +13,8 @@ class ACouchGame2025GameMode : public AGameModeBase
 
 public:
 	ACouchGame2025GameMode();
+
+	virtual void StartPlay() override;
 };
 
 
