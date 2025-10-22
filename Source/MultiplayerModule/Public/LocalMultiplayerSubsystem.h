@@ -11,6 +11,8 @@ class MULTIPLAYERMODULE_API ULocalMultiplayerSubsystem : public UGameInstanceSub
 	GENERATED_BODY()
 
 public:
+	void Initialize(FSubsystemCollectionBase& Collection) override;
+	
 	UFUNCTION(BlueprintCallable)
 	void CreateAndInitPlayers(ELocalMultiplayerInputMappingType MappingType);
 	
@@ -36,6 +38,6 @@ protected:
 	UPROPERTY()
 	TMap<int, int> PlayerIndexFromGamepadProfileIndex;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings;
 };

@@ -4,9 +4,13 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputSubsystems.h"
 
-void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMappingType MappingType)
+void ULocalMultiplayerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
+}
+
+void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMappingType MappingType)
+{
 	for (int i = 0; i < LocalMultiplayerSettings->GetNbKeyboardProfiles(); i++)
 	{
 		UGameplayStatics::CreatePlayer(GetWorld(), i);
