@@ -7942,6 +7942,14 @@
 			"Type": "RequiredResource"
 		},
 		{
+			"Path": "$(ProjectDir)/Binaries/Win64/UnrealEditor-CableComponentBis.dll",
+			"Type": "DynamicLibrary"
+		},
+		{
+			"Path": "$(ProjectDir)/Binaries/Win64/UnrealEditor-CableComponentBis.pdb",
+			"Type": "SymbolFile"
+		},
+		{
 			"Path": "$(ProjectDir)/Binaries/Win64/UnrealEditor-CouchGame2025.dll",
 			"Type": "DynamicLibrary"
 		},
@@ -33544,10 +33552,6 @@
 			"Type": "UFS"
 		},
 		{
-			"Path": "$(EngineDir)/Plugins/Runtime/CableComponent/CableComponent.uplugin",
-			"Type": "UFS"
-		},
-		{
 			"Path": "$(EngineDir)/Plugins/Runtime/ChunkDownloader/ChunkDownloader.uplugin",
 			"Type": "UFS"
 		},
@@ -33690,6 +33694,10 @@
 		{
 			"Path": "$(ProjectDir)/CouchGame2025.uproject",
 			"Type": "UFS"
+		},
+		{
+			"Path": "$(ProjectDir)/Source/CableComponentBis/CableComponentBis.uplugin",
+			"Type": "UFS"
 		}
 	],
 	"BuildPlugins": [
@@ -33723,7 +33731,7 @@
 		"BlueprintHeaderView",
 		"Bridge",
 		"CLionSourceCodeAccess",
-		"CableComponent",
+		"CableComponentBis",
 		"CameraShakePreviewer",
 		"ChangelistReview",
 		"ChaosCaching",

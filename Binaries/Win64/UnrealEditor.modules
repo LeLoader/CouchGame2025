@@ -2,6 +2,7 @@
 	"BuildId": "37670630",
 	"Modules": 
 	{
+		"CableComponentBis": "UnrealEditor-CableComponentBis.dll",
 		"CouchGame2025": "UnrealEditor-CouchGame2025.dll",
 		"MultiplayerModule": "UnrealEditor-MultiplayerModule.dll"
 	}

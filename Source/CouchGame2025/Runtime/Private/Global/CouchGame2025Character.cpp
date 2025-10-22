@@ -10,6 +10,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include <CouchGame2025/Runtime/Public/Interface/Interactable.h>
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -85,6 +86,11 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Look);
+
+		// Rope
+		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Started, this, &ACouchGame2025Character::ToggleRopeMode);
+		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ToggleRopeMode);
+		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Canceled, this, &ACouchGame2025Character::ToggleRopeMode);
 	}
 	else
 	{
@@ -126,4 +132,26 @@ void ACouchGame2025Character::Look(const FInputActionValue& Value)
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
 	}
+}
+
+void ACouchGame2025Character::Interact(const FInputActionValue& Value)
+{
+	FHitResult Hit;
+	FVector TraceStart = GetActorLocation();
+	FVector TraceEnd = GetActorLocation() + GetActorForwardVector() * 1000.0f;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams);
+
+	if (Hit.bBlockingHit) {
+		if (IInteractable* Interactable = Cast<IInteractable>(Hit.GetActor())) {
+			Interactable->Interact(this);
+		}
+	}
+}
+
+void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
+{
+	bIsRopeFree = !bIsRopeFree;
 }
