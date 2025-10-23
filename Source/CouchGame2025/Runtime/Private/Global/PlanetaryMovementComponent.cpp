@@ -3,3 +3,7 @@
 
 #include "CouchGame2025/Runtime/Public/Global/PlanetaryMovementComponent.h"
 
+void UPlanetaryMovementComponent::UpdateGravityDirection(const FVector& NewGravityDirection)
+{
+	SetGravityDirection(NewGravityDirection);
+}
