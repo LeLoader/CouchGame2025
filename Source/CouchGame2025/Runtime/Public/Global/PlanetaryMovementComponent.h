@@ -17,5 +17,7 @@ class COUCHGAME2025_API UPlanetaryMovementComponent : public UCharacterMovementC
 public:
 	UFUNCTION(BlueprintCallable)
 		void UpdateGravityDirection(const FVector& NewGravityDirection);
-	
+
+	UFUNCTION(BlueprintCallable)
+		void InvertGravity();
 };
