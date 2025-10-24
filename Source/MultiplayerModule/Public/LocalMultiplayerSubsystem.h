@@ -28,6 +28,12 @@ public:
 	
 	void AssignGamepadInputMapping(int PlayerIndex, ELocalMultiplayerInputMappingType MappingType) const;
 
+	UFUNCTION(BlueprintCallable)
+	void SetCurrentMappingType(ELocalMultiplayerInputMappingType InMappingType);
+
+	UPROPERTY(BlueprintReadOnly)
+	ELocalMultiplayerInputMappingType CurrentMappingType;
+
 protected:
 	UPROPERTY()
 	uint8 LastAssignedPlayerIndex = -1;
@@ -40,4 +46,5 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings;
+
 };

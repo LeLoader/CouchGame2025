@@ -13,7 +13,7 @@ void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMapp
 {
 	for (int i = 0; i < LocalMultiplayerSettings->GetNbKeyboardProfiles(); i++)
 	{
-		UGameplayStatics::CreatePlayer(GetWorld(), i);
+		UGameplayStatics::CreatePlayer(GetWorld(), i, true);
 	}
 	for (int i = 0; i < LocalMultiplayerSettings->NbMaxGamepads; i++)
 	{
@@ -75,4 +75,9 @@ void ULocalMultiplayerSubsystem::AssignGamepadInputMapping(int PlayerIndex, ELoc
 	FModifyContextOptions Options = FModifyContextOptions();
 	Options.bIgnoreAllPressedKeysUntilRelease = false;
 	Subsystem->AddMappingContext(InputMappingcontext, -1, Options);
+}
+
+void ULocalMultiplayerSubsystem::SetCurrentMappingType(ELocalMultiplayerInputMappingType InMappingType)
+{
+	CurrentMappingType = InMappingType;
 }
