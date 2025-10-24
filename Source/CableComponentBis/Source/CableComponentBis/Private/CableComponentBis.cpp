@@ -1038,7 +1038,7 @@ void UCableComponentBis::TickComponent(float DeltaTime, enum ELevelTick TickType
 		}
 	}
 
-	UE_LOGFMT(LogCableComponentBis, Display, "Lenght: {0}", GetFullLength());
+	//UE_LOGFMT(LogCableComponentBis, Display, "Lenght: {0}", GetFullLength());
 
 	// Need to send new data to render thread
 	MarkRenderDynamicDataDirty();
