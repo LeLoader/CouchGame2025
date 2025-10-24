@@ -20,4 +20,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 		void InvertGravity();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool UseExternalGravityDirection = true;
+
+	virtual bool DoJump(bool bReplayingMoves) override;
 };

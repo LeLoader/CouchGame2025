@@ -8,7 +8,6 @@
 void UPlanetaryMovementComponent::UpdateGravityDirection(const FVector& NewGravityDirection)
 {
 	SetGravityDirection(NewGravityDirection);
-
 }
 
 void UPlanetaryMovementComponent::InvertGravity()
@@ -18,4 +17,16 @@ void UPlanetaryMovementComponent::InvertGravity()
     FVector InvertedGravityDirection = -CurrentGravityDirection;
 
     SetGravityDirection(InvertedGravityDirection);
+}
+
+bool UPlanetaryMovementComponent::DoJump(bool bReplayingMoves)
+{
+    if (IsMovingOnGround() && !UseExternalGravityDirection)
+    {
+		SetGravityDirection(-GetGravityDirection());
+        UpdateGravityDirection(GetGravityDirection());
+		UseExternalGravityDirection = true;
+    }
+
+    return Super::DoJump(bReplayingMoves);
 }
