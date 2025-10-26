@@ -29,8 +29,8 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 		int PlayerIndex = Subsystem->GetAssignedPlayerIndexFromKeyboardProfileIndex(KeyboardProfile);
 		if (PlayerIndex == -1)
 		{
-			PlayerIndex = Subsystem->AssignNewPlayerToKeyboardProfile(KeyboardProfile);
-			Subsystem->AssignKeyboardMapping(PlayerIndex, KeyboardProfile, Subsystem->CurrentMappingType);
+			//PlayerIndex = Subsystem->AssignNewPlayerToKeyboardProfile(KeyboardProfile);
+			//Subsystem->AssignKeyboardMapping(PlayerIndex, KeyboardProfile, Subsystem->CurrentMappingType);
 		}
 		APlayerController* Controller = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), PlayerIndex);
 		if (Controller == nullptr)
@@ -47,8 +47,8 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 		int PlayerIndex = Subsystem->GetAssignedPlayerIndexFromGamepadDeviceID(EventArgs.InputDevice.GetId());
 		if (PlayerIndex == -1)
 		{
-			PlayerIndex = Subsystem->AssignNewPlayerToGamepadDeviceID(EventArgs.InputDevice.GetId());
-			Subsystem->AssignGamepadInputMapping(PlayerIndex, Subsystem->CurrentMappingType);
+			//PlayerIndex = Subsystem->AssignNewPlayerToGamepadDeviceID(EventArgs.InputDevice.GetId());
+			//Subsystem->AssignGamepadInputMapping(PlayerIndex, Subsystem->CurrentMappingType);
 		}
 		APlayerController* Controller = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), PlayerIndex);
 		if (Controller == nullptr)
@@ -79,8 +79,8 @@ bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInpu
 		int PlayerIndex = Subsystem->GetAssignedPlayerIndexFromKeyboardProfileIndex(KeyboardProfile);
 		if (PlayerIndex == -1)
 		{
-			PlayerIndex = Subsystem->AssignNewPlayerToKeyboardProfile(KeyboardProfile);
-			Subsystem->AssignKeyboardMapping(PlayerIndex, KeyboardProfile, Subsystem->CurrentMappingType);
+			// PlayerIndex = Subsystem->AssignNewPlayerToKeyboardProfile(KeyboardProfile);
+			// Subsystem->AssignKeyboardMapping(PlayerIndex, KeyboardProfile, Subsystem->CurrentMappingType);
 		}
 		APlayerController* Controller = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), PlayerIndex);
 		if (Controller == nullptr)
@@ -96,8 +96,8 @@ bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInpu
 		int PlayerIndex = Subsystem->GetAssignedPlayerIndexFromGamepadDeviceID(InputDevice.GetId());
 		if (PlayerIndex == -1)
 		{
-			PlayerIndex = Subsystem->AssignNewPlayerToGamepadDeviceID(InputDevice.GetId());
-			Subsystem->AssignGamepadInputMapping(PlayerIndex, Subsystem->CurrentMappingType);
+			// PlayerIndex = Subsystem->AssignNewPlayerToGamepadDeviceID(InputDevice.GetId());
+			// Subsystem->AssignGamepadInputMapping(PlayerIndex, Subsystem->CurrentMappingType);
 		}
 		APlayerController* Controller = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), PlayerIndex);
 		if (Controller == nullptr)
