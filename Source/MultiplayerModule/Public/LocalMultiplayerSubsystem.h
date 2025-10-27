@@ -3,7 +3,12 @@
 #include "CoreMinimal.h"
 #include "LocalMultiplayerSettings.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "Delegates/Delegate.h"
 #include "LocalMultiplayerSubsystem.generated.h"
+
+enum class EHardwareDevicePrimaryType : uint8;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNewPlayerMappedSignature, int32, Index, EHardwareDevicePrimaryType, DeviceType);
 
 UCLASS()
 class MULTIPLAYERMODULE_API ULocalMultiplayerSubsystem : public UGameInstanceSubsystem
@@ -11,6 +16,9 @@ class MULTIPLAYERMODULE_API ULocalMultiplayerSubsystem : public UGameInstanceSub
 	GENERATED_BODY()
 
 public:
+	UPROPERTY(BlueprintAssignable)
+	FOnNewPlayerMappedSignature OnNewPlayerMapped;
+
 	void Initialize(FSubsystemCollectionBase& Collection) override;
 	
 	UFUNCTION(BlueprintCallable)
@@ -35,7 +43,7 @@ public:
 	ELocalMultiplayerInputMappingType CurrentMappingType;
 
 protected:
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	uint8 LastAssignedPlayerIndex = -1;
 
 	UPROPERTY()

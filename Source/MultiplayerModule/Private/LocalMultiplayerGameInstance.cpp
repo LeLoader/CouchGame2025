@@ -3,12 +3,17 @@
 
 #include "LocalMultiplayerGameInstance.h"
 
-void ULocalMultiplayerGameInstance::CreateLocalPlayerWithDevice(int32 ControllerId, FString& OutError, bool bSpawnPlayerController)
+ULocalPlayer* ULocalMultiplayerGameInstance::CreateInitialPlayer(FString& OutError)
 {
-	ULocalPlayer* Player = CreateLocalPlayer(ControllerId, OutError, bSpawnPlayerController);
+	ULocalPlayer* LocalPlayer = Super::CreateInitialPlayer(OutError);
+
+	FString OutError2;
+	CreateSecondPlayer(OutError2);
+
+	return LocalPlayer;
 }
 
-void ULocalMultiplayerGameInstance::HandleInputDeviceConnectionChange(EInputDeviceConnectionState NewConnectionState, FPlatformUserId PlatformUserId, FInputDeviceId InputDeviceId)
+void ULocalMultiplayerGameInstance::CreateSecondPlayer(FString& OutError)
 {
-	Super::HandleInputDeviceConnectionChange(NewConnectionState, PlatformUserId, InputDeviceId);
+	CreateLocalPlayer(1, OutError, true);
 }
