@@ -21,6 +21,7 @@ void UPlanetaryMovementComponent::InvertGravity()
 
 bool UPlanetaryMovementComponent::DoJump(bool bReplayingMoves)
 {
+
     if (IsMovingOnGround() && !UseExternalGravityDirection)
     {
 		SetGravityDirection(-GetGravityDirection());
