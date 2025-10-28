@@ -15,6 +15,9 @@ class COUCHGAME2025_API AABlackHole : public AActor
 public:
 	AABlackHole();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int32 DestroyedObjectCount = 0;
+
 protected:
 	virtual void BeginPlay() override;
 

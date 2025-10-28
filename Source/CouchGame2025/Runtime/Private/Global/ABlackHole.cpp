@@ -45,5 +45,7 @@ void AABlackHole::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	else
 	{
 		OtherActor->Destroy();
+		DestroyedObjectCount++;
+		UE_LOG(LogTemp, Warning, TEXT("DestroyedObjectCount: %d"), DestroyedObjectCount);
 	}
 }
