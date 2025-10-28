@@ -24,5 +24,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool UseExternalGravityDirection = true;
 
+	void OrientCharacterToGravity();
+
 	virtual bool DoJump(bool bReplayingMoves) override;
 };

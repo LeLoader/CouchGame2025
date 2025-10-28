@@ -8,6 +8,7 @@
 void UPlanetaryMovementComponent::UpdateGravityDirection(const FVector& NewGravityDirection)
 {
 	SetGravityDirection(NewGravityDirection);
+	OrientCharacterToGravity();
 }
 
 void UPlanetaryMovementComponent::InvertGravity()
@@ -30,4 +31,16 @@ bool UPlanetaryMovementComponent::DoJump(bool bReplayingMoves)
     }
 
     return Super::DoJump(bReplayingMoves);
+}
+
+void UPlanetaryMovementComponent::OrientCharacterToGravity()
+{
+    if (AActor* Owner = GetOwner())
+    {
+        FVector GravityDir = GetGravityDirection();
+        FRotator TargetRotation = GravityDir.ToOrientationRotator();
+        TargetRotation = (-GravityDir).ToOrientationRotator();
+
+        Owner->SetActorRotation(TargetRotation);
+    }
 }
