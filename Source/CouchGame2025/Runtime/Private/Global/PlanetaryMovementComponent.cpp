@@ -4,20 +4,19 @@
 #include "CouchGame2025/Runtime/Public/Global/PlanetaryMovementComponent.h"
 #include <Logging/StructuredLog.h>
 
+UPlanetaryMovementComponent::UPlanetaryMovementComponent()
+{
+    PrimaryComponentTick.bCanEverTick = true;
+}
 
 void UPlanetaryMovementComponent::UpdateGravityDirection(const FVector& NewGravityDirection)
 {
 	SetGravityDirection(NewGravityDirection);
-	OrientCharacterToGravity();
 }
 
 void UPlanetaryMovementComponent::InvertGravity()
 {
-    FVector CurrentGravityDirection = GetGravityDirection();
-
-    FVector InvertedGravityDirection = -CurrentGravityDirection;
-
-    SetGravityDirection(InvertedGravityDirection);
+    UseExternalGravityDirection = false;
 }
 
 bool UPlanetaryMovementComponent::DoJump(bool bReplayingMoves)
@@ -33,14 +32,20 @@ bool UPlanetaryMovementComponent::DoJump(bool bReplayingMoves)
     return Super::DoJump(bReplayingMoves);
 }
 
-void UPlanetaryMovementComponent::OrientCharacterToGravity()
+void UPlanetaryMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-    if (AActor* Owner = GetOwner())
-    {
-        FVector GravityDir = GetGravityDirection();
-        FRotator TargetRotation = GravityDir.ToOrientationRotator();
-        TargetRotation = (-GravityDir).ToOrientationRotator();
+    Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-        Owner->SetActorRotation(TargetRotation);
+    APawn* OwnerPawn = Cast<APawn>(GetOwner());
+    if (!OwnerPawn) return;
+
+    FVector CharacterPosition = OwnerPawn->GetActorLocation();
+    FVector GravityDir = (PlanetCenter - CharacterPosition).GetSafeNormal();
+
+    if (!UseExternalGravityDirection)
+    {
+        GravityDir *= -1;
     }
+
+    UpdateGravityDirection(GravityDir);
 }

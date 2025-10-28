@@ -15,6 +15,8 @@ class COUCHGAME2025_API UPlanetaryMovementComponent : public UCharacterMovementC
 	GENERATED_BODY()
 
 public:
+	UPlanetaryMovementComponent();
+
 	UFUNCTION(BlueprintCallable)
 		void UpdateGravityDirection(const FVector& NewGravityDirection);
 
@@ -24,7 +26,11 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool UseExternalGravityDirection = true;
 
-	void OrientCharacterToGravity();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gravity")
+	FVector PlanetCenter = FVector::ZeroVector;
 
 	virtual bool DoJump(bool bReplayingMoves) override;
+
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 };
