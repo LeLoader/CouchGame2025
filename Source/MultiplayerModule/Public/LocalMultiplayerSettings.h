@@ -55,4 +55,21 @@ public:
 	UPROPERTY(Config, EditAnywhere, Category = "LocalMultiplayer")
 	int NbMaxGamepads = 4;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "LocalMultiplayer|Icon")
+	UTexture2D* KeyboardIcon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "LocalMultiplayer|Icon")
+	UTexture2D* Gamepad1Icon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "LocalMultiplayer|Icon")
+	UTexture2D* Gamepad2Icon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "LocalMultiplayer|Icon")
+	UTexture2D* Gamepad3Icon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "LocalMultiplayer|Icon")
+	UTexture2D* Gamepad4Icon;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "LocalMultiplayer|Icon")
+	UTexture2D* GamepadDisconnectedIcon;
 };
