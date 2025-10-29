@@ -9,6 +9,12 @@ UPlanetaryMovementComponent::UPlanetaryMovementComponent()
     PrimaryComponentTick.bCanEverTick = true;
 }
 
+void UPlanetaryMovementComponent::BeginPlay()
+{
+    Super::BeginPlay();
+    CachedOwnerPawn = Cast<APawn>(GetOwner());
+}
+
 void UPlanetaryMovementComponent::UpdateGravityDirection(const FVector& NewGravityDirection)
 {
 	SetGravityDirection(NewGravityDirection);
@@ -36,10 +42,9 @@ void UPlanetaryMovementComponent::TickComponent(float DeltaTime, enum ELevelTick
 {
     Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-    APawn* OwnerPawn = Cast<APawn>(GetOwner());
-    if (!OwnerPawn) return;
+    if (!CachedOwnerPawn) return;
 
-    FVector CharacterPosition = OwnerPawn->GetActorLocation();
+    FVector CharacterPosition = CachedOwnerPawn->GetActorLocation();
     FVector GravityDir = (PlanetCenter - CharacterPosition).GetSafeNormal();
 
     if (!UseExternalGravityDirection)
