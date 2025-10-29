@@ -102,6 +102,7 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
+	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, TEXT("moving"));
 
 	if (Controller != nullptr)
 	{

@@ -3,7 +3,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "EnhancedInputSubsystems.h"
-
+#include "GameFramework/InputSettings.h"
 
 void ULocalMultiplayerGameViewportClient::PostInitProperties()
 {
@@ -13,6 +13,7 @@ void ULocalMultiplayerGameViewportClient::PostInitProperties()
 
 bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& EventArgs)
 {
+	FString OutError;
 	const ULocalMultiplayerSettings* settings = GetDefault<ULocalMultiplayerSettings>();
 	if (GameInstance == nullptr)
 	{
@@ -21,7 +22,7 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 	ULocalMultiplayerSubsystem* Subsystem = GameInstance->GetSubsystem<ULocalMultiplayerSubsystem>();
 	if (!EventArgs.Key.IsGamepadKey())
 	{
-		int KeyboardProfile = settings->FindKeyboardProfileIndexFromKey(EventArgs.Key, ELocalMultiplayerInputMappingType::InGame);
+		int KeyboardProfile = settings->FindKeyboardProfileIndexFromKey(EventArgs.Key, Subsystem->CurrentMappingType);
 		if (KeyboardProfile == -1)
 		{
 			return Super::InputKey(EventArgs);
@@ -30,7 +31,8 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 		if (PlayerIndex == -1)
 		{
 			PlayerIndex = Subsystem->AssignNewPlayerToKeyboardProfile(KeyboardProfile);
-			Subsystem->AssignKeyboardMapping(PlayerIndex, KeyboardProfile, ELocalMultiplayerInputMappingType::InGame);
+			Subsystem->AssignKeyboardMapping(PlayerIndex, KeyboardProfile, Subsystem->CurrentMappingType);
+			NewPlayerMapped(PlayerIndex, EHardwareDevicePrimaryType::KeyboardAndMouse);
 		}
 		APlayerController* Controller = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), PlayerIndex);
 		if (Controller == nullptr)
@@ -48,7 +50,8 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 		if (PlayerIndex == -1)
 		{
 			PlayerIndex = Subsystem->AssignNewPlayerToGamepadDeviceID(EventArgs.InputDevice.GetId());
-			Subsystem->AssignGamepadInputMapping(PlayerIndex, ELocalMultiplayerInputMappingType::InGame);
+			Subsystem->AssignGamepadInputMapping(PlayerIndex, Subsystem->CurrentMappingType);
+			NewPlayerMapped(PlayerIndex, EHardwareDevicePrimaryType::Gamepad);
 		}
 		APlayerController* Controller = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), PlayerIndex);
 		if (Controller == nullptr)
@@ -63,6 +66,7 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 
 bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInputDeviceId InputDevice, FKey Key, float Delta, float DeltaTime, int32 NumSamples, bool bGamepad)
 {
+
 	const ULocalMultiplayerSettings* settings = GetDefault<ULocalMultiplayerSettings>();
 	if (GameInstance == nullptr)
 	{
@@ -71,7 +75,7 @@ bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInpu
 	ULocalMultiplayerSubsystem* Subsystem = GameInstance->GetSubsystem<ULocalMultiplayerSubsystem>();
 	if (!Key.IsGamepadKey())
 	{
-		int KeyboardProfile = settings->FindKeyboardProfileIndexFromKey(Key, ELocalMultiplayerInputMappingType::InGame);
+		int KeyboardProfile = settings->FindKeyboardProfileIndexFromKey(Key, Subsystem->CurrentMappingType);
 		if (KeyboardProfile == -1)
 		{
 			return Super::InputAxis(InViewport, InputDevice, Key, Delta, DeltaTime, NumSamples, bGamepad);
@@ -80,7 +84,8 @@ bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInpu
 		if (PlayerIndex == -1)
 		{
 			PlayerIndex = Subsystem->AssignNewPlayerToKeyboardProfile(KeyboardProfile);
-			Subsystem->AssignKeyboardMapping(PlayerIndex, KeyboardProfile, ELocalMultiplayerInputMappingType::InGame);
+			Subsystem->AssignKeyboardMapping(PlayerIndex, KeyboardProfile, Subsystem->CurrentMappingType);
+			NewPlayerMapped(PlayerIndex, EHardwareDevicePrimaryType::KeyboardAndMouse);
 		}
 		APlayerController* Controller = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), PlayerIndex);
 		if (Controller == nullptr)
@@ -97,7 +102,8 @@ bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInpu
 		if (PlayerIndex == -1)
 		{
 			PlayerIndex = Subsystem->AssignNewPlayerToGamepadDeviceID(InputDevice.GetId());
-			Subsystem->AssignGamepadInputMapping(PlayerIndex, ELocalMultiplayerInputMappingType::InGame);
+			Subsystem->AssignGamepadInputMapping(PlayerIndex, Subsystem->CurrentMappingType);
+			NewPlayerMapped(PlayerIndex, EHardwareDevicePrimaryType::Gamepad);
 		}
 		APlayerController* Controller = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), PlayerIndex);
 		if (Controller == nullptr)
@@ -108,4 +114,12 @@ bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInpu
 		return true;
 	}
 	
+}
+
+void ULocalMultiplayerGameViewportClient::NewPlayerMapped(int Index, EHardwareDevicePrimaryType DeviceType)
+{
+	ULocalMultiplayerSubsystem* Subsystem = GameInstance->GetSubsystem<ULocalMultiplayerSubsystem>();
+	FString OutError;
+	GameInstance->CreateLocalPlayer(FPlatformUserId::CreateFromInternalId(-1), OutError, true);
+	Subsystem->OnNewPlayerMapped.Broadcast(Index, DeviceType);
 }
