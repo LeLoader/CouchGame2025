@@ -12,6 +12,8 @@
 #include "InputActionValue.h"
 #include <CouchGame2025/Runtime/Public/Interface/Interactable.h>
 
+#include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
+
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
@@ -51,6 +53,9 @@ ACouchGame2025Character::ACouchGame2025Character()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
+	PickupComponent = CreateDefaultSubobject<UPickupComponent>(TEXT("PickupComponent"));
+	PickupComponent->SetupAttachment(GetCapsuleComponent());
+
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
@@ -86,6 +91,11 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Look);
+
+		// Pickup
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::TryPickUp);
+		//EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, PickupComponent, &UPickupComponent::TryPickUp);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::StopPickUp);
 
 		// Rope
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Started, this, &ACouchGame2025Character::ToggleRopeMode);

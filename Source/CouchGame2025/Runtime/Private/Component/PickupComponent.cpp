@@ -4,6 +4,8 @@
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
 
 #include "KismetTraceUtils.h"
+#include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
+#include "CouchGame2025/Runtime/Public/PickUpObject/PickUpObject.h"
 
 
 // Sets default values for this component's properties
@@ -13,6 +15,9 @@ UPickupComponent::UPickupComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
+	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName("PhysicsHandle"));
+	//PhysicsHandle->AddToRoot();
+	
 	// ...
 }
 
@@ -22,8 +27,11 @@ void UPickupComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// ...
-	
+	Player = Cast<ACouchGame2025Character>(GetOwner());
+	if (!IsValid(Player))
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "Player Is InValid");
+	}
 }
 
 
@@ -33,7 +41,11 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	// ...
+	if (IsGrabbingObject)
+	{
+		PhysicsHandle->SetTargetLocation(GetComponentLocation());
+		//passe
+	}
 }
 
 void UPickupComponent::TryPickUp()
@@ -47,17 +59,22 @@ void UPickupComponent::TryPickUp()
 	if (Hit->bBlockingHit == true && IsValid(Hit->GetActor()))
 	{
 		DrawDebugLine(GetWorld(), StartLocation, Hit->Location, FColor::Red);
-		DrawDebugSphere(GetWorld(), Hit->Location, 5, 5, FColor::White);
+		DrawDebugSphere(GetWorld(), Hit->Location, 5, 5, FColor::Red);
 
 		AActor* PickedActor = Hit->GetActor();
 
-		//bool IsActorPickable = 
+		if (IInteractable* PickupObject = Cast<IInteractable>(PickedActor))
+		{
+			PickedUpObject = Cast<APickUpObject>(PickedActor);
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, Hit->GetComponent()->GetName());
+			PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
+			
+			PickupObject->Interact(Player);
+		} else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Can Not Be Picked up");
+		}
 		
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			3.f,
-			FColor::Cyan,
-			PickedActor->GetName());
 	} else
 	{
 		DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red);
@@ -69,5 +86,12 @@ void UPickupComponent::TryPickUp()
 			TEXT("Not Found"));
 	}
 	
+}
+void UPickupComponent::StopPickUp()
+{
+	if (PickedUpObject == nullptr) return;
+	PickedUpObject->StopPickUp();
+	PhysicsHandle->ReleaseComponent();
+	IsGrabbingObject = false;
 }
 

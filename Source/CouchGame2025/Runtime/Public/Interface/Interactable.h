@@ -10,7 +10,7 @@
 class ACharacter;
 
 // This class does not need to be modified.
-UINTERFACE(MinimalAPI)
+UINTERFACE(MinimalAPI, NotBlueprintable)
 class UInteractable : public UInterface
 {
 	GENERATED_BODY()
@@ -25,6 +25,7 @@ class COUCHGAME2025_API IInteractable
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void Interact(ACharacter* Instigator) = 0;
+	UFUNCTION(BlueprintCallable)
+	virtual void Interact(ACouchGame2025Character* Instigator) = 0;
 	
 };

@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "CouchGame2025Character.generated.h"
 
+class UPickupComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -58,7 +59,9 @@ class ACouchGame2025Character : public ACharacter
 
 public:
 	ACouchGame2025Character();
-	
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPickupComponent* PickupComponent;
 
 protected:
 
