@@ -1,4 +1,4 @@
-#include "CouchGame2025/Runtime/Public/Global/ABlackHole.h"
+#include "CouchGame2025/Runtime/Public/Gameplay/ABlackHole.h"
 #include "Components/SphereComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "GameFramework/PlayerController.h"
