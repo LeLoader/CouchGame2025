@@ -1,5 +1,7 @@
 # Visual Studio 2015 user specific files
 .vs/
+.idea
+.DotSettings.user
 
 # Compiled Object files
 *.slo
@@ -76,10 +78,8 @@ Build/*/**
 Saved/*
 
 # Compiled source files for the engine to use
-*/Intermediate/*
-Intermediate/*
+**/Intermediate
 Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
-/.idea/.idea.CouchGame2025/.idea/workspace.xml
