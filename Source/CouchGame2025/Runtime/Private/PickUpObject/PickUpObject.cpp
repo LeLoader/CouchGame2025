@@ -5,6 +5,7 @@
 
 #include <string>
 
+#include "ConstraintsEvaluationGraph.h"
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
 #include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
 #include "GameFramework/Character.h"
@@ -41,6 +42,10 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 
 	Interactor = Player;
 	SetActorEnableCollision(false);
+	Mesh->SetPhysicsAngularVelocityInDegrees(FVector(0, 0, 0));
+	Mesh->SetPhysicsLinearVelocity(FVector(0, 0, 0));
+	Mesh->SetWorldRotation(FRotator(0, 0, 0));
+	Mesh->BodyInstance.bLockRotation = true;
 	Player->PickupComponent->IsGrabbingObject = true;
 	Player->PickupComponent->PhysicsHandle->Activate(true);
 }
@@ -56,6 +61,8 @@ void APickUpObject::StopPickUp()
 	if (DistToSocket <= 150.f)
 	{
 		SetActorLocation(Socket->GetActorLocation() + FVector::UpVector * 50);
+		SetActorRotation(Socket->GetActorRotation());
+		Mesh->BodyInstance.bLockRotation = false;
 	}
 
 }
