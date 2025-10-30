@@ -12,7 +12,7 @@ class FCableComponentBisPlugin : public IModuleInterface
 	virtual void ShutdownModule() override;
 };
 
-IMPLEMENT_MODULE( FCableComponentBisPlugin, CableComponent )
+IMPLEMENT_MODULE( FCableComponentBisPlugin, CableComponentBis )
 
 
 
