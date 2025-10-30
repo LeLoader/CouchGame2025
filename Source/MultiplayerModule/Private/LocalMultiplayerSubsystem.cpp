@@ -4,12 +4,16 @@
 #include "Kismet/GameplayStatics.h"
 #include "EnhancedInputSubsystems.h"
 
-void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMappingType MappingType)
+void ULocalMultiplayerSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	LocalMultiplayerSettings = GetDefault<ULocalMultiplayerSettings>();
+}
+
+void ULocalMultiplayerSubsystem::CreateAndInitPlayers(ELocalMultiplayerInputMappingType MappingType)
+{
 	for (int i = 0; i < LocalMultiplayerSettings->GetNbKeyboardProfiles(); i++)
 	{
-		UGameplayStatics::CreatePlayer(GetWorld(), i);
+		UGameplayStatics::CreatePlayer(GetWorld(), i, true);
 	}
 	for (int i = 0; i < LocalMultiplayerSettings->NbMaxGamepads; i++)
 	{
@@ -71,4 +75,9 @@ void ULocalMultiplayerSubsystem::AssignGamepadInputMapping(int PlayerIndex, ELoc
 	FModifyContextOptions Options = FModifyContextOptions();
 	Options.bIgnoreAllPressedKeysUntilRelease = false;
 	Subsystem->AddMappingContext(InputMappingcontext, -1, Options);
+}
+
+void ULocalMultiplayerSubsystem::SetCurrentMappingType(ELocalMultiplayerInputMappingType InMappingType)
+{
+	CurrentMappingType = InMappingType;
 }

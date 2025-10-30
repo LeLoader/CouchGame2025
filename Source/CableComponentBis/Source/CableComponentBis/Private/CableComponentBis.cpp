@@ -22,7 +22,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 
-DEFINE_RENDER_COMMAND_PIPE(Cable, ERenderCommandPipeFlags::None);
+DEFINE_RENDER_COMMAND_PIPE(CableBis, ERenderCommandPipeFlags::None);
 
 static TAutoConsoleVariable<int32> CVarRayTracingCableMeshes(
 	TEXT("r.RayTracing.Geometry.Cable"),
@@ -103,7 +103,7 @@ public:
 		, NumSides(Component->NumSides)
 		, TileMaterial(Component->TileMaterial)
 	{
-		VertexBuffers.InitWithDummyData(&UE::RenderCommandPipe::Cable, &VertexFactory, GetRequiredVertexCount());
+		VertexBuffers.InitWithDummyData(&UE::RenderCommandPipe::CableBis, &VertexFactory, GetRequiredVertexCount());
 
 		IndexBuffer.NumIndices = GetRequiredIndexCount();
 
@@ -119,7 +119,7 @@ public:
 		bDynamicRayTracingGeometry = bSupportRayTracing && MaterialRelevance.bUsesWorldPositionOffset;
 #endif
 
-		ENQUEUE_RENDER_COMMAND(InitCableResources)(UE::RenderCommandPipe::Cable,
+		ENQUEUE_RENDER_COMMAND(InitCableResources)(UE::RenderCommandPipe::CableBis,
 			[this](FRHICommandList& RHICmdList)
 			{
 				IndexBuffer.InitResource(RHICmdList);
@@ -1083,7 +1083,7 @@ void UCableComponentBis::SendRenderDynamicData_Concurrent()
 
 		// Enqueue command to send to render thread
 		FCableSceneProxy* CableSceneProxy = (FCableSceneProxy*)SceneProxy;
-		ENQUEUE_RENDER_COMMAND(FSendCableDynamicData)(UE::RenderCommandPipe::Cable,
+		ENQUEUE_RENDER_COMMAND(FSendCableDynamicData)(UE::RenderCommandPipe::CableBis,
 			[CableSceneProxy, DynamicData](FRHICommandListBase& RHICmdList)
 			{
 				CableSceneProxy->SetDynamicData_RenderThread(RHICmdList, DynamicData);

@@ -12,13 +12,12 @@ ACouchGame2025GameMode::ACouchGame2025GameMode()
 		TEXT("/Game/ThirdPerson/Blueprints/BP_ThirdPersonCharacter"));
 	if (PlayerPawnBPClass.Class != NULL)
 	{
-		DefaultPawnClass = PlayerPawnBPClass.Class;
+		// DefaultPawnClass = PlayerPawnBPClass.Class;
 	}
 }
 
 void ACouchGame2025GameMode::StartPlay()
 {
 	Super::StartPlay();
-
 	// GetGameInstance()->GetSubsystem<ULocalMultiplayerSubsystem>()->CreateAndInitPlayers(ELocalMultiplayerInputMappingType::InGame);
 }
