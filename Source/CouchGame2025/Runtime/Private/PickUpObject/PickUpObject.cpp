@@ -6,6 +6,7 @@
 #include <string>
 
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
+#include "CouchGame2025/Runtime/Public/Component/PlanetaryMovementComponent.h"
 #include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
@@ -65,5 +66,31 @@ void APickUpObject::StopPickUp()
 void APickUpObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (Mesh && Mesh->IsSimulatingPhysics())
+	{
+		UPlanetaryMovementComponent* PlanetaryComp = nullptr;
+		if (Interactor)
+		{
+			PlanetaryComp = Interactor->FindComponentByClass<UPlanetaryMovementComponent>();
+		}
+
+		if (PlanetaryComp)
+		{
+			FVector ObjectPosition = GetActorLocation();
+			FVector GravityDir = (PlanetaryComp->PlanetCenter - ObjectPosition).GetSafeNormal();
+
+			if (!PlanetaryComp->UseExternalGravityDirection)
+			{
+				GravityDir *= -1;
+			}
+
+			float GravityZ = GetWorld()->GetGravityZ();
+			FVector GravityForce = GravityDir * FMath::Abs(GravityZ) * Mesh->GetMass();
+
+			Mesh->AddForce(GravityForce);
+			UE_LOGFMT(LogTemplateCharacter, Log, "Applying gravity force: {0}", *GravityForce.ToString());
+		}
+	}
 }
 
