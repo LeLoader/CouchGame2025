@@ -4,6 +4,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 #include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerStart.h"
 
 AABlackHole::AABlackHole()
@@ -34,12 +35,13 @@ void AABlackHole::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 		return;
 	}
 
-	if (OtherActor->IsA(ACouchGame2025Character::StaticClass()))
+	if (ACouchGame2025Character* Character = Cast<ACouchGame2025Character>(OtherActor))
 	{
 		AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());
 		if (PlayerStart)
 		{
-			OtherActor->SetActorLocation(PlayerStart->GetActorLocation());
+			Character->SetActorLocation(PlayerStart->GetActorLocation());
+			Character->GetCharacterMovement()->StopMovementImmediately();
 		}
 	}
 	else
