@@ -81,3 +81,10 @@ void ULocalMultiplayerSubsystem::SetCurrentMappingType(ELocalMultiplayerInputMap
 {
 	CurrentMappingType = InMappingType;
 }
+
+void ULocalMultiplayerSubsystem::ResetPlayers()
+{
+	PlayerIndexFromKeyboardProfileIndex.Empty();
+	PlayerIndexFromGamepadProfileIndex.Empty();
+	LastAssignedPlayerIndex = -1;
+}

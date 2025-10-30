@@ -43,6 +43,7 @@ public:
 	ELocalMultiplayerInputMappingType CurrentMappingType;
 
 protected:
+
 	UPROPERTY(BlueprintReadOnly)
 	uint8 LastAssignedPlayerIndex = -1;
 
@@ -54,5 +55,8 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly)
 	const ULocalMultiplayerSettings* LocalMultiplayerSettings;
+
+	UFUNCTION(BlueprintCallable)
+	void ResetPlayers();
 
 };
