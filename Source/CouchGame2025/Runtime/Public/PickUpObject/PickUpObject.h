@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
 #include "GameFramework/Actor.h"
-#include "CouchGame2025/Runtime/Public/Component/PlanetaryMovementComponent.h"
 #include "PickUpObject.generated.h"
 
 UCLASS()
@@ -27,11 +26,6 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* Mesh;
 
-	UPROPERTY(EditAnywhere, Category = "Gravity")
-	FVector PlanetCenter = FVector::ZeroVector;
-
-	UPROPERTY(EditAnywhere, Category = "Gravity")
-	float GravityStrength = 980.0f;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
