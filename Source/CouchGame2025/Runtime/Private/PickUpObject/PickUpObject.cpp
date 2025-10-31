@@ -50,6 +50,9 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 void APickUpObject::StopPickUp()
 {
 	SetActorEnableCollision(true);
+	if (Socket == nullptr) {
+		return; // :)
+	}
 	float DistToSocket = FVector::Dist(Socket->GetActorLocation(), GetActorLocation());
 
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("%f"), DistToSocket);
