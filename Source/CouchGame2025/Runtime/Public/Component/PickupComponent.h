@@ -32,6 +32,11 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void TryPickUp();
 
+	UPROPERTY(EditDefaultsOnly, meta = (Units = "cm"))
+	float TraceLength = 250;
+
+	UPROPERTY(EditDefaultsOnly, meta = (Units = "cm"))
+	float TraceWidth = 100;
 
 	// Use
 	UFUNCTION()
@@ -40,6 +45,8 @@ public:
 	void Use();
 	UFUNCTION()
 	void StopUse();
+
+
 
 	UFUNCTION()
 	void HandleInputCompleted();

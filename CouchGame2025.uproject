@@ -29,6 +29,10 @@
 		{
 			"Name": "CableComponent",
 			"Enabled": false
+		},
+		{
+			"Name": "NiagaraFluids",
+			"Enabled": true
 		}
 	],
 	"AdditionalPluginDirectories": [

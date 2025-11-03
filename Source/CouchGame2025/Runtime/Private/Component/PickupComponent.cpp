@@ -57,15 +57,17 @@ void UPickupComponent::TryPickUp()
 
 	FHitResult* Hit = new FHitResult();
 	FVector StartLocation = GetOwner()->GetActorLocation();
-	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector()*250;
-	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(32));
+	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector() * TraceLength;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Player);
+	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(TraceWidth));
 	
 	//GetWorld()->LineTraceSingleByChannel(*Hit, StartLocation, EndLocation, ECC_Visibility);
-	DrawDebugSphere(GetWorld(), StartLocation, 5, 5, FColor::White);
+	DrawDebugSphere(GetWorld(), StartLocation, TraceWidth, 8, FColor::White);
 	
 	if (Hit->bBlockingHit == true && IsValid(Hit->GetActor()))
 	{
-		DrawDebugSphere(GetWorld(), Hit->Location, 5, 5, FColor::Green);
+		DrawDebugSphere(GetWorld(), Hit->Location, TraceWidth, 8, FColor::Green);
 
 		AActor* PickedActor = Hit->GetActor();
 
@@ -84,7 +86,7 @@ void UPickupComponent::TryPickUp()
 		
 	} else
 	{
-		DrawDebugSphere(GetWorld(), EndLocation, 5, 5, FColor::Red);
+		DrawDebugSphere(GetWorld(), EndLocation, TraceWidth, 8, FColor::Red);
 
 		GEngine->AddOnScreenDebugMessage(
 			-1,
