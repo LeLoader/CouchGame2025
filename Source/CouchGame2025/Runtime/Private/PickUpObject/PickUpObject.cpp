@@ -5,12 +5,10 @@
 
 #include <string>
 
+
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
 #include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
-#include "GameFramework/Character.h"
-#include "Kismet/GameplayStatics.h"
 #include "Logging/StructuredLog.h"
-#include "Misc/MapErrors.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 
 
@@ -41,6 +39,10 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 
 	Interactor = Player;
 	SetActorEnableCollision(false);
+	Mesh->SetPhysicsAngularVelocityInDegrees(FVector(0, 0, 0));
+	Mesh->SetPhysicsLinearVelocity(FVector(0, 0, 0));
+	Mesh->SetWorldRotation(FRotator(0, 0, 0));
+	Mesh->BodyInstance.bLockRotation = true;
 	Player->PickupComponent->IsGrabbingObject = true;
 	Player->PickupComponent->PhysicsHandle->Activate(true);
 }
@@ -48,6 +50,9 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 void APickUpObject::StopPickUp()
 {
 	SetActorEnableCollision(true);
+	if (Socket == nullptr) {
+		return; // :)
+	}
 	float DistToSocket = FVector::Dist(Socket->GetActorLocation(), GetActorLocation());
 
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("%f"), DistToSocket);
@@ -56,6 +61,8 @@ void APickUpObject::StopPickUp()
 	if (DistToSocket <= 150.f)
 	{
 		SetActorLocation(Socket->GetActorLocation() + FVector::UpVector * 50);
+		SetActorRotation(Socket->GetActorRotation());
+		Mesh->BodyInstance.bLockRotation = false;
 	}
 
 }
