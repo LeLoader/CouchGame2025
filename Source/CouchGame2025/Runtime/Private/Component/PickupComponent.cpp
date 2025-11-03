@@ -58,13 +58,14 @@ void UPickupComponent::TryPickUp()
 	FHitResult* Hit = new FHitResult();
 	FVector StartLocation = GetOwner()->GetActorLocation();
 	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector()*250;
+	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(32));
 	
-	GetWorld()->LineTraceSingleByChannel(*Hit, StartLocation, EndLocation, ECC_Visibility);
+	//GetWorld()->LineTraceSingleByChannel(*Hit, StartLocation, EndLocation, ECC_Visibility);
+	DrawDebugSphere(GetWorld(), StartLocation, 5, 5, FColor::White);
 	
 	if (Hit->bBlockingHit == true && IsValid(Hit->GetActor()))
 	{
-		DrawDebugLine(GetWorld(), StartLocation, Hit->Location, FColor::Red);
-		DrawDebugSphere(GetWorld(), Hit->Location, 5, 5, FColor::Red);
+		DrawDebugSphere(GetWorld(), Hit->Location, 5, 5, FColor::Green);
 
 		AActor* PickedActor = Hit->GetActor();
 
@@ -83,8 +84,8 @@ void UPickupComponent::TryPickUp()
 		
 	} else
 	{
-		DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red);
-		DrawDebugSphere(GetWorld(), EndLocation, 5, 5, FColor::White);
+		DrawDebugSphere(GetWorld(), EndLocation, 5, 5, FColor::Red);
+
 		GEngine->AddOnScreenDebugMessage(
 			-1,
 			3.f,
