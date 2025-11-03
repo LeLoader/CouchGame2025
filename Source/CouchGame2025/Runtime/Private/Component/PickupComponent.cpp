@@ -6,6 +6,7 @@
 #include "KismetTraceUtils.h"
 #include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
 #include "CouchGame2025/Runtime/Public/PickUpObject/PickUpObject.h"
+#include <CouchGame2025/Runtime/Public/Interface/Usable.h>
 
 
 // Sets default values for this component's properties
@@ -50,6 +51,10 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UPickupComponent::TryPickUp()
 {
+	if (IsValid(PickedUpObject)) {
+		return;
+	}
+
 	FHitResult* Hit = new FHitResult();
 	FVector StartLocation = GetOwner()->GetActorLocation();
 	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector()*250;
@@ -68,8 +73,9 @@ void UPickupComponent::TryPickUp()
 			PickedUpObject = Cast<APickUpObject>(PickedActor);
 			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, Hit->GetComponent()->GetName());
 			PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
-			
+
 			PickupObject->Interact(Player);
+
 		} else
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Can Not Be Picked up");
@@ -85,13 +91,43 @@ void UPickupComponent::TryPickUp()
 			FColor::Cyan,
 			TEXT("Not Found"));
 	}
-	
 }
+
+void UPickupComponent::StartUse() {
+	if (IUsable* UsableObject = Cast<IUsable>(PickedUpObject)) {
+		UsableObject->StartUse();
+	}
+}
+
+void UPickupComponent::Use() {
+	if (IUsable* UsableObject = Cast<IUsable>(PickedUpObject)) {
+		UsableObject->Use();
+	}
+}
+
+void UPickupComponent::StopUse() {
+	if (IUsable* UsableObject = Cast<IUsable>(PickedUpObject)) {
+		UsableObject->StopUse();
+	}
+}
+
+void UPickupComponent::HandleInputCompleted() {
+	if (!bCanBeReleased)
+		bCanBeReleased = true;
+
+	StopPickUp();
+}
+
 void UPickupComponent::StopPickUp()
 {
-	if (PickedUpObject == nullptr) return;
+	if (!IsValid(PickedUpObject) || !bCanBeReleased) {
+		return;
+	}
+
 	PickedUpObject->StopPickUp();
 	PhysicsHandle->ReleaseComponent();
+	PickedUpObject = nullptr;
 	IsGrabbingObject = false;
+	bCanBeReleased = false;
 }
 
