@@ -18,7 +18,12 @@ public:
 
 	virtual void Interact(ACouchGame2025Character* Player) override;
 
+	UFUNCTION(BlueprintCallable)
+	void StartPickUp(ACouchGame2025Character* Player);
+
+	UFUNCTION(BlueprintCallable)
 	void StopPickUp();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

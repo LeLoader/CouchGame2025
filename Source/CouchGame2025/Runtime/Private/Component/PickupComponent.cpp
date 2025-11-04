@@ -7,6 +7,7 @@
 #include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
 #include "CouchGame2025/Runtime/Public/PickUpObject/PickUpObject.h"
 #include <CouchGame2025/Runtime/Public/Interface/Usable.h>
+#include <Logging/StructuredLog.h>
 
 
 // Sets default values for this component's properties
@@ -45,6 +46,9 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	if (IsGrabbingObject)
 	{
 		PhysicsHandle->SetTargetLocation(GetComponentLocation());
+		//PhysicsHandle->GrabbedComponent->SetWorldRotation(GetForwardVector().Rotation());
+		DrawDebugSphere(GetWorld(), GetComponentLocation(), 20, 16, FColor::Red);
+		DrawDebugLine(GetWorld(), GetComponentLocation(), GetComponentLocation() + GetForwardVector() * 100, FColor::Blue);
 		//passe
 	}
 }

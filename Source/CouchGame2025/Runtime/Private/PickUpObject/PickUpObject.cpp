@@ -36,15 +36,19 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 	//passe	
 
 	if (Player == nullptr) return;
+	StartPickUp(Player);
 
+}
+
+void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	Interactor = Player;
 	SetActorEnableCollision(false);
-	Mesh->SetPhysicsAngularVelocityInDegrees(FVector(0, 0, 0));
-	Mesh->SetPhysicsLinearVelocity(FVector(0, 0, 0));
-	Mesh->SetWorldRotation(FRotator(0, 0, 0));
-	Mesh->BodyInstance.bLockRotation = true;
+	// Mesh->SetPhysicsAngularVelocityInDegrees(FVector(0, 0, 0));
+	// Mesh->SetPhysicsLinearVelocity(FVector(0, 0, 0));
+	// Mesh->SetWorldRotation(FRotator(0, 0, 0));
+	// Mesh->BodyInstance.bLockRotation = true;
 	Player->PickupComponent->IsGrabbingObject = true;
-	Player->PickupComponent->PhysicsHandle->Activate(true);
+	// Player->PickupComponent->PhysicsHandle->Activate(true);
 }
 
 void APickUpObject::StopPickUp()
