@@ -178,3 +178,8 @@ void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
 	bIsRopeFree = !bIsRopeFree;
 }
+
+void ACouchGame2025Character::AddWater(float AddedWaterAmount)
+{
+	CurrentWaterAmount = FMath::Clamp(CurrentWaterAmount + AddedWaterAmount, 0, MaxWaterAmount);
+}

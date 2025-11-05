@@ -108,5 +108,25 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+#pragma region Water
+
+public:
+	UFUNCTION(BlueprintCallable, Category = "Water")
+	void AddWater(float WaterAmount);
+
+	UFUNCTION(BlueprintGetter, Category = "Water")
+	FORCEINLINE float WaterAmountUntilFull() const { return MaxWaterAmount - CurrentWaterAmount; }
+
+	UFUNCTION(BlueprintGetter, Category = "Water")
+	FORCEINLINE float IsWaterTankFull() const { return FMath::Abs(MaxWaterAmount - CurrentWaterAmount) < UE_KINDA_SMALL_NUMBER; }
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Water")
+	float CurrentWaterAmount;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Water")
+	float MaxWaterAmount;
+
+#pragma endregion Water
 };
 
