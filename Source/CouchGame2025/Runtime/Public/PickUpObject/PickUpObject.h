@@ -31,14 +31,13 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* Mesh;
 
+	UPROPERTY()
+	ACouchGame2025Character* Interactor;
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AActor> Socket;
-
-private:
-	UPROPERTY()
-	ACouchGame2025Character* Interactor;
 };

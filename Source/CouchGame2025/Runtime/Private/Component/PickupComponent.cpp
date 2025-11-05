@@ -45,8 +45,7 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 	if (IsGrabbingObject)
 	{
-		PhysicsHandle->SetTargetLocation(GetComponentLocation());
-		//PhysicsHandle->GrabbedComponent->SetWorldRotation(GetForwardVector().Rotation());
+		PhysicsHandle->SetTargetLocationAndRotation(GetComponentLocation(), GetForwardVector().Rotation());
 		DrawDebugSphere(GetWorld(), GetComponentLocation(), 20, 16, FColor::Red);
 		DrawDebugLine(GetWorld(), GetComponentLocation(), GetComponentLocation() + GetForwardVector() * 100, FColor::Blue);
 		//passe
@@ -80,7 +79,7 @@ void UPickupComponent::TryPickUp()
 			PickedUpObject = Cast<APickUpObject>(PickedActor);
 			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, Hit->GetComponent()->GetName());
 			PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
-
+			PhysicsHandle->Activate();
 			PickupObject->Interact(Player);
 
 		} else

@@ -26,4 +26,10 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void StopUse() override;
+
+	UPROPERTY(EditAnywhere)
+	float FlamethrowerLength = 250.f;
+
+	UPROPERTY(EditAnywhere)
+	float FlamethrowerWidth = 32.f;
 };

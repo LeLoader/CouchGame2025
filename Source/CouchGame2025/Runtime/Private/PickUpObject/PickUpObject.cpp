@@ -48,7 +48,6 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	// Mesh->SetWorldRotation(FRotator(0, 0, 0));
 	// Mesh->BodyInstance.bLockRotation = true;
 	Player->PickupComponent->IsGrabbingObject = true;
-	// Player->PickupComponent->PhysicsHandle->Activate(true);
 }
 
 void APickUpObject::StopPickUp()
