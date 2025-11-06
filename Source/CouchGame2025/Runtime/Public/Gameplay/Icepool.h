@@ -11,6 +11,7 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnElementUpdatedSignature, float, IceAmount, float, WaterAmount);
 
 class UBoxComponent;
+class ACouchGame2025Character;
 
 UCLASS(Blueprintable)
 class COUCHGAME2025_API AIcepool : public AActor, public IBurnable
@@ -29,6 +30,9 @@ protected:
 	UFUNCTION()
 	void OnWaterBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
+	UFUNCTION()
+	void OnWaterBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -38,16 +42,21 @@ public:
 	FOnElementUpdatedSignature OnElementUpdated;
 
 protected:
-	void StartGatherWater();
-
-	UFUNCTION(BlueprintCallable, Category = "Icepool")
+	void GatherWaterForCharacter(ACouchGame2025Character* Character);
 	float GatherWater(float MaxGatheredWater);
-
 	void ElementUpdated();
 
-	UPROPERTY(VisibleAnywhere, Category = "Icepool")
-	float IceAmount = 1;
+	UPROPERTY(EditDefaultsOnly, Category = "Icepool", meta = (Units = "kg"))
+	float IceStartAmount = 1;
 
-	UPROPERTY(VisibleAnywhere, Category = "Icepool")
-	float WaterAmount = 0;
+	UPROPERTY(VisibleAnywhere, Category = "Icepool", meta = (Units = "kg"))
+	float IceAmount;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Icepool", meta = (Units = "x"))
+	float IceToWaterRatio = 1;
+
+	UPROPERTY(VisibleAnywhere, Category = "Icepool", meta = (Units = "kg"))
+	float WaterAmount;
+
+	TArray<ACouchGame2025Character*> GatheringCharacters;
 };

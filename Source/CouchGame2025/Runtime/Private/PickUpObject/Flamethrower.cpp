@@ -13,7 +13,7 @@ AFlamethrower::AFlamethrower()
 
 void AFlamethrower::StartUse_Implementation()
 {
-
+	
 }
 
 void AFlamethrower::Use_Implementation()

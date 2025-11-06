@@ -121,10 +121,10 @@ public:
 	UFUNCTION(BlueprintGetter, Category = "Water")
 	FORCEINLINE float IsWaterTankFull() const { return FMath::Abs(MaxWaterAmount - CurrentWaterAmount) < UE_KINDA_SMALL_NUMBER; }
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Water")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Water", meta = (Units = "kg"))
 	float CurrentWaterAmount;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Water")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Water", meta = (Units = "kg"))
 	float MaxWaterAmount;
 
 #pragma endregion Water
