@@ -62,6 +62,9 @@ ACouchGame2025Character::ACouchGame2025Character()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	WaterTank = CreateDefaultSubobject<URessourceContainerComponent>(TEXT("WaterTank"));
+	WaterTank->SetRessourceType(FRessourceType::WATER);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -177,9 +180,4 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
 	bIsRopeFree = !bIsRopeFree;
-}
-
-void ACouchGame2025Character::AddWater(float AddedWaterAmount)
-{
-	CurrentWaterAmount = FMath::Clamp(CurrentWaterAmount + AddedWaterAmount, 0, MaxWaterAmount);
 }

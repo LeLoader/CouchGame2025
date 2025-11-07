@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "../Component/RessourceContainerComponent.h"
 #include "CouchGame2025Character.generated.h"
 
 class UPickupComponent;
@@ -112,20 +113,8 @@ public:
 #pragma region Water
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Water")
-	void AddWater(float WaterAmount);
-
-	UFUNCTION(BlueprintGetter, Category = "Water")
-	FORCEINLINE float WaterAmountUntilFull() const { return MaxWaterAmount - CurrentWaterAmount; }
-
-	UFUNCTION(BlueprintGetter, Category = "Water")
-	FORCEINLINE float IsWaterTankFull() const { return FMath::Abs(MaxWaterAmount - CurrentWaterAmount) < UE_KINDA_SMALL_NUMBER; }
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Water", meta = (Units = "kg"))
-	float CurrentWaterAmount;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Water", meta = (Units = "kg"))
-	float MaxWaterAmount;
+	UPROPERTY(VisibleAnywhere)
+	URessourceContainerComponent* WaterTank;
 
 #pragma endregion Water
 };

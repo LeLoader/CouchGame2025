@@ -8,10 +8,9 @@
 
 #include "Icepool.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnElementUpdatedSignature, float, IceAmount, float, WaterAmount);
-
 class UBoxComponent;
 class ACouchGame2025Character;
+class URessourceContainerComponent;
 
 UCLASS(Blueprintable)
 class COUCHGAME2025_API AIcepool : public AActor, public IBurnable
@@ -22,7 +21,6 @@ protected:
 	AIcepool();
 
 	virtual void BeginPlay() override;
-	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY()
 	UBoxComponent* WaterTriggerBox;
@@ -33,30 +31,17 @@ protected:
 	UFUNCTION()
 	void OnWaterBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	URessourceContainerComponent* WaterContainer;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	URessourceContainerComponent* IceContainer;
+
+// Start of IBurnable implementation
 
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual void Burn() override;
 
-	UPROPERTY(BlueprintAssignable)
-	FOnElementUpdatedSignature OnElementUpdated;
-
-protected:
-	void GatherWaterForCharacter(ACouchGame2025Character* Character);
-	float GatherWater(float MaxGatheredWater);
-	void ElementUpdated();
-
-	UPROPERTY(EditDefaultsOnly, Category = "Icepool", meta = (Units = "kg"))
-	float IceStartAmount = 1;
-
-	UPROPERTY(VisibleAnywhere, Category = "Icepool", meta = (Units = "kg"))
-	float IceAmount;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Icepool", meta = (Units = "x"))
-	float IceToWaterRatio = 1;
-
-	UPROPERTY(VisibleAnywhere, Category = "Icepool", meta = (Units = "kg"))
-	float WaterAmount;
-
-	TArray<ACouchGame2025Character*> GatheringCharacters;
+// End of IBurnable implementation
 };
