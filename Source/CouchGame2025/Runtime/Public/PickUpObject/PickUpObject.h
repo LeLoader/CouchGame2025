@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
 #include "GameFramework/Actor.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "PickUpObject.generated.h"
 
 UCLASS()
@@ -23,6 +24,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void StopPickUp();
+	
+	UPROPERTY()
+	ACouchGame2025Character* Interactor;
 
 protected:
 	// Called when the game starts or when spawned
@@ -31,13 +35,28 @@ protected:
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* Mesh;
 
-	UPROPERTY()
-	ACouchGame2025Character* Interactor;
-
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AActor> Socket;
+
+
+#pragma region MultiPlayerHolding
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool NeedsTwoPlayersToBePickedUp;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool IsAPlayerHolding;
+
+private:
+
+	UPROPERTY(EditAnywhere)
+	TArray<UPhysicsConstraintComponent*> PhysicsConstraints;
+	
+#pragma endregion
 };

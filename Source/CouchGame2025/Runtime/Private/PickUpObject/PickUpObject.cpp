@@ -20,24 +20,43 @@ APickUpObject::APickUpObject()
 
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = Mesh;
+
+	if (NeedsTwoPlayersToBePickedUp)
+	{
+		for (int i = 0; i < 2; ++i)
+		{
+			FString Name;
+			Name.Append("PhysicsConstraints");
+			Name.Append(FString::FromInt(i));
+			
+			PhysicsConstraints.Add(CreateDefaultSubobject<UPhysicsConstraintComponent>(FName(Name)));
+		}
+	}
 }
 
 // Called when the game starts or when spawned
 void APickUpObject::BeginPlay()
 {
 	Super::BeginPlay();
-
-	//UGameplayStatics::GetAllActorsOfClass(GetWorld(), )
-	
 }
 
 void APickUpObject::Interact(ACouchGame2025Character* Player)
 {
-	//passe	
-
 	if (Player == nullptr) return;
-	StartPickUp(Player);
 
+	if (!NeedsTwoPlayersToBePickedUp)
+	{
+		StartPickUp(Player);
+	}
+	else
+	{
+		// If two players are needed to move the object around
+		if (!IsAPlayerHolding)
+		{
+			
+		}
+	}
+	
 }
 
 void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
