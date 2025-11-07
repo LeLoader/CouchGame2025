@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Delegates/Delegate.h"
+
 #include "RessourceContainerComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnRessourceUpdatedSignature, float, NewRessourceAmount, float, OldRessourceAmount);

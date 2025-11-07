@@ -39,6 +39,8 @@ void URessourceContainerComponent::TickComponent(float DeltaTime, ELevelTick Tic
 
 float URessourceContainerComponent::AddRessource(float Amount)
 {
+	if (Amount < UE_KINDA_SMALL_NUMBER) return 0.f;
+
 	float OldRessourceAmount = CurrentRessourceAmount;
 	CurrentRessourceAmount = FMath::Clamp(CurrentRessourceAmount + Amount, 0, MaxRessourceAmount);
 	OnRessourceUpdated.Broadcast(CurrentRessourceAmount, OldRessourceAmount);
@@ -51,6 +53,8 @@ float URessourceContainerComponent::AddRessource(float Amount)
 
 float URessourceContainerComponent::RemoveRessource(float Amount)
 {
+	if (Amount < UE_KINDA_SMALL_NUMBER) return 0.f;
+
 	float OldRessourceAmount = CurrentRessourceAmount;
 	CurrentRessourceAmount = FMath::Clamp(CurrentRessourceAmount - Amount, 0, MaxRessourceAmount);
 	OnRessourceUpdated.Broadcast(CurrentRessourceAmount, OldRessourceAmount);
@@ -58,13 +62,13 @@ float URessourceContainerComponent::RemoveRessource(float Amount)
 		OnContainerEmpty.Broadcast();
 		OnContainerEmptyBP.Broadcast();
 	}
-	return CurrentRessourceAmount - OldRessourceAmount;
+	return OldRessourceAmount - CurrentRessourceAmount;
 }
 
 float URessourceContainerComponent::InstantMoveRessource(float DeltaTime, URessourceContainerComponent* Target)
 {
 
-	// Target is a valid container, move ressource here
+	// Target is a valid container, move ressource inside Target
 	if (IsValid(Target)) {
 		if (Target->IsContainerFull() || IsContainerEmpty() || Target->RessourceType != RessourceType) return 0;
 
@@ -72,6 +76,7 @@ float URessourceContainerComponent::InstantMoveRessource(float DeltaTime, UResso
 		float RessourceAdded = Target->AddRessource(RessourceRemoved);
 		float OverflowDuringTransaction = RessourceRemoved - RessourceAdded;
 		AddRessource(OverflowDuringTransaction);
+
 		return RessourceAdded;
 	}
 	// Target is not valid, destroy ressource

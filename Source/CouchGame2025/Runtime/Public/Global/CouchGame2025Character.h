@@ -69,8 +69,11 @@ class ACouchGame2025Character : public ACharacter
 public:
 	ACouchGame2025Character();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition = "bHidePickupComponent", EditConditionHides))
 	UPickupComponent* PickupComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bHidePickupComponent;
 
 protected:
 
