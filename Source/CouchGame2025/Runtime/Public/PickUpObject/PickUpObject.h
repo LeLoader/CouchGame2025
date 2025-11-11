@@ -16,7 +16,7 @@ public:
 	// Sets default values for this actor's properties
 	APickUpObject();
 
-	virtual void Interact(ACouchGame2025Character* Player) override;
+	virtual bool Interact(ACouchGame2025Character* Player) override;
 
 	UFUNCTION(BlueprintCallable)
 	void StartPickUp(ACouchGame2025Character* Player);
@@ -40,4 +40,8 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AActor> Socket;
+
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bCanBePickedUp = true;
 };

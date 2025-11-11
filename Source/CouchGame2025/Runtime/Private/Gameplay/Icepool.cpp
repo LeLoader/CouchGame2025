@@ -5,8 +5,9 @@
 
 #include "Logging/StructuredLog.h"
 #include "Components/BoxComponent.h"
-#include "CouchGame2025/Runtime/Public/Component/RessourceContainerComponent.h"
-#include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
+#include "Component/RessourceContainerComponent.h"
+#include "Global/CouchGame2025Character.h"
+#include "Component/BurnComponent.h"
 
 // Sets default values
 AIcepool::AIcepool()
@@ -24,6 +25,8 @@ AIcepool::AIcepool()
 	IceContainer->SetRessourceType(FRessourceType::ICE);
 	WaterContainer = CreateDefaultSubobject<URessourceContainerComponent>(TEXT("WaterContainer"));
 	WaterContainer->SetRessourceType(FRessourceType::WATER);
+
+	BurnComponent = CreateDefaultSubobject<UBurnComponent>("BurnComponent");
 }
 
 // Called when the game starts or when spawned
@@ -53,8 +56,13 @@ void AIcepool::OnWaterBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AA
 	}
 }
 
-void AIcepool::Burn()
+void AIcepool::Burn(float DeltaTime)
 {
-	IceContainer->InstantMoveRessource(GetWorld()->GetDeltaSeconds(), nullptr);
+	IceContainer->InstantMoveRessource(DeltaTime, nullptr);
+}
+
+UBurnComponent* AIcepool::GetBurnComponent()
+{
+	return BurnComponent;
 }
 

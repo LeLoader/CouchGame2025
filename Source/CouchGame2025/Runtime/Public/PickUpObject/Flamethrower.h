@@ -7,6 +7,8 @@
 #include "CouchGame2025/Runtime/Public/Interface/Usable.h"
 #include "Flamethrower.generated.h"
 
+class IBurnable;
+
 /**
  * 
  */
@@ -32,4 +34,11 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	float FlamethrowerWidth = 32.f;
+
+protected:
+	//UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	TArray<IBurnable*> CurrentBurnTarget;
+
+	//UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	TArray<IBurnable*> OldBurnTarget;
 };

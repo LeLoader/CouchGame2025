@@ -19,7 +19,7 @@ UPickupComponent::UPickupComponent()
 
 	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName("PhysicsHandle"));
 	//PhysicsHandle->AddToRoot();
-	
+
 	// ...
 }
 
@@ -39,7 +39,7 @@ void UPickupComponent::BeginPlay()
 
 // Called every frame
 void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                     FActorComponentTickFunction* ThisTickFunction)
+	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
@@ -64,10 +64,10 @@ void UPickupComponent::TryPickUp()
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Player);
 	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(TraceWidth));
-	
+
 	//GetWorld()->LineTraceSingleByChannel(*Hit, StartLocation, EndLocation, ECC_Visibility);
 	DrawDebugSphere(GetWorld(), StartLocation, TraceWidth, 8, FColor::White);
-	
+
 	if (Hit->bBlockingHit == true && IsValid(Hit->GetActor()))
 	{
 		DrawDebugSphere(GetWorld(), Hit->Location, TraceWidth, 8, FColor::Green);
@@ -76,18 +76,22 @@ void UPickupComponent::TryPickUp()
 
 		if (IInteractable* PickupObject = Cast<IInteractable>(PickedActor))
 		{
-			PickedUpObject = Cast<APickUpObject>(PickedActor);
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, Hit->GetComponent()->GetName());
-			PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
-			PhysicsHandle->Activate();
-			PickupObject->Interact(Player);
-
-		} else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Can Not Be Picked up");
+			if (PickupObject->Interact(Player)) {
+				PickedUpObject = Cast<APickUpObject>(PickedActor);
+				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, Hit->GetComponent()->GetName());
+				PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
+				PhysicsHandle->Activate();
+			}
+			else {
+				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Can Not Be Picked up");
+			}
 		}
-		
-	} else
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Cannot be interacted with");
+		}
+	}
+	else
 	{
 		DrawDebugSphere(GetWorld(), EndLocation, TraceWidth, 8, FColor::Red);
 

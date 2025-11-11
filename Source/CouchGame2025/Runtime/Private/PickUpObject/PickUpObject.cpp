@@ -31,13 +31,14 @@ void APickUpObject::BeginPlay()
 	
 }
 
-void APickUpObject::Interact(ACouchGame2025Character* Player)
+bool APickUpObject::Interact(ACouchGame2025Character* Player)
 {
 	//passe	
 
-	if (Player == nullptr) return;
+	if (!bCanBePickedUp || Player == nullptr) return false;
 	StartPickUp(Player);
 
+	return true;
 }
 
 void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {

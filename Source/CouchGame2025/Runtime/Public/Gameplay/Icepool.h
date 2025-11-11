@@ -22,8 +22,11 @@ protected:
 
 	virtual void BeginPlay() override;
 
-	UPROPERTY()
+	UPROPERTY(EditAnywhere)
 	UBoxComponent* WaterTriggerBox;
+
+	UPROPERTY(EditAnywhere)
+	UBurnComponent* BurnComponent;
 
 	UFUNCTION()
 	void OnWaterBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
@@ -41,7 +44,11 @@ protected:
 
 public:
 	UFUNCTION(BlueprintCallable)
-	virtual void Burn() override;
+	virtual void Burn(float DeltaTime) override;
+
+	UFUNCTION(BlueprintCallable)
+	UBurnComponent* GetBurnComponent() override;
 
 // End of IBurnable implementation
+
 };
