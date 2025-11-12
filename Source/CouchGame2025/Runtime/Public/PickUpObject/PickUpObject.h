@@ -16,13 +16,13 @@ public:
 	// Sets default values for this actor's properties
 	APickUpObject();
 
-	virtual bool Interact(ACouchGame2025Character* Player) override;
+	bool Interact(ACouchGame2025Character* Player) override;
 
 	UFUNCTION(BlueprintCallable)
-	void StartPickUp(ACouchGame2025Character* Player);
+	virtual void StartPickUp(ACouchGame2025Character* Player);
 
 	UFUNCTION(BlueprintCallable)
-	void StopPickUp();
+	virtual void StopPickUp();
 
 protected:
 	// Called when the game starts or when spawned

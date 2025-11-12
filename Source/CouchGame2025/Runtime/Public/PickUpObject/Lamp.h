@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "PickUpObject.h"
 #include "CouchGame2025/Runtime/Public/Interface/Usable.h"
-#include "Flamethrower.generated.h"
+#include "Lamp.generated.h"
 
 class IBurnable;
 
@@ -13,26 +13,30 @@ class IBurnable;
  * 
  */
 UCLASS(Blueprintable)
-class COUCHGAME2025_API AFlamethrower : public APickUpObject, public IUsable
+class COUCHGAME2025_API ALamp : public APickUpObject, public IUsable
 {
 	GENERATED_BODY()
 
 public:
-	AFlamethrower();
+	ALamp();
+	void Tick(float DeltaTime) override;
+	virtual void StartPickUp(ACouchGame2025Character* Player);
+	virtual void StopPickUp();
 
-	UFUNCTION(BlueprintNativeEvent)
 	void StartUse() override;
-
-	UFUNCTION(BlueprintNativeEvent)
 	void Use() override;
-
-	UFUNCTION(BlueprintNativeEvent)
 	void StopUse() override;
 
-	UPROPERTY(EditAnywhere)
+	UFUNCTION(BlueprintNativeEvent)
+	void EnableLamp();
+	UFUNCTION(BlueprintNativeEvent)
+	void DisableLamp();
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float FlamethrowerLength = 250.f;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float FlamethrowerWidth = 32.f;
 
 protected:
@@ -41,4 +45,8 @@ protected:
 
 	//UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	TArray<IBurnable*> OldBurnTarget;
+
+	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
+	bool bIsActive = false;
+
 };

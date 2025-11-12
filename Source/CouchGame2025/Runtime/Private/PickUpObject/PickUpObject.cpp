@@ -1,13 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CouchGame2025/Runtime/Public/PickUpObject/PickUpObject.h"
+#include "PickUpObject/PickUpObject.h"
 
-#include <string>
-
-
-#include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
-#include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
+#include "Component/PickupComponent.h"
+#include "Global/CouchGame2025Character.h"
 #include "Logging/StructuredLog.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 
