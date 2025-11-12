@@ -18,6 +18,7 @@ class COUCHGAME2025_API AABridge : public AActor
 
 public:
     AABridge();
+    void InitializeMeshData();
 
 protected:
     virtual void BeginPlay() override;

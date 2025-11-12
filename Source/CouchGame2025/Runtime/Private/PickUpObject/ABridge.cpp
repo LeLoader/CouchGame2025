@@ -28,16 +28,31 @@ AABridge::AABridge()
     BridgeMesh->SetVisibility(false);
 }
 
+void AABridge::InitializeMeshData()
+{
+    if (!BridgeMesh) return;
+
+    if (BridgeMesh->GetStaticMesh())
+    {
+        const FVector MeshSize = BridgeMesh->GetStaticMesh()->GetBoundingBox().GetSize();
+        OriginalMeshLength = MeshSize.X > KINDA_SMALL_NUMBER ? MeshSize.X : 1.f;
+    }
+    else
+    {
+        OriginalMeshLength = 1.f;
+    }
+
+    InitialMeshScale = BridgeMesh->GetComponentScale();
+    if (InitialMeshScale.X <= KINDA_SMALL_NUMBER) InitialMeshScale.X = 1.f;
+    if (InitialMeshScale.Y <= KINDA_SMALL_NUMBER) InitialMeshScale.Y = 1.f;
+    if (InitialMeshScale.Z <= KINDA_SMALL_NUMBER) InitialMeshScale.Z = 1.f;
+}
+
 void AABridge::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (BridgeMesh && BridgeMesh->GetStaticMesh())
-    {
-        const FVector MeshSize = BridgeMesh->GetStaticMesh()->GetBoundingBox().GetSize();
-        OriginalMeshLength = MeshSize.X > KINDA_SMALL_NUMBER ? MeshSize.X : 1.f;
-        InitialMeshScale = BridgeMesh->GetComponentScale();
-    }
+    InitializeMeshData();
 
     APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
     if (!PC) return;
@@ -95,11 +110,12 @@ void AABridge::UpdateBridgeTransform()
     if (Distance <= KINDA_SMALL_NUMBER) return;
 
     const FVector Mid = (A + B) * 0.5f;
-
+    
     const FRotator Rot = Dir.Rotation();
 
-    const float ScaleX = (Distance / OriginalMeshLength) * InitialMeshScale.X;
-    FVector NewScale = InitialMeshScale;
+    const float MeshLen = OriginalMeshLength > KINDA_SMALL_NUMBER ? OriginalMeshLength : 1.f;
+    const float ScaleX = Distance / MeshLen;
+    FVector NewScale;
     NewScale.X = ScaleX;
     NewScale.Y = InitialMeshScale.Y * WidthHeightScale;
     NewScale.Z = InitialMeshScale.Z * WidthHeightScale;
@@ -111,7 +127,6 @@ void AABridge::UpdateBridgeTransform()
     {
         MeshCenterLocal = BridgeMesh->GetStaticMesh()->GetBoundingBox().GetCenter();
     }
-//////////////////////////////////////////////////////////////////////
     const FVector ScaledCenterLocal = MeshCenterLocal * NewScale;
 
     const FVector CenterOffsetWorld = Rot.RotateVector(ScaledCenterLocal);
@@ -125,17 +140,8 @@ void AABridge::UpdateBridgeTransform()
 void AABridge::Editor_UpdateBridge()
 {
 #if WITH_EDITOR
-    if (StartPoint)
-    {
-        const FTransform StartTf = StartPoint->GetComponentTransform();
-        const FVector StartLoc = StartTf.GetLocation();
-        const FRotator StartRot = StartTf.GetRotation().Rotator();
-        const FVector StartScale = StartTf.GetScale3D();
-    
-        UE_LOG(LogTemp, Log, TEXT("StartPoint Transform - Location: %s Rotator: %s Scale: %s"),
-        *StartLoc.ToString(), *StartRot.ToString(), *StartScale.ToString());
-    }
-    
+    InitializeMeshData();
+
     bIsDeployed = !bIsDeployed;
     UpdateBridgeState();
 #endif
