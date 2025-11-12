@@ -53,16 +53,6 @@ void AABridge::BeginPlay()
     }
 }
 
-void AABridge::Tick(float DeltaTime)
-{
-    Super::Tick(DeltaTime);
-
-    if (bIsDeployed)
-    {
-        UpdateBridgeTransform();
-    }
-}
-
 void AABridge::ToggleBridge()
 {
     APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
@@ -121,7 +111,7 @@ void AABridge::UpdateBridgeTransform()
     {
         MeshCenterLocal = BridgeMesh->GetStaticMesh()->GetBoundingBox().GetCenter();
     }
-
+//////////////////////////////////////////////////////////////////////
     const FVector ScaledCenterLocal = MeshCenterLocal * NewScale;
 
     const FVector CenterOffsetWorld = Rot.RotateVector(ScaledCenterLocal);
@@ -129,4 +119,24 @@ void AABridge::UpdateBridgeTransform()
 
     BridgeMesh->SetWorldLocation(DesiredWorldLocation);
     BridgeMesh->SetWorldRotation(Rot);
+}
+
+
+void AABridge::Editor_UpdateBridge()
+{
+#if WITH_EDITOR
+    if (StartPoint)
+    {
+        const FTransform StartTf = StartPoint->GetComponentTransform();
+        const FVector StartLoc = StartTf.GetLocation();
+        const FRotator StartRot = StartTf.GetRotation().Rotator();
+        const FVector StartScale = StartTf.GetScale3D();
+    
+        UE_LOG(LogTemp, Log, TEXT("StartPoint Transform - Location: %s Rotator: %s Scale: %s"),
+        *StartLoc.ToString(), *StartRot.ToString(), *StartScale.ToString());
+    }
+    
+    bIsDeployed = !bIsDeployed;
+    UpdateBridgeState();
+#endif
 }

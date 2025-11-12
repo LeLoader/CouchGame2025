@@ -21,7 +21,6 @@ public:
 
 protected:
     virtual void BeginPlay() override;
-    virtual void Tick(float DeltaTime) override;
 
     void ToggleBridge();
     void UpdateBridgeState();
@@ -58,4 +57,8 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = "Bridge")
     float WidthHeightScale = 1.f;
+
+private:
+    UFUNCTION(CallInEditor, Category = "Bridge", meta = (DisplayName = "Editor: Update Bridge"))
+    void Editor_UpdateBridge();
 };
