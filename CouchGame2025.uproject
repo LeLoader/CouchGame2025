@@ -29,6 +29,10 @@
 		{
 			"Name": "CableComponent",
 			"Enabled": false
+		},
+		{
+			"Name": "HDRIBackdrop",
+			"Enabled": true
 		}
 	],
 	"AdditionalPluginDirectories": [
