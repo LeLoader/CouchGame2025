@@ -21,17 +21,22 @@ APickUpObject::APickUpObject()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = Mesh;
 
-	if (NeedsTwoPlayersToBePickedUp)
+
+	for (int i = 0; i < 2; ++i)
 	{
-		for (int i = 0; i < 2; ++i)
-		{
-			FString Name;
-			Name.Append("PhysicsConstraints");
-			Name.Append(FString::FromInt(i));
-			
-			PhysicsConstraints.Add(CreateDefaultSubobject<UPhysicsConstraintComponent>(FName(Name)));
-		}
+		FString Name;
+		Name.Append("PhysicsConstraints");
+		Name.Append(FString::FromInt(i));
+		PhysicsConstraints.Add(CreateDefaultSubobject<UPhysicsConstraintComponent>(FName(Name)));
+		PhysicsConstraints[i]->SetupAttachment(GetRootComponent());
+		PhysicsConstraints[i]->SetConstrainedComponents(
+			Mesh,
+			NAME_None,
+			nullptr,
+			NAME_None
+		);
 	}
+
 }
 
 // Called when the game starts or when spawned
@@ -51,9 +56,27 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 	else
 	{
 		// If two players are needed to move the object around
-		if (!IsAPlayerHolding)
-		{
-			
+		if (!IsAPlayerHolding){
+			UPhysicsConstraintComponent* ClosestHandle = GetClosestPhysicsConstraint();
+			if (ClosestHandle == nullptr) return;			
+
+
+			FString ClosestHandleName;
+			ClosestHandleName.Append(ClosestHandle->GetName());
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				3.f,
+				FColor::Blue,
+				FString(ClosestHandleName)
+				);
+
+
+			ClosestHandle->SetConstrainedComponents(
+				FindComponentByClass<UMeshComponent>(),
+				NAME_None,
+				Player->GetMesh(),
+				NAME_None
+			); 
 		}
 	}
 	
@@ -61,7 +84,35 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 
 void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	Interactor = Player;
-	SetActorEnableCollision(false);
+	// Player->PickupComponent->PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(GetRootComponent()), FName(), GetActorLocation());
+	// Player->PickupComponent->PhysicsHandle->Activate();
+	UPhysicsConstraintComponent* ClosestHandle = GetClosestPhysicsConstraint();
+	if (ClosestHandle == nullptr) return;
+
+	//SetActorEnableCollision(false);
+
+	FString ClosestHandleName;
+	ClosestHandleName.Append(ClosestHandle->GetName());
+	GEngine->AddOnScreenDebugMessage(
+		-1,
+		3.f,
+		FColor::Blue,
+		FString(ClosestHandleName)
+		);
+	UPrimitiveComponent* Component1;
+	UPrimitiveComponent* Component2;
+	FName ComponentName1;
+	FName ComponentName2;
+	ClosestHandle->GetConstrainedComponents(Component1, ComponentName1, Component2, ComponentName2);
+	
+	ClosestHandle->SetConstrainedComponents(
+				Component1,
+				NAME_None,
+				Player->GetMesh(),
+				NAME_None
+			);
+	
+	
 	// Mesh->SetPhysicsAngularVelocityInDegrees(FVector(0, 0, 0));
 	// Mesh->SetPhysicsLinearVelocity(FVector(0, 0, 0));
 	// Mesh->SetWorldRotation(FRotator(0, 0, 0));
@@ -94,5 +145,14 @@ void APickUpObject::StopPickUp()
 void APickUpObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+UPhysicsConstraintComponent* APickUpObject::GetClosestPhysicsConstraint()
+{
+	if (FVector::Dist(GetActorLocation(), PhysicsConstraints[0]->GetComponentLocation()) < FVector::Dist(GetActorLocation(), PhysicsConstraints[1]->GetComponentLocation()))
+	{
+		return PhysicsConstraints[0];
+	}
+	return PhysicsConstraints[1];
 }
 

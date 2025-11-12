@@ -17,7 +17,8 @@ UPickupComponent::UPickupComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName("PhysicsHandle"));
+	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName("PhysicsHandle"), true);
+	
 	//PhysicsHandle->AddToRoot();
 	
 	// ...
@@ -42,14 +43,14 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                      FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (IsGrabbingObject)
-	{
-		PhysicsHandle->SetTargetLocationAndRotation(GetComponentLocation(), GetForwardVector().Rotation());
-		DrawDebugSphere(GetWorld(), GetComponentLocation(), 20, 16, FColor::Red);
-		DrawDebugLine(GetWorld(), GetComponentLocation(), GetComponentLocation() + GetForwardVector() * 100, FColor::Blue);
-		//passe
-	}
+	
+	// if (IsGrabbingObject)
+	// {
+	// 	PhysicsHandle->SetTargetLocationAndRotation(GetComponentLocation(), GetForwardVector().Rotation());
+	// 	DrawDebugSphere(GetWorld(), GetComponentLocation(), 20, 16, FColor::Red);
+	// 	DrawDebugLine(GetWorld(), GetComponentLocation(), GetComponentLocation() + GetForwardVector() * 100, FColor::Blue);
+	// 	//passe
+	// }
 }
 
 void UPickupComponent::TryPickUp()
@@ -78,8 +79,8 @@ void UPickupComponent::TryPickUp()
 		{
 			PickedUpObject = Cast<APickUpObject>(PickedActor);
 			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, Hit->GetComponent()->GetName());
-			PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
-			PhysicsHandle->Activate();
+			// PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
+			// PhysicsHandle->Activate();
 			PickupObject->Interact(Player);
 
 		} else

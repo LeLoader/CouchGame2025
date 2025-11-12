@@ -53,10 +53,13 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool IsAPlayerHolding;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	TArray<UPhysicsConstraintComponent*> PhysicsConstraints;
+
 private:
 
-	UPROPERTY(EditAnywhere)
-	TArray<UPhysicsConstraintComponent*> PhysicsConstraints;
+	UFUNCTION()
+	UPhysicsConstraintComponent* GetClosestPhysicsConstraint();
 	
 #pragma endregion
 };
