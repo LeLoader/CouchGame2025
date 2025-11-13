@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "CouchGame2025/Runtime/Public/Interface/CameraFollowable.h"
 #include "CouchGame2025Character.generated.h"
 
 class UPickupComponent;
@@ -17,7 +18,7 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ACouchGame2025Character : public ACharacter
+class ACouchGame2025Character : public ACharacter, public ICameraFollowable
 {
 	GENERATED_BODY()
 
@@ -94,6 +95,8 @@ protected:
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual FVector GetFollowPosition() override;
 
 public:
 	/** Returns CameraBoom subobject **/

@@ -90,7 +90,7 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Move);
 
 		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Look);
+		//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Look);
 
 		// Pickup
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::TryPickUp);
@@ -116,10 +116,15 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
+
+
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
-		//const FRotator YawRotation(Rotation.Roll, Rotation.Yaw, Rotation.Pitch);
-		const FRotator YawRotation(Rotation);
+		
+		FRotator RotationToAdd = (GetActorUpVector() - FVector::UpVector).Rotation();
+		FRotator FinalRotation = Rotation + RotationToAdd;
+		const FRotator YawRotation(0.f, FinalRotation.Yaw, 0.f);
+		//const FRotator YawRotation(Rotation);
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
@@ -167,4 +172,9 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
 	bIsRopeFree = !bIsRopeFree;
+}
+
+FVector ACouchGame2025Character::GetFollowPosition()
+{
+	return GetActorLocation();
 }
