@@ -24,7 +24,7 @@ void UObjectPlanetaryGravityComponent::ApplyGravity()
     if (!Owner) return;
 
     UPrimitiveComponent* PrimitiveComp = Cast<UPrimitiveComponent>(Owner->GetComponentByClass(UPrimitiveComponent::StaticClass()));
-    if (!PrimitiveComp || !PrimitiveComp->IsSimulatingPhysics()) return;
+    if (!PrimitiveComp || !PrimitiveComp->IsSimulatingPhysics() || !(PrimitiveComp->GetCollisionEnabled() != ECollisionEnabled::NoCollision)) return;
 
     FVector ObjectPosition = Owner->GetActorLocation();
     FVector GravityDir = (PlanetCenter - ObjectPosition).GetSafeNormal();

@@ -1,13 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CouchGame2025/Runtime/Public/PickUpObject/PickUpObject.h"
+#include "PickUpObject/PickUpObject.h"
 
-#include <string>
-
-
-#include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
-#include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
+#include "Component/PickupComponent.h"
+#include "Global/CouchGame2025Character.h"
 #include "Logging/StructuredLog.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 
@@ -31,20 +28,24 @@ void APickUpObject::BeginPlay()
 	
 }
 
-void APickUpObject::Interact(ACouchGame2025Character* Player)
+bool APickUpObject::Interact(ACouchGame2025Character* Player)
 {
 	//passe	
 
-	if (Player == nullptr) return;
+	if (!bCanBePickedUp || Player == nullptr) return false;
+	StartPickUp(Player);
 
+	return true;
+}
+
+void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	Interactor = Player;
 	SetActorEnableCollision(false);
-	Mesh->SetPhysicsAngularVelocityInDegrees(FVector(0, 0, 0));
-	Mesh->SetPhysicsLinearVelocity(FVector(0, 0, 0));
-	Mesh->SetWorldRotation(FRotator(0, 0, 0));
-	Mesh->BodyInstance.bLockRotation = true;
+	// Mesh->SetPhysicsAngularVelocityInDegrees(FVector(0, 0, 0));
+	// Mesh->SetPhysicsLinearVelocity(FVector(0, 0, 0));
+	// Mesh->SetWorldRotation(FRotator(0, 0, 0));
+	// Mesh->BodyInstance.bLockRotation = true;
 	Player->PickupComponent->IsGrabbingObject = true;
-	Player->PickupComponent->PhysicsHandle->Activate(true);
 }
 
 void APickUpObject::StopPickUp()
