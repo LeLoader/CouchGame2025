@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "../Component/RessourceContainerComponent.h"
 #include "CouchGame2025Character.generated.h"
 
 class UPickupComponent;
@@ -51,11 +52,15 @@ class ACouchGame2025Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
-	/** Look Input Action */
+	/** Interact Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
 
-	/** Look Input Action */
+	/** Use Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* UseAction;
+
+	/** Rope Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* RopeAction;
 
@@ -64,8 +69,11 @@ class ACouchGame2025Character : public ACharacter
 public:
 	ACouchGame2025Character();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition = "bHidePickupComponent", EditConditionHides))
 	UPickupComponent* PickupComponent;
+
+	UPROPERTY(EditDefaultsOnly)
+	bool bHidePickupComponent;
 
 protected:
 
@@ -104,5 +112,13 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+#pragma region Water
+
+public:
+	UPROPERTY(VisibleAnywhere)
+	URessourceContainerComponent* WaterTank;
+
+#pragma endregion Water
 };
 

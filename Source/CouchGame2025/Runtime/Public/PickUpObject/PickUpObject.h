@@ -16,15 +16,23 @@ public:
 	// Sets default values for this actor's properties
 	APickUpObject();
 
-	virtual void Interact(ACouchGame2025Character* Player) override;
+	bool Interact(ACouchGame2025Character* Player) override;
 
-	void StopPickUp();
+	UFUNCTION(BlueprintCallable)
+	virtual void StartPickUp(ACouchGame2025Character* Player);
+
+	UFUNCTION(BlueprintCallable)
+	virtual void StopPickUp();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	UPROPERTY(EditAnywhere)
 	UStaticMeshComponent* Mesh;
+
+	UPROPERTY()
+	ACouchGame2025Character* Interactor;
 
 public:
 	// Called every frame
@@ -33,7 +41,7 @@ public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AActor> Socket;
 
-private:
-	UPROPERTY()
-	ACouchGame2025Character* Interactor;
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bCanBePickedUp = true;
 };
