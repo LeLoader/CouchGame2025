@@ -36,11 +36,14 @@ protected:
 	UFUNCTION()
 	void ChangeDestination(AInterestPoint* NewInterestPoint);
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector CalculateAveragePositions();
 
 	UPROPERTY(EditAnywhere)
 	float LerpSpeed = 1.f;
+
+	UPROPERTY(EditAnywhere, Category = "CouchGameCamera", meta = (Units = "deg"))
+	float Angle = 45.f;
 
 private:
 	UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))

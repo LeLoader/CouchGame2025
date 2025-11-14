@@ -42,13 +42,34 @@ void ACouchCameraActor::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	FVector LookAtPosition = CalculateAveragePositions();
 	float Zoom = 750.f;
-	FVector CameraDestination = LookAtPosition;
-	LookAtPosition.Normalize();
-	CameraDestination += Zoom * LookAtPosition;
+	FVector CameraDestination;
+
+	FVector LocalUpVector(LookAtPosition);
+	LocalUpVector.Normalize();
+
+	CameraDestination += Zoom * LocalUpVector;
 	DrawDebugSphere(GetWorld(), CameraDestination, 16, 32, FColor::Red, false, -1.f, 32);
 	float TargetR = 0.f;
 	float TargetTheta = 0.f;
 	float TargetPhi = 0.f;
+	CartesianToPolar(CameraDestination, TargetR, TargetTheta, TargetPhi);
+	TargetTheta = TargetTheta + FMath::DegreesToRadians(90 - Angle);
+	FVector FwdLookAtNormalized = FVector::ZeroVector;
+	if (UGameplayStatics::GetPlayerPawn(GetWorld(), 0) != nullptr) {
+		FwdLookAtNormalized = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorForwardVector();
+	}
+	else {
+		FwdLookAtNormalized = FVector::ForwardVector;
+	}
+	FwdLookAtNormalized *= -1;
+	float FwdR = 0.f;
+	float FwdTheta = 0.f;
+	float FwdPhi = 0.f;
+	CartesianToPolar(FwdLookAtNormalized, FwdR, FwdTheta, FwdPhi);
+	TargetPhi = FwdPhi;
+
+	PolarToCartesian(TargetR, TargetTheta, TargetPhi, CameraDestination);
+	CameraDestination += LookAtPosition;
 	CartesianToPolar(CameraDestination, TargetR, TargetTheta, TargetPhi);
 	float CurrentR = 0.f;
 	float CurrentTheta = 0.f;
@@ -136,10 +157,11 @@ void ACouchCameraActor::Zoom(float Input)
 }
 
 //{
-//	average des joueurs : LookAtPos
-//	float Zoom entre camera et LookAtPos : Zoom
-//	Vector unitaire : UP du World
-//	TargetLocation : LookAtPos + Zoom * vector unitaire
-//	COORD Polaire de TargetLocation
-//
+//	UP * zoom qui donnent la sommet de la sphere
+//  on passe en polaire
+//	on ajoute (90 - angle des GD) en radians a theta pour avoir l'inclinaison
+//	on prend le forward du joueur 1
+//	on passe en polaire, on prend son phi, on le negate et on le set à notre camera destination
+//	on repasse tout en cartésien
+//  
 //}
