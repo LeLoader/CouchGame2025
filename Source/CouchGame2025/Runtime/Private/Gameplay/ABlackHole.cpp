@@ -38,16 +38,16 @@ void AABlackHole::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	if (ACouchGame2025Character* Character = Cast<ACouchGame2025Character>(OtherActor))
 	{
 		AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());
-		if (PlayerStart)
+		if (PlayerStart) // TODO: Instead of player start, find a suitable spawn near the other player
 		{
 			Character->SetActorLocation(PlayerStart->GetActorLocation());
 			Character->GetCharacterMovement()->StopMovementImmediately();
+			OnPlayerDiedFromBlackHole.Broadcast(Character);
 		}
 	}
 	else
 	{
+		OnTrashDestroyed.Broadcast(OtherActor);
 		OtherActor->Destroy();
-		DestroyedObjectCount++;
-		UE_LOG(LogTemp, Warning, TEXT("DestroyedObjectCount: %d"), DestroyedObjectCount);
 	}
 }
