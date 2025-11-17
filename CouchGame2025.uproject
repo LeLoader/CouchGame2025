@@ -31,7 +31,11 @@
 			"Enabled": false
 		},
 		{
-			"Name": "NiagaraFluids",
+			"Name": "HDRIBackdrop",
+			"Enabled": true
+		},
+		{
+			"Name": "HDRIBackdrop",
 			"Enabled": true
 		}
 	],
