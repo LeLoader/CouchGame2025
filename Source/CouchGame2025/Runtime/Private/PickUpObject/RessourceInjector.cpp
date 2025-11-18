@@ -10,7 +10,9 @@
         RootComponent = MeshComponent;
     
         RessourceContainer = CreateDefaultSubobject<URessourceContainerComponent>(TEXT("RessourceContainer"));
-    
+
+        RessourceContainer->SetRessourceType(FRessourceType::WATER);
+        
         ProximitySphere = CreateDefaultSubobject<USphereComponent>(TEXT("ProximitySphere"));
         ProximitySphere->SetupAttachment(RootComponent);
         ProximitySphere->SetSphereRadius(ProximityRadius);
@@ -23,6 +25,10 @@
     
         ProximitySphere->OnComponentBeginOverlap.AddDynamic(this, &ARessourceInjector::OnProximityBeginOverlap);
         ProximitySphere->OnComponentEndOverlap.AddDynamic(this, &ARessourceInjector::OnProximityEndOverlap);
+        //FDelegateHandle Handle;
+        //Handle = RessourceContainer->OnContainerEmpty.AddWeakLambda(this, [this, Handle] {
+        //    RessourceContainer->OnContainerEmpty.Remove(Handle);
+        //    });
     }
     
     void ARessourceInjector::Tick(float DeltaSeconds)
