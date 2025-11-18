@@ -3,6 +3,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Component/RessourceContainerComponent.h"
+#include "Components/StaticMeshComponent.h"
+#include "Components/SphereComponent.h"
 #include "RessourceInjector.generated.h"
 
 UCLASS(Blueprintable)
@@ -17,40 +19,30 @@ protected:
     virtual void BeginPlay() override;
     virtual void Tick(float DeltaSeconds) override;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ressource")
-    FRessourceType RessourceType;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    UStaticMeshComponent* MeshComponent;
 
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Ressource")
-    float MaxRessourceAmount = 1.f;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+    URessourceContainerComponent* RessourceContainer;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Ressource")
-    float CurrentRessourceAmount = 0.f;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Proximity")
+    USphereComponent* ProximitySphere;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Transfer")
-    float TransferRate = 1.f;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Proximity")
+    float ProximityRadius = 200.f;
 
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Transfer")
-    URessourceContainerComponent* CurrentSource = nullptr;
+    UPROPERTY()
+    ACharacter* PlayerCharacter = nullptr;
 
-public:
-    UFUNCTION(BlueprintCallable, Category = "Ressource")
-    float AddRessource(float Amount);
+    UPROPERTY(BlueprintReadOnly)
+    bool bIsFull = false;
 
-    UFUNCTION(BlueprintCallable, Category = "Ressource")
-    float RemoveRessource(float Amount);
+    UFUNCTION()
+    void OnProximityBeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-    UFUNCTION(BlueprintCallable, Category = "Transfer")
-    float TransferFromContainerInstant(URessourceContainerComponent* Source, float Amount);
+    UFUNCTION()
+    void OnProximityEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-    UFUNCTION(BlueprintCallable, Category = "Transfer")
-    void StartTransferFromContainer(URessourceContainerComponent* Source);
-
-    UFUNCTION(BlueprintCallable, Category = "Transfer")
-    void StopTransferFromContainer();
-
-    UFUNCTION(BlueprintGetter, Category = "Ressource")
-    bool IsFull() const;
-
-    UFUNCTION(BlueprintGetter, Category = "Ressource")
-    bool IsEmpty() const;
 };

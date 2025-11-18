@@ -1,101 +1,60 @@
-﻿#include "CouchGame2025/Runtime/Public/PickUpObject/RessourceInjector.h"
-#include "Component/RessourceContainerComponent.h"
-
-ARessourceInjector::ARessourceInjector()
-{
-    PrimaryActorTick.bCanEverTick = true;
-}
-
-void ARessourceInjector::BeginPlay()
-{
-    Super::BeginPlay();
-}
-
-void ARessourceInjector::Tick(float DeltaSeconds)
-{
-    Super::Tick(DeltaSeconds);
-
-    if (CurrentSource == nullptr)
-        return;
-
-    if (IsFull() || CurrentSource->IsContainerEmpty())
+﻿    #include "CouchGame2025/Runtime/Public/PickUpObject/RessourceInjector.h"
+    #include "Kismet/GameplayStatics.h"
+    #include "GameFramework/Character.h"
+    
+    ARessourceInjector::ARessourceInjector()
     {
-        StopTransferFromContainer();
-        return;
+        PrimaryActorTick.bCanEverTick = false; // plus besoin de Tick avec la sphere
+    
+        MeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("MeshComponent"));
+        RootComponent = MeshComponent;
+    
+        RessourceContainer = CreateDefaultSubobject<URessourceContainerComponent>(TEXT("RessourceContainer"));
+    
+        ProximitySphere = CreateDefaultSubobject<USphereComponent>(TEXT("ProximitySphere"));
+        ProximitySphere->SetupAttachment(RootComponent);
+        ProximitySphere->SetSphereRadius(ProximityRadius);
+        ProximitySphere->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
     }
-
-    float Wanted = TransferRate * DeltaSeconds;
-    float Removed = CurrentSource->RemoveRessource(Wanted);
-    if (Removed <= 0.f)
+    
+    void ARessourceInjector::BeginPlay()
     {
-        StopTransferFromContainer();
-        return;
+        Super::BeginPlay();
+    
+        ProximitySphere->OnComponentBeginOverlap.AddDynamic(this, &ARessourceInjector::OnProximityBeginOverlap);
+        ProximitySphere->OnComponentEndOverlap.AddDynamic(this, &ARessourceInjector::OnProximityEndOverlap);
     }
-
-    float Added = AddRessource(Removed);
-    if (Added < Removed)
+    
+    void ARessourceInjector::Tick(float DeltaSeconds)
     {
-        float ReturnAmount = Removed - Added;
-        CurrentSource->AddRessource(ReturnAmount);
-        StopTransferFromContainer();
+        Super::Tick(DeltaSeconds);
     }
-
-    if (CurrentSource->IsContainerEmpty())
+    
+    void ARessourceInjector::OnProximityBeginOverlap(UPrimitiveComponent* /*OverlappedComp*/, AActor* OtherActor,
+        UPrimitiveComponent* /*OtherComp*/, int32 /*OtherBodyIndex*/, bool /*bFromSweep*/, const FHitResult& /*SweepResult*/)
     {
-        StopTransferFromContainer();
+        if (bIsFull) return;
+    
+        auto* Player = Cast<ACharacter>(OtherActor);
+        if (!Player) return;
+    
+        URessourceContainerComponent* PlayerContainer = Player->FindComponentByClass<URessourceContainerComponent>();
+        if (PlayerContainer)
+        {
+            PlayerContainer->StartMovingRessource(RessourceContainer);
+        }
     }
-}
-
-float ARessourceInjector::AddRessource(float Amount)
-{
-    if (Amount <= 0.f) return 0.f;
-    float Space = FMath::Max(0.f, MaxRessourceAmount - CurrentRessourceAmount);
-    float ToAdd = FMath::Min(Amount, Space);
-    CurrentRessourceAmount += ToAdd;
-    return ToAdd;
-}
-
-float ARessourceInjector::RemoveRessource(float Amount)
-{
-    if (Amount <= 0.f) return 0.f;
-    float ToRemove = FMath::Min(Amount, CurrentRessourceAmount);
-    CurrentRessourceAmount -= ToRemove;
-    return ToRemove;
-}
-
-float ARessourceInjector::TransferFromContainerInstant(URessourceContainerComponent* Source, float Amount)
-{
-    if (Source == nullptr || Amount <= 0.f) return 0.f;
-
-    float Removed = Source->RemoveRessource(Amount);
-    if (Removed <= 0.f) return 0.f;
-
-    float Added = AddRessource(Removed);
-    if (Added < Removed)
+    
+    void ARessourceInjector::OnProximityEndOverlap(UPrimitiveComponent* /*OverlappedComp*/, AActor* OtherActor,
+        UPrimitiveComponent* /*OtherComp*/, int32 /*OtherBodyIndex*/)
     {
-        float ReturnAmount = Removed - Added;
-        Source->AddRessource(ReturnAmount);
+    
+        auto* Player = Cast<ACharacter>(OtherActor);
+        if (!Player) return;
+    
+        URessourceContainerComponent* PlayerContainer = Player->FindComponentByClass<URessourceContainerComponent>();
+        if (PlayerContainer)
+        {
+            PlayerContainer->StopMovingRessource(RessourceContainer);
+        }
     }
-    return Added;
-}
-
-void ARessourceInjector::StartTransferFromContainer(URessourceContainerComponent* Source)
-{
-    if (Source == nullptr) return;
-    CurrentSource = Source;
-}
-
-void ARessourceInjector::StopTransferFromContainer()
-{
-    CurrentSource = nullptr;
-}
-
-bool ARessourceInjector::IsFull() const
-{
-    return FMath::Abs(CurrentRessourceAmount - MaxRessourceAmount) < UE_KINDA_SMALL_NUMBER;
-}
-
-bool ARessourceInjector::IsEmpty() const
-{
-    return CurrentRessourceAmount < UE_KINDA_SMALL_NUMBER;
-}
