@@ -32,7 +32,7 @@ protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* Mesh;
 
 public:
@@ -53,13 +53,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool IsAPlayerHolding;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	TArray<UPhysicsConstraintComponent*> PhysicsConstraints;
+	UPROPERTY()
+	bool IsPickedUp;
 
 private:
 
-	UFUNCTION()
-	UPhysicsConstraintComponent* GetClosestPhysicsConstraint();
-	
+	UPROPERTY()
+	TArray<ACouchGame2025Character*> PlayersHolding;
 #pragma endregion
 };

@@ -6,8 +6,10 @@
 #include <string>
 
 
+#include "CouchGame2025/Runtime/Public/Component/ObjectPlanetaryGravityComponent.h"
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
 #include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Logging/StructuredLog.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 
@@ -21,28 +23,13 @@ APickUpObject::APickUpObject()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
 	RootComponent = Mesh;
 
-
-	for (int i = 0; i < 2; ++i)
-	{
-		FString Name;
-		Name.Append("PhysicsConstraints");
-		Name.Append(FString::FromInt(i));
-		PhysicsConstraints.Add(CreateDefaultSubobject<UPhysicsConstraintComponent>(FName(Name)));
-		PhysicsConstraints[i]->SetupAttachment(GetRootComponent());
-		PhysicsConstraints[i]->SetConstrainedComponents(
-			Mesh,
-			NAME_None,
-			nullptr,
-			NAME_None
-		);
-	}
-
 }
 
 // Called when the game starts or when spawned
 void APickUpObject::BeginPlay()
 {
 	Super::BeginPlay();
+	IsPickedUp = false;
 }
 
 void APickUpObject::Interact(ACouchGame2025Character* Player)
@@ -56,103 +43,78 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 	else
 	{
 		// If two players are needed to move the object around
-		if (!IsAPlayerHolding){
-			UPhysicsConstraintComponent* ClosestHandle = GetClosestPhysicsConstraint();
-			if (ClosestHandle == nullptr) return;			
-
-
-			FString ClosestHandleName;
-			ClosestHandleName.Append(ClosestHandle->GetName());
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				3.f,
-				FColor::Blue,
-				FString(ClosestHandleName)
-				);
-
-
-			ClosestHandle->SetConstrainedComponents(
-				FindComponentByClass<UMeshComponent>(),
-				NAME_None,
-				Player->GetMesh(),
-				NAME_None
-			); 
+		
+		if (!IsAPlayerHolding){ // If Player is the first one to hold the object
+			//Mesh->SetMobility(EComponentMobility::Type::Static);
+			Player->GetCharacterMovement()->SetMovementMode(MOVE_None);
+			//Player->SetLockLocation(true);
+			this->AttachToComponent(
+			Player->GetMesh(),
+			FAttachmentTransformRules
+			(EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			true),
+			"Hand_Pos");
+			PlayersHolding.Add(Player); // Will be first index if first to pick up
+			IsAPlayerHolding = true;
+		} else // If a Player is already holding the object
+		{
+			//Mesh->SetMobility(EComponentMobility::Type::Movable);
+			//SetLockLocation(false);
+			Mesh->BodyInstance.bLockRotation = true;
+			SetActorEnableCollision(false);
+			this->AttachToComponent(
+			Player->GetMesh(),
+			FAttachmentTransformRules
+			(EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			true),
+			"Hand_Pos");
+			PlayersHolding.Add(Player);
+			// PlayersHolding[0]->SetLockLocation(false);
+			PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		}
 	}
 	
 }
 
 void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
+
+	// Will only be called when a single player is needed to pick up the object
+	
 	Interactor = Player;
-	// Player->PickupComponent->PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(GetRootComponent()), FName(), GetActorLocation());
-	// Player->PickupComponent->PhysicsHandle->Activate();
-	UPhysicsConstraintComponent* ClosestHandle = GetClosestPhysicsConstraint();
-	if (ClosestHandle == nullptr) return;
-
-	//SetActorEnableCollision(false);
-
-	FString ClosestHandleName;
-	ClosestHandleName.Append(ClosestHandle->GetName());
-	GEngine->AddOnScreenDebugMessage(
-		-1,
-		3.f,
-		FColor::Blue,
-		FString(ClosestHandleName)
+	this->AttachToComponent(
+		Player->GetMesh(),
+		FAttachmentTransformRules
+		(
+		EAttachmentRule::SnapToTarget,
+		EAttachmentRule::SnapToTarget,
+		EAttachmentRule::SnapToTarget,
+		true
+		),
+		"Hand_Pos"
 		);
-	UPrimitiveComponent* Component1;
-	UPrimitiveComponent* Component2;
-	FName ComponentName1;
-	FName ComponentName2;
-	ClosestHandle->GetConstrainedComponents(Component1, ComponentName1, Component2, ComponentName2);
 	
-	ClosestHandle->SetConstrainedComponents(
-				Component1,
-				NAME_None,
-				Player->GetMesh(),
-				NAME_None
-			);
-	
-	
-	// Mesh->SetPhysicsAngularVelocityInDegrees(FVector(0, 0, 0));
-	// Mesh->SetPhysicsLinearVelocity(FVector(0, 0, 0));
-	// Mesh->SetWorldRotation(FRotator(0, 0, 0));
-	// Mesh->BodyInstance.bLockRotation = true;
-	Player->PickupComponent->IsGrabbingObject = true;
+	SetActorEnableCollision(false);
+	Mesh->BodyInstance.bLockRotation = true;
 }
 
 void APickUpObject::StopPickUp()
 {
-	SetActorEnableCollision(true);
-	if (Socket == nullptr) {
-		return; // :)
-	}
-	float DistToSocket = FVector::Dist(Socket->GetActorLocation(), GetActorLocation());
-
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, TEXT("%f"), DistToSocket);
-	UE_LOGFMT(LogTemplateCharacter, Log, "Distance : {0}", DistToSocket);
-
-	if (DistToSocket <= 150.f)
+	if (PlayersHolding.Num() < 2)
 	{
-		SetActorLocation(Socket->GetActorLocation() + FVector::UpVector * 50);
-		SetActorRotation(Socket->GetActorRotation());
-		Mesh->BodyInstance.bLockRotation = false;
+		PlayersHolding[0]->SetLockLocation(false);
 	}
-
+	
+	this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	SetActorEnableCollision(true);
+	Mesh->BodyInstance.bLockRotation = false;
 }
-
 
 // Called every frame
 void APickUpObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
-
-UPhysicsConstraintComponent* APickUpObject::GetClosestPhysicsConstraint()
-{
-	if (FVector::Dist(GetActorLocation(), PhysicsConstraints[0]->GetComponentLocation()) < FVector::Dist(GetActorLocation(), PhysicsConstraints[1]->GetComponentLocation()))
-	{
-		return PhysicsConstraints[0];
-	}
-	return PhysicsConstraints[1];
-}
-
