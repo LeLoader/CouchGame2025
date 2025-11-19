@@ -65,6 +65,10 @@ class ACouchGame2025Character : public ACharacter, public ICameraFollowable
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* RopeAction;
 
+	/** Bridge Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* BridgeAction;
+
 #pragma endregion Inputs
 
 public:
