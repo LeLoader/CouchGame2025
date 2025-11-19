@@ -31,7 +31,26 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void TryPickUp();
-	
+
+	UPROPERTY(EditDefaultsOnly, meta = (Units = "cm"))
+	float TraceLength = 250;
+
+	UPROPERTY(EditDefaultsOnly, meta = (Units = "cm"))
+	float TraceWidth = 100;
+
+	// Use
+	UFUNCTION()
+	void StartUse();
+	UFUNCTION()
+	void Use();
+	UFUNCTION()
+	void StopUse();
+
+
+
+	UFUNCTION()
+	void HandleInputCompleted();
+
 	UFUNCTION()
 	void StopPickUp();
 
@@ -39,6 +58,8 @@ public:
 	UPhysicsHandleComponent* PhysicsHandle;
 
 	bool IsGrabbingObject = false;
+
+	bool bCanBeReleased = false;
 private:
 	UPROPERTY()
 	ACouchGame2025Character* Player;
