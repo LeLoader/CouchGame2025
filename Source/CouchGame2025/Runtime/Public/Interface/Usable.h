@@ -5,13 +5,11 @@
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
 
-#include "Interactable.generated.h"
-
-class ACharacter;
+#include "Usable.generated.h"
 
 // This class does not need to be modified.
-UINTERFACE(MinimalAPI, NotBlueprintable)
-class UInteractable : public UInterface
+UINTERFACE(MinimalAPI)
+class UUsable : public UInterface
 {
 	GENERATED_BODY()
 };
@@ -19,13 +17,15 @@ class UInteractable : public UInterface
 /**
  * 
  */
-class COUCHGAME2025_API IInteractable
+class COUCHGAME2025_API IUsable
 {
 	GENERATED_BODY()
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintCallable)
-	virtual bool Interact(ACouchGame2025Character* Instigator) = 0;
+
+	virtual void StartUse() = 0;
+	virtual void Use() = 0;
+	virtual void StopUse() = 0;
 	
 };

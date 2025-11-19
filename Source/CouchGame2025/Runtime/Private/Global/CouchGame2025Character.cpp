@@ -62,6 +62,9 @@ ACouchGame2025Character::ACouchGame2025Character()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	WaterTank = CreateDefaultSubobject<URessourceContainerComponent>(TEXT("WaterTank"));
+	WaterTank->SetRessourceType(FRessourceType::WATER);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -96,10 +99,14 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Look);
 
-		// Pickup
+		// Pickup & release
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::TryPickUp);
-		//EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, PickupComponent, &UPickupComponent::TryPickUp);
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::StopPickUp);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::HandleInputCompleted);
+
+		// Use (Move everything in a specific imc that's added on pickup
+		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::StartUse);
+		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Triggered, PickupComponent, &UPickupComponent::Use);
+		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::StopUse);
 
 		// Rope
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Started, this, &ACouchGame2025Character::ToggleRopeMode);
