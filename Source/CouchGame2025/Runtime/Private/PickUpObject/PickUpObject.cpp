@@ -45,23 +45,26 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 	{
 		// If two players are needed to move the object around
 		
-		if (!IsAPlayerHolding){ // If Player is the first one to hold the object
+		if (!bIsAPlayerHolding){ // If Player is the first one to hold the object
+			Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 			Player->GetCharacterMovement()->SetMovementMode(MOVE_None);
-			this->AttachToComponent(
-			Player->GetMesh(),
-			FAttachmentTransformRules
-			(EAttachmentRule::SnapToTarget,
-			EAttachmentRule::SnapToTarget,
-			EAttachmentRule::SnapToTarget,
-			true),
-			"Hand_Pos");
+			Player->bIsGrabbing = true;
+			// this->AttachToComponent(
+			// Player->GetMesh(),
+			// FAttachmentTransformRules
+			// (EAttachmentRule::SnapToTarget,
+			// EAttachmentRule::SnapToTarget,
+			// EAttachmentRule::SnapToTarget,
+			// true),
+			// "Hand_Pos");
 			PlayersHolding.Add(Player); // Will be first index if first to pick up
-			IsAPlayerHolding = true;
+			bIsAPlayerHolding = true;
 		} else // If a Player is already holding the object
 		{
 			bIsGrabbedByBoth = true;
 			Mesh->BodyInstance.bLockRotation = true;
 			SetActorEnableCollision(false);
+			Player->bIsGrabbing = true;
 			this->AttachToComponent(
 			Player->GetMesh(),
 			FAttachmentTransformRules
@@ -72,6 +75,14 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 			"Hand_Pos");
 			PlayersHolding.Add(Player);
 			PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+			this->AttachToComponent(
+				PlayersHolding[0]->GetMesh(),
+				FAttachmentTransformRules
+				(EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
+				true),
+				"Hand_Pos");
 		}
 	}
 	
@@ -110,6 +121,7 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 		SetActorEnableCollision(true);
 		Mesh->BodyInstance.bLockRotation = false;
 		bIsGrabbedByBoth = false;
+		bIsAPlayerHolding = false;
 		return;
 	}
 	ReleaseObjectFromOnePlayer(Player);

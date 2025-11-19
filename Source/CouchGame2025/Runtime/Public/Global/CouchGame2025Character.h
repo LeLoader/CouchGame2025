@@ -138,7 +138,7 @@ public:
 	UPROPERTY()
 	FVector2D InputMovement;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	bool bIsGrabbing;
 
 private:

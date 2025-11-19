@@ -123,10 +123,10 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	InputMovement = MovementVector;
-	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, TEXT("moving"));
 
 	if (Controller != nullptr && !bIsGrabbing)
 	{
+		GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, TEXT("moving"));
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
 		//const FRotator YawRotation(Rotation.Roll, Rotation.Yaw, Rotation.Pitch);

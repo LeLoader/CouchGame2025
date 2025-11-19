@@ -51,7 +51,7 @@ public:
 	bool NeedsTwoPlayersToBePickedUp;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool IsAPlayerHolding;
+	bool bIsAPlayerHolding;
 
 	UPROPERTY()
 	bool bIsPickedUp;
