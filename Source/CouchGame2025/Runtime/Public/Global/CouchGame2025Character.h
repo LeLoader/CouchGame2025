@@ -26,6 +26,10 @@ class ACouchGame2025Character : public ACharacter, public ICameraFollowable
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
+	/** Scene component for relative rotation of camera*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* SceneComponent;
+
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
@@ -66,6 +70,10 @@ public:
 
 protected:
 
+	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaTime) override;
+
 	/** Called for movement */
 	void Move(const FInputActionValue& Value);
 
@@ -74,6 +82,9 @@ protected:
 	
 	/** Called for interacting */
 	void Interact(const FInputActionValue& Value);
+
+	void PolarToCartesian(float r, float theta, float phi, FVector& OutVector);
+	void CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi);
 
 #pragma region Rope
 

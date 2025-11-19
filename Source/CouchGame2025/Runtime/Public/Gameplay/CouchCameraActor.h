@@ -39,6 +39,12 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector CalculateAveragePositions();
 
+	UFUNCTION()
+	bool IsInWholeCamera(FVector2D Position);
+
+	UFUNCTION()
+	bool isInCenterCamera(FVector2D Position);
+
 	UPROPERTY(EditAnywhere)
 	float LerpSpeed = 1.f;
 
