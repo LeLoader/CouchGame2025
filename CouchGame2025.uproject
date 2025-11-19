@@ -31,9 +31,9 @@
 			"Enabled": false
 		},
 		{
-			"Name": "NiagaraFluids",
+			"Name": "HDRIBackdrop",
 			"Enabled": true
-		}
+		},
 	],
 	"AdditionalPluginDirectories": [
 		"Source"
