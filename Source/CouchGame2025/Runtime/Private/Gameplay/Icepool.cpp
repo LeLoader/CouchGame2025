@@ -1,6 +1,3 @@
-
-
-
 #include "CouchGame2025/Runtime/Public/Gameplay/Icepool.h"
 
 #include "Logging/StructuredLog.h"

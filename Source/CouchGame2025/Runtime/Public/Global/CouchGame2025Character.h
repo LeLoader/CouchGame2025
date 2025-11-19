@@ -116,7 +116,7 @@ public:
 #pragma region Water
 
 public:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	URessourceContainerComponent* WaterTank;
 
 #pragma endregion Water
