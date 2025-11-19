@@ -183,6 +183,19 @@ bool ACouchCameraActor::isInCenterCamera(FVector2D Position)
 	return Position.X > sizeXBordered && Position.Y > sizeYBordered && Position.X < sizeX - sizeXBordered && Position.Y < sizeY - sizeYBordered;
 }
 
+void ACouchCameraActor::InvertCamera()
+{
+	float R;
+	float Theta;
+	float Phi;
+	CartesianToPolar(GetActorLocation(), R, Theta, Phi);
+	R = 3000.f;
+	FVector NewPosition;
+	PolarToCartesian(R, Theta, Phi, NewPosition);
+	SetActorLocation(NewPosition);
+	InvertLookAt = !InvertLookAt;
+}
+
 //{
 //	UP * zoom qui donnent la sommet de la sphere
 //  on passe en polaire

@@ -26,6 +26,9 @@ protected:
 	void CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi);
 
 	UFUNCTION(BlueprintCallable)
+	void InvertCamera();
+
+	UFUNCTION(BlueprintCallable)
 	void Move(FVector2D Input);
 
 	UFUNCTION(BlueprintCallable)
@@ -50,6 +53,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "CouchGameCamera", meta = (Units = "deg"))
 	float Angle = 45.f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool InvertLookAt;
 
 private:
 	UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
