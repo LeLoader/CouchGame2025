@@ -17,7 +17,8 @@ UPickupComponent::UPickupComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName("PhysicsHandle"));
+	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName("PhysicsHandle"), true);
+	
 	//PhysicsHandle->AddToRoot();
 
 	// ...
@@ -42,14 +43,14 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (IsGrabbingObject)
-	{
-		PhysicsHandle->SetTargetLocationAndRotation(GetComponentLocation(), GetForwardVector().Rotation());
-		DrawDebugSphere(GetWorld(), GetComponentLocation(), 20, 16, FColor::Red);
-		DrawDebugLine(GetWorld(), GetComponentLocation(), GetComponentLocation() + GetForwardVector() * 100, FColor::Blue);
-		//passe
-	}
+	
+	// if (IsGrabbingObject)
+	// {
+	// 	PhysicsHandle->SetTargetLocationAndRotation(GetComponentLocation(), GetForwardVector().Rotation());
+	// 	DrawDebugSphere(GetWorld(), GetComponentLocation(), 20, 16, FColor::Red);
+	// 	DrawDebugLine(GetWorld(), GetComponentLocation(), GetComponentLocation() + GetForwardVector() * 100, FColor::Blue);
+	// 	//passe
+	// }
 }
 
 void UPickupComponent::TryPickUp()
@@ -121,20 +122,20 @@ void UPickupComponent::StopUse() {
 	}
 }
 
-void UPickupComponent::HandleInputCompleted() {
+void UPickupComponent::HandleInputCompleted(ACouchGame2025Character* Instigator) {
 	if (!bCanBeReleased)
 		bCanBeReleased = true;
 
-	StopPickUp();
+	StopPickUp(Instigator);
 }
 
-void UPickupComponent::StopPickUp()
+void UPickupComponent::StopPickUp(ACouchGame2025Character* Instigator)
 {
 	if (!IsValid(PickedUpObject) || !bCanBeReleased) {
 		return;
 	}
 
-	PickedUpObject->StopPickUp();
+	PickedUpObject->StopPickUp(Instigator);
 	PhysicsHandle->ReleaseComponent();
 	PickedUpObject = nullptr;
 	IsGrabbingObject = false;

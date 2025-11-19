@@ -120,5 +120,24 @@ public:
 	URessourceContainerComponent* WaterTank;
 
 #pragma endregion Water
+
+#pragma region Grab
+
+public:	
+	UFUNCTION()
+	void MoveWhenGrabbing(FVector2D Movement);
+
+	UPROPERTY()
+	FVector2D InputMovement;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsGrabbing;
+
+private:
+
+	UFUNCTION()
+	void StopMove();
+	
+#pragma endregion Grab	
 };
 
