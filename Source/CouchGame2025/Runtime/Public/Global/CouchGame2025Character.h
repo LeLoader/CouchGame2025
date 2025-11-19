@@ -5,7 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
-#include "../Component/RessourceContainerComponent.h"
+#include "Component/RessourceContainerComponent.h"
+#include "Interface/CameraFollowable.h"
 #include "CouchGame2025Character.generated.h"
 
 class UPickupComponent;
@@ -18,17 +19,17 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ACouchGame2025Character : public ACharacter
+class ACouchGame2025Character : public ACharacter, public ICameraFollowable
 {
 	GENERATED_BODY()
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USceneComponent* CameraBoomRoot;
-
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
+
+	/** Scene component for relative rotation of camera*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* SceneComponent;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -77,6 +78,10 @@ public:
 
 protected:
 
+	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaTime) override;
+
 	/** Called for movement */
 	void Move(const FInputActionValue& Value);
 
@@ -85,6 +90,9 @@ protected:
 	
 	/** Called for interacting */
 	void Interact(const FInputActionValue& Value);
+
+	void PolarToCartesian(float r, float theta, float phi, FVector& OutVector);
+	void CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi);
 
 #pragma region Rope
 
@@ -106,6 +114,8 @@ protected:
 	virtual void NotifyControllerChanged() override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	virtual FVector GetFollowPosition() override;
 
 public:
 	/** Returns CameraBoom subobject **/
