@@ -49,10 +49,10 @@ public:
 
 
 	UFUNCTION()
-	void HandleInputCompleted();
+	void HandleInputCompleted(ACouchGame2025Character* Player);
 
 	UFUNCTION()
-	void StopPickUp();
+	void StopPickUp(ACouchGame2025Character* Player);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UPhysicsHandleComponent* PhysicsHandle;

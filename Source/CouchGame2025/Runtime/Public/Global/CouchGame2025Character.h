@@ -128,5 +128,24 @@ public:
 	float MaxWaterAmount;
 
 #pragma endregion Water
+
+#pragma region Grab
+
+public:	
+	UFUNCTION()
+	void MoveWhenGrabbing(FVector2D Movement);
+
+	UPROPERTY()
+	FVector2D InputMovement;
+
+	UPROPERTY()
+	bool bIsGrabbing;
+
+private:
+
+	UFUNCTION()
+	void StopMove();
+	
+#pragma endregion Grab	
 };
 

@@ -118,20 +118,20 @@ void UPickupComponent::StopUse() {
 	}
 }
 
-void UPickupComponent::HandleInputCompleted() {
+void UPickupComponent::HandleInputCompleted(ACouchGame2025Character* Instigator) {
 	if (!bCanBeReleased)
 		bCanBeReleased = true;
 
-	StopPickUp();
+	StopPickUp(Instigator);
 }
 
-void UPickupComponent::StopPickUp()
+void UPickupComponent::StopPickUp(ACouchGame2025Character* Instigator)
 {
 	if (!IsValid(PickedUpObject) || !bCanBeReleased) {
 		return;
 	}
 
-	PickedUpObject->StopPickUp();
+	PickedUpObject->StopPickUp(Instigator);
 	PhysicsHandle->ReleaseComponent();
 	PickedUpObject = nullptr;
 	IsGrabbingObject = false;

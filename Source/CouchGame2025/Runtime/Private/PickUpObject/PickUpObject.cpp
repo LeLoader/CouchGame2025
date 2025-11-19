@@ -29,7 +29,8 @@ APickUpObject::APickUpObject()
 void APickUpObject::BeginPlay()
 {
 	Super::BeginPlay();
-	IsPickedUp = false;
+	bIsPickedUp = false;
+	bIsGrabbedByBoth = false;
 }
 
 void APickUpObject::Interact(ACouchGame2025Character* Player)
@@ -45,9 +46,7 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 		// If two players are needed to move the object around
 		
 		if (!IsAPlayerHolding){ // If Player is the first one to hold the object
-			//Mesh->SetMobility(EComponentMobility::Type::Static);
 			Player->GetCharacterMovement()->SetMovementMode(MOVE_None);
-			//Player->SetLockLocation(true);
 			this->AttachToComponent(
 			Player->GetMesh(),
 			FAttachmentTransformRules
@@ -60,8 +59,7 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 			IsAPlayerHolding = true;
 		} else // If a Player is already holding the object
 		{
-			//Mesh->SetMobility(EComponentMobility::Type::Movable);
-			//SetLockLocation(false);
+			bIsGrabbedByBoth = true;
 			Mesh->BodyInstance.bLockRotation = true;
 			SetActorEnableCollision(false);
 			this->AttachToComponent(
@@ -73,7 +71,6 @@ void APickUpObject::Interact(ACouchGame2025Character* Player)
 			true),
 			"Hand_Pos");
 			PlayersHolding.Add(Player);
-			// PlayersHolding[0]->SetLockLocation(false);
 			PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		}
 	}
@@ -85,6 +82,7 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	// Will only be called when a single player is needed to pick up the object
 	
 	Interactor = Player;
+	Interactor->bIsGrabbing = true;
 	this->AttachToComponent(
 		Player->GetMesh(),
 		FAttachmentTransformRules
@@ -101,20 +99,58 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	Mesh->BodyInstance.bLockRotation = true;
 }
 
-void APickUpObject::StopPickUp()
+void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 {
 	if (PlayersHolding.Num() < 2)
 	{
-		PlayersHolding[0]->SetLockLocation(false);
+		PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+		PlayersHolding[0]->bIsGrabbing = false;
+		PlayersHolding.Empty();
+		this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		SetActorEnableCollision(true);
+		Mesh->BodyInstance.bLockRotation = false;
+		bIsGrabbedByBoth = false;
+		return;
 	}
-	
-	this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	SetActorEnableCollision(true);
-	Mesh->BodyInstance.bLockRotation = false;
+	ReleaseObjectFromOnePlayer(Player);
 }
 
 // Called every frame
+
+void APickUpObject::ReleaseObjectFromOnePlayer(ACouchGame2025Character* PlayerReleasing)
+{
+	Mesh->BodyInstance.bLockRotation = false;
+	SetActorEnableCollision(true);
+	PlayerReleasing->bIsGrabbing = false;
+	int PlayerReleasingIndex = PlayersHolding.Find(PlayerReleasing);
+	PlayersHolding.RemoveAt(PlayerReleasingIndex);
+	this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	
+	this->AttachToComponent(
+	PlayersHolding[0]->GetMesh(),
+	FAttachmentTransformRules
+	(EAttachmentRule::SnapToTarget,
+	EAttachmentRule::SnapToTarget,
+	EAttachmentRule::SnapToTarget,
+	true),
+	"Hand_Pos");
+	PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_None);
+	bIsGrabbedByBoth = false;
+}
+
+
 void APickUpObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	if (bIsGrabbedByBoth && PlayersHolding.Num() == 2)
+	{
+		PlayersAverageInput = (PlayersHolding[0]->InputMovement + PlayersHolding[1]->InputMovement) / 2;
+   
+		
+		for (ACouchGame2025Character* Element : PlayersHolding)
+		{
+			Element->MoveWhenGrabbing(PlayersAverageInput);
+		}
+	}
 }

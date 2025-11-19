@@ -28,6 +28,7 @@ ACouchGame2025Character::ACouchGame2025Character()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+	bIsGrabbing = false;
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
@@ -92,13 +93,14 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::StopMove);
 
 		// Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Look);
 
 		// Pickup & release
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::TryPickUp);
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::HandleInputCompleted);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::HandleInputCompleted, this);
 
 		// Use (Move everything in a specific imc that's added on pickup
 		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::StartUse);
@@ -120,9 +122,10 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
+	InputMovement = MovementVector;
 	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, TEXT("moving"));
 
-	if (Controller != nullptr)
+	if (Controller != nullptr && !bIsGrabbing)
 	{
 		// find out which way is forward
 		const FRotator Rotation = Controller->GetControlRotation();
@@ -182,4 +185,31 @@ void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 void ACouchGame2025Character::AddWater(float AddedWaterAmount)
 {
 	CurrentWaterAmount = FMath::Clamp(CurrentWaterAmount + AddedWaterAmount, 0, MaxWaterAmount);
+}
+
+void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Emerald, TEXT("moving but grabbing"));
+	if (Controller != nullptr)
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		//const FRotator YawRotation(Rotation.Roll, Rotation.Yaw, Rotation.Pitch);
+		const FRotator YawRotation(Rotation);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	
+		// get right vector 
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement 
+		AddMovementInput(ForwardDirection, Movement.Y);
+		AddMovementInput(RightDirection, Movement.X);
+	}
+}
+
+void ACouchGame2025Character::StopMove()
+{
+	InputMovement = FVector2D::ZeroVector;
 }

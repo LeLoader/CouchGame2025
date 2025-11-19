@@ -23,7 +23,7 @@ public:
 	void StartPickUp(ACouchGame2025Character* Player);
 
 	UFUNCTION(BlueprintCallable)
-	void StopPickUp();
+	void StopPickUp(ACouchGame2025Character* Player);
 	
 	UPROPERTY()
 	ACouchGame2025Character* Interactor;
@@ -54,11 +54,20 @@ public:
 	bool IsAPlayerHolding;
 
 	UPROPERTY()
-	bool IsPickedUp;
+	bool bIsPickedUp;
 
 private:
 
 	UPROPERTY()
 	TArray<ACouchGame2025Character*> PlayersHolding;
+
+	UFUNCTION()
+	void ReleaseObjectFromOnePlayer(ACouchGame2025Character* PlayerReleasing);
+
+	UPROPERTY()
+	bool bIsGrabbedByBoth;
+
+	UPROPERTY()
+	FVector2D PlayersAverageInput;
 #pragma endregion
 };
