@@ -1,4 +1,4 @@
-﻿	#include "CouchGame2025/Runtime/Public/Gameplay/TransferPoint.h"
+﻿	#include "Gameplay/TransferPoint.h"
 	#include "Components/SphereComponent.h"
 	#include "Engine/Engine.h"
 	
