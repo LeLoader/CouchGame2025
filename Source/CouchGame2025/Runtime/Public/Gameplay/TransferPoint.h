@@ -1,4 +1,6 @@
-﻿#include "CoreMinimal.h"
+﻿#pragma once
+
+#include "CoreMinimal.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/Actor.h"
 #include "TransferPoint.generated.h"
