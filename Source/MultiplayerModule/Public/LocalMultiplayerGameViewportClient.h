@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Engine/GameViewportClient.h"
+#include "CommonGameViewportClient.h"
 
 #include "LocalMultiplayerGameViewportClient.generated.h"
 
@@ -9,7 +9,7 @@ class ULocalMultiplayerSubsystem;
 enum class EHardwareDevicePrimaryType : uint8;
 
 UCLASS()
-class MULTIPLAYERMODULE_API ULocalMultiplayerGameViewportClient : public UGameViewportClient
+class MULTIPLAYERMODULE_API ULocalMultiplayerGameViewportClient : public UCommonGameViewportClient
 {
 	GENERATED_BODY()
 

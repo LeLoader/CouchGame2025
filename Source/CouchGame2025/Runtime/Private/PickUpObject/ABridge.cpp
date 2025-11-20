@@ -53,19 +53,6 @@ void AABridge::BeginPlay()
     Super::BeginPlay();
 
     InitializeMeshData();
-
-    APlayerController* PC = GetWorld() ? GetWorld()->GetFirstPlayerController() : nullptr;
-    if (!PC) return;
-
-    EnableInput(PC);
-
-    if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PC->InputComponent))
-    {
-        if (ToggleBridgeAction)
-        {
-            EnhancedInput->BindAction(ToggleBridgeAction, ETriggerEvent::Started, this, &AABridge::ToggleBridge);
-        }
-    }
 }
 
 void AABridge::ToggleBridge()
