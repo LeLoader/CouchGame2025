@@ -35,14 +35,22 @@ void AABlackHole::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 		return;
 	}
 
-	if (ACouchGame2025Character* Character = Cast<ACouchGame2025Character>(OtherActor))
+	if (ACouchGame2025Character* DeadCharacter = Cast<ACouchGame2025Character>(OtherActor))
 	{
-		AActor* PlayerStart = UGameplayStatics::GetActorOfClass(GetWorld(), APlayerStart::StaticClass());
-		if (PlayerStart) // TODO: Instead of player start, find a suitable spawn near the other player
+		ACharacter* OtherCharacter = nullptr;
+		if (DeadCharacter == UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
+			OtherCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 1);
+		}
+		else {
+			OtherCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 0);
+		}
+
+		
+		if (OtherCharacter)
 		{
-			Character->SetActorLocation(PlayerStart->GetActorLocation());
-			Character->GetCharacterMovement()->StopMovementImmediately();
-			OnPlayerDiedFromBlackHole.Broadcast(Character);
+			DeadCharacter->SetActorLocation(OtherCharacter->GetActorLocation() + OtherCharacter->GetActorForwardVector() * -1 * 100); // Spawn one meter behind the other character
+			DeadCharacter->GetCharacterMovement()->StopMovementImmediately();
+			OnPlayerDiedFromBlackHole.Broadcast(DeadCharacter);
 		}
 	}
 	else
