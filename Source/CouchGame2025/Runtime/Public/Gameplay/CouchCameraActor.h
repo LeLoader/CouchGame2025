@@ -55,7 +55,7 @@ protected:
 	float Angle = 45.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool InvertLookAt;
+	bool bisInverted;
 
 private:
 	UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
