@@ -8,6 +8,7 @@
 #include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
 #include "CouchGame2025/Runtime/Public/PickUpObject/PickUpObject.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "CollisionQueryParams.h"
 #include "PickupComponent.generated.h"
 
 
@@ -60,10 +61,16 @@ public:
 	bool IsGrabbingObject = false;
 
 	bool bCanBeReleased = false;
+
+	UPROPERTY()
+	ACouchGame2025Character* PickedUpPlayer;
 private:
 	UPROPERTY()
-	ACouchGame2025Character* Player;
-
+	ACouchGame2025Character* Player; // Owner Player
+	
+	// UPROPERTY()
+	FCollisionQueryParams Params;
+	
 	UPROPERTY()
 	APickUpObject* PickedUpObject;
 

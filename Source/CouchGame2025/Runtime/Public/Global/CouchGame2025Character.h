@@ -3,7 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
 #include "GameFramework/Character.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 #include "Logging/LogMacros.h"
 #include "CouchGame2025Character.generated.h"
 
@@ -17,8 +19,9 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ACouchGame2025Character : public ACharacter
+class ACouchGame2025Character : public ACharacter, public IInteractable
 {
+private:
 	GENERATED_BODY()
 
 	/** Camera boom positioning the camera behind the character */
@@ -32,6 +35,8 @@ class ACouchGame2025Character : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
+
+
 	
 #pragma region Inputs
 
@@ -59,6 +64,14 @@ class ACouchGame2025Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* UseAction;
 
+	/** Throw Left Trigger Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ThrowLeftAction;
+
+	/** Throw Right Trigger Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* ThrowRightAction;
+
 	/** Rope Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* RopeAction;
@@ -68,8 +81,13 @@ class ACouchGame2025Character : public ACharacter
 public:
 	ACouchGame2025Character();
 
+	/** Pickup Component **/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPickupComponent* PickupComponent;
+
+	/** Projectile Movement Component **/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UProjectileMovementComponent* ProjectileMovement;
 
 protected:
 
@@ -141,10 +159,31 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	bool bIsGrabbing;
 
+	UPROPERTY(VisibleAnywhere)
+	bool bIsGrabbingPlayer;
+	
+	UFUNCTION()
+	void GrabbedByOtherPlayer(ACouchGame2025Character* Other);
+
+	UFUNCTION()
+	void ThrowPlayer();
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float frontLaunchForce;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float UpLaunchForce;
+	
 private:
 
 	UFUNCTION()
 	void StopMove();
+
+	UPROPERTY(VisibleAnywhere)
+	ACouchGame2025Character* OtherPlayer;
+
+protected:
+	virtual void Interact(ACouchGame2025Character* A) override;
 	
 #pragma endregion Grab	
 };

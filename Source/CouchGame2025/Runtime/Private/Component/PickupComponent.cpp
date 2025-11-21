@@ -35,6 +35,8 @@ void UPickupComponent::BeginPlay()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "Player Is InValid");
 	}
+	
+	Params.AddIgnoredActor(Player);
 }
 
 
@@ -43,28 +45,18 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
                                      FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	
-	// if (IsGrabbingObject)
-	// {
-	// 	PhysicsHandle->SetTargetLocationAndRotation(GetComponentLocation(), GetForwardVector().Rotation());
-	// 	DrawDebugSphere(GetWorld(), GetComponentLocation(), 20, 16, FColor::Red);
-	// 	DrawDebugLine(GetWorld(), GetComponentLocation(), GetComponentLocation() + GetForwardVector() * 100, FColor::Blue);
-	// 	//passe
-	// }
 }
 
 void UPickupComponent::TryPickUp()
 {
-	if (IsValid(PickedUpObject)) {
+	if (IsValid(PickedUpObject) || IsValid(PickedUpPlayer)) {
 		return;
 	}
 
 	FHitResult* Hit = new FHitResult();
-	FVector StartLocation = GetOwner()->GetActorLocation();
+	FVector StartLocation = GetOwner()->GetActorLocation()+GetForwardVector()*100;
 	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector() * TraceLength;
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(Player);
-	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(TraceWidth));
+	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(TraceWidth)/*, Params*/);
 	
 	//GetWorld()->LineTraceSingleByChannel(*Hit, StartLocation, EndLocation, ECC_Visibility);
 	DrawDebugSphere(GetWorld(), StartLocation, TraceWidth, 8, FColor::White);
@@ -75,13 +67,22 @@ void UPickupComponent::TryPickUp()
 
 		AActor* PickedActor = Hit->GetActor();
 
+		if (PickedActor == GetOwner()) return;
+		
 		if (IInteractable* PickupObject = Cast<IInteractable>(PickedActor))
 		{
-			PickedUpObject = Cast<APickUpObject>(PickedActor);
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, Hit->GetComponent()->GetName());
-			// PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
-			// PhysicsHandle->Activate();
-			PickupObject->Interact(Player);
+			if (Cast<APickUpObject>(PickedActor))
+			{
+				PickedUpObject = Cast<APickUpObject>(PickedActor);
+				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, Hit->GetComponent()->GetName());
+				PickupObject->Interact(Player);
+			}
+			else if (Cast<ACouchGame2025Character>(PickedActor))
+			{
+				PickedUpPlayer = Cast<ACouchGame2025Character>(PickedActor);
+				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, Hit->GetComponent()->GetName());
+				PickedUpPlayer->GrabbedByOtherPlayer(Player);
+			}
 
 		} else
 		{
@@ -131,8 +132,11 @@ void UPickupComponent::StopPickUp(ACouchGame2025Character* Instigator)
 		return;
 	}
 
-	PickedUpObject->StopPickUp(Instigator);
-	PhysicsHandle->ReleaseComponent();
+	if (PickedUpObject != nullptr)
+	{
+		PickedUpObject->StopPickUp(Instigator);
+	}
+	//PhysicsHandle->ReleaseComponent();
 	PickedUpObject = nullptr;
 	IsGrabbingObject = false;
 	bCanBeReleased = false;
