@@ -86,6 +86,9 @@ protected:
 	void PolarToCartesian(float r, float theta, float phi, FVector& OutVector);
 	void CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi);
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsInverted;
+
 #pragma region Rope
 
 	/** Called to toggle rope*/

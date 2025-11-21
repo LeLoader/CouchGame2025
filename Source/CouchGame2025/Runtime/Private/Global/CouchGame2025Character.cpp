@@ -125,7 +125,14 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 	FVector NorthVector;
 	PolarToCartesian(PosR, PosTheta - 0.1f, PosPhi, NorthVector);
 	FVector EastVector;
-	PolarToCartesian(PosR, PosTheta, PosPhi - 0.1f, EastVector);
+	if (bIsInverted)
+	{
+		PolarToCartesian(PosR, PosTheta, PosPhi + 0.1f, EastVector);
+	}
+	else
+	{
+		PolarToCartesian(PosR, PosTheta, PosPhi - 0.1f, EastVector);
+	}
 	AddMovementInput(NorthVector, MovementVector.Y);
 	AddMovementInput(EastVector, MovementVector.X);
 	//const FRotator Rotation = CameraBoom->GetComponentRotation();
