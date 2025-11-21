@@ -131,7 +131,7 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	InputMovement = MovementVector;
 
-	if (Controller != nullptr && !bIsGrabbing)
+	if (Controller != nullptr /*&& !bIsGrabbing*/)
 	{
 		float PosR;
 		float PosTheta;

@@ -34,7 +34,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	FRessourceType RessourceType;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxRessourceAmount = 1.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)

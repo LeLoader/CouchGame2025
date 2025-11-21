@@ -96,8 +96,8 @@ void UPickupComponent::TryPickUp()
 			if (PickupObject->Interact(Player)) {
 				PickedUpObject = Cast<APickUpObject>(PickedActor);
 				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, CurrentInteractionTarget->GetName());
-				PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
-				PhysicsHandle->Activate();
+				//PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
+				//PhysicsHandle->Activate();
 			}
 			else {
 				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Can Not Be Picked up");
