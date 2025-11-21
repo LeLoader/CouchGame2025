@@ -13,6 +13,7 @@
 #include <CouchGame2025/Runtime/Public/Interface/Interactable.h>
 #include "Kismet/KismetMathLibrary.h"
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
+#include "ProfilingDebugging/CookStats.h"
 
 
 
@@ -20,7 +21,6 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 //////////////////////////////////////////////////////////////////////////
 // ACouchGame2025Character
-
 ACouchGame2025Character::ACouchGame2025Character()
 {
 	// Set size for collision capsule
@@ -31,6 +31,7 @@ ACouchGame2025Character::ACouchGame2025Character()
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
 	bIsGrabbing = false;
+	bIsGrabbingPlayer = false;
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
@@ -61,6 +62,8 @@ ACouchGame2025Character::ACouchGame2025Character()
 
 	PickupComponent = CreateDefaultSubobject<UPickupComponent>(TEXT("PickupComponent"));
 	PickupComponent->SetupAttachment(GetCapsuleComponent());
+
+	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -116,8 +119,8 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ToggleRopeMode);
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Canceled, this, &ACouchGame2025Character::ToggleRopeMode);
 
-		// Bridge
-		//EnhancedInputComponent->BindAction(BridgeAction, ETriggerEvent::Started, this, &AABridge::ToggleBridge);
+		// Throw Player
+		EnhancedInputComponent->BindAction(ThrowLeftAction, ETriggerEvent::Started, this, &ACouchGame2025Character::ThrowPlayer);
 	}
 	else
 	{
@@ -265,6 +268,31 @@ void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
 	}
 }
 
+void ACouchGame2025Character::GrabbedByOtherPlayer(ACouchGame2025Character* Other)
+{
+	Other->OtherPlayer = this;
+	Other->bIsGrabbingPlayer = true;
+	this->AttachToActor(
+	Other,
+	FAttachmentTransformRules(
+		EAttachmentRule::SnapToTarget,
+		EAttachmentRule::SnapToTarget,
+		EAttachmentRule::SnapToTarget,
+		true),
+		"Hand_Pos");
+	// this->AttachToComponent(
+	// 	Other->GetMesh(),
+	// 	FAttachmentTransformRules(
+	// 		EAttachmentRule::SnapToTarget,
+	// 		EAttachmentRule::SnapToTarget,
+	// 		EAttachmentRule::SnapToTarget,
+	// 		true),
+	// 		"Hand_Pos");
+	SetActorEnableCollision(false);
+	GetCharacterMovement()->SetMovementMode(MOVE_None);
+}
+
+
 void ACouchGame2025Character::StopMove()
 {
 	InputMovement = FVector2D::ZeroVector;
@@ -286,4 +314,22 @@ void ACouchGame2025Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	SceneComponent->SetWorldLocation(GetActorLocation());
+}
+void ACouchGame2025Character::Interact(ACouchGame2025Character* A)
+{
+	
+}
+	
+void ACouchGame2025Character::ThrowPlayer()
+{
+	if (OtherPlayer == nullptr) return;
+	
+	SetActorEnableCollision(true);
+	OtherPlayer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	OtherPlayer->SetActorRotation(FRotator(0, 0, 0));
+	OtherPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	//OtherPlayer->ProjectileMovement->Activate();
+
+	PickupComponent->PickedUpPlayer = nullptr;
+	OtherPlayer->bIsGrabbingPlayer = false;
 }

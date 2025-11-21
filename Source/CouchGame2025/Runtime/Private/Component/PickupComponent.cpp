@@ -36,6 +36,8 @@ void UPickupComponent::BeginPlay()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "Player Is InValid");
 	}
+	
+	Params.AddIgnoredActor(Player);
 }
 
 
@@ -83,7 +85,7 @@ void UPickupComponent::TraceToFindNearestInteractable()
 
 void UPickupComponent::TryPickUp()
 {
-	if (IsValid(PickedUpObject)) {
+	if (IsValid(PickedUpObject) || IsValid(PickedUpPlayer)) {
 		return;
 	}
 
@@ -91,6 +93,8 @@ void UPickupComponent::TryPickUp()
 	{
 		AActor* PickedActor = CurrentInteractionTarget;
 
+		if (PickedActor == GetOwner()) return;
+		
 		if (IInteractable* PickupObject = Cast<IInteractable>(PickedActor))
 		{
 			if (PickupObject->Interact(Player)) {
@@ -98,12 +102,16 @@ void UPickupComponent::TryPickUp()
 				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, CurrentInteractionTarget->GetName());
 				//PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
 				//PhysicsHandle->Activate();
+			} else if (Cast<ACouchGame2025Character>(PickedActor))
+			{
+				PickedUpPlayer = Cast<ACouchGame2025Character>(PickedActor);
+				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, Hit->GetComponent()->GetName());
+				PickedUpPlayer->GrabbedByOtherPlayer(Player);
 			}
 			else {
 				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Can Not Be Picked up");
-			}
-		}
-		else
+			} 
+		} else
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Cannot be interacted with");
 		}
@@ -150,8 +158,11 @@ void UPickupComponent::StopPickUp(ACouchGame2025Character* Instigator)
 		return;
 	}
 
-	PickedUpObject->StopPickUp(Instigator);
-	PhysicsHandle->ReleaseComponent();
+	if (PickedUpObject != nullptr)
+	{
+		PickedUpObject->StopPickUp(Instigator);
+	}
+	//PhysicsHandle->ReleaseComponent();
 	PickedUpObject = nullptr;
 	IsGrabbingObject = false;
 	bCanBeReleased = false;
