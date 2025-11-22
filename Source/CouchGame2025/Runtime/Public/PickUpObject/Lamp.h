@@ -21,7 +21,7 @@ public:
 	ALamp();
 	void Tick(float DeltaTime) override;
 	virtual void StartPickUp(ACouchGame2025Character* Player);
-	virtual void StopPickUp();
+	virtual void StopPickUp(ACouchGame2025Character* Player);
 
 	void StartUse() override;
 	void Use() override;
