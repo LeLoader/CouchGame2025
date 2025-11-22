@@ -143,7 +143,14 @@ void ACouchCameraActor::Move(FVector2D Input)
 	float Theta = 0.f;
 	float Phi = 0.f;
 	CartesianToPolar(GetActorLocation(), R, Theta, Phi);
-	Theta -= Input.Y * PI / 180;
+	if (bisInverted)
+	{
+		Theta += Input.Y * PI / 180;
+	}
+	else
+	{
+		Theta -= Input.Y * PI / 180;
+	}
 	Theta = FMath::Clamp(Theta, 0.1f, PI - 0.1f);
 	Phi += Input.X * PI / 180;
 	FVector NewPosition;
@@ -158,8 +165,16 @@ void ACouchCameraActor::Zoom(float Input)
 	float Theta = 0.f;
 	float Phi = 0.f;
 	CartesianToPolar(GetActorLocation(), R, Theta, Phi);
-	R -= Input * 50.f;
-	R = FMath::Clamp(R, 7000.f, 9000.f);
+	if (bisInverted)
+	{
+		R += Input * 50.f;
+		R = FMath::Clamp(R, 2500.f, 3500.f);	
+	}
+	else
+	{
+		R -= Input * 50.f;
+		R = FMath::Clamp(R, 7000.f, 9000.f);
+	}
 	FVector NewPosition;
 	PolarToCartesian(R, Theta, Phi, NewPosition);
 	SetActorLocation(NewPosition);
@@ -189,11 +204,18 @@ void ACouchCameraActor::InvertCamera()
 	float Theta;
 	float Phi;
 	CartesianToPolar(GetActorLocation(), R, Theta, Phi);
-	R = 3000.f;
+	if (bisInverted)
+	{
+		R = 8000.f;
+	}
+	else
+	{
+		R = 3000.f;
+	}
 	FVector NewPosition;
 	PolarToCartesian(R, Theta, Phi, NewPosition);
 	SetActorLocation(NewPosition);
-	InvertLookAt = !InvertLookAt;
+	bisInverted = !bisInverted;
 }
 
 //{
