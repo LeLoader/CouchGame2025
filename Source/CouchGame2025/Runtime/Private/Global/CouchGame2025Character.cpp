@@ -191,6 +191,11 @@ void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 	bIsRopeFree = !bIsRopeFree;
 }
 
+void ACouchGame2025Character::AddWater(float AddedWaterAmount)
+{
+	CurrentWaterAmount = FMath::Clamp(CurrentWaterAmount + AddedWaterAmount, 0, MaxWaterAmount);
+}
+
 void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
 {
 	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Emerald, TEXT("moving but grabbing"));
@@ -243,9 +248,9 @@ void ACouchGame2025Character::StopMove()
 	InputMovement = FVector2D::ZeroVector;
 }
 
-bool ACouchGame2025Character::Interact(ACouchGame2025Character* A)
+void ACouchGame2025Character::Interact(ACouchGame2025Character* A)
 {
-	return false;
+	
 }
 	
 void ACouchGame2025Character::ThrowPlayer()

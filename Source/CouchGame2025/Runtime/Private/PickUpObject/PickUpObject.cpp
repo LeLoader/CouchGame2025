@@ -35,7 +35,7 @@ void APickUpObject::BeginPlay()
 
 bool APickUpObject::Interact(ACouchGame2025Character* Player)
 {
-	if (Player == nullptr) return false;
+	if (Player == nullptr) return;
 
 	if (!NeedsTwoPlayersToBePickedUp)
 	{
@@ -85,7 +85,7 @@ bool APickUpObject::Interact(ACouchGame2025Character* Player)
 				"Hand_Pos");
 		}
 	}
-	return true;
+	
 }
 
 void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {

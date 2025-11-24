@@ -82,9 +82,9 @@ void ALamp::StartPickUp(ACouchGame2025Character* Player)
 	Super::StartPickUp(Player);
 }
 
-void ALamp::StopPickUp(ACouchGame2025Character* Player)
+void ALamp::StopPickUp()
 {
-	Super::StopPickUp(Player);
+	Super::StopPickUp();
 
 	DisableLamp();
 }
