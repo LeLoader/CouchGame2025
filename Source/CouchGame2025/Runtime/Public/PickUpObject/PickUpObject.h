@@ -42,9 +42,6 @@ public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AActor> Socket;
 
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	bool bCanBePickedUp = true;
 
 #pragma region MultiPlayerHolding
 
