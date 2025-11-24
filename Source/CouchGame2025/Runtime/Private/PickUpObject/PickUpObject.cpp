@@ -96,6 +96,7 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	
 	Interactor = Player;
 	Interactor->bIsGrabbing = true;
+	PlayersHolding.Add(Player);
 	this->AttachToComponent(
 		Player->GetMesh(),
 		FAttachmentTransformRules
@@ -114,7 +115,7 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 
 void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 {
-	if (PlayersHolding.Num() < 2)
+	if (PlayersHolding.Num() < 2 && PlayersHolding.Num() > 0)
 	{
 		PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		PlayersHolding[0]->bIsGrabbing = false;

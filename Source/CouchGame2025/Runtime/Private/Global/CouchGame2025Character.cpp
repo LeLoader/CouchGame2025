@@ -131,18 +131,26 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	InputMovement = MovementVector;
 
-	if (Controller != nullptr && !bIsGrabbing)
+	if (Controller != nullptr /*&& !bIsGrabbing*/)
 	{
-		float PosR;
-		float PosTheta;
-		float PosPhi;
-		CartesianToPolar(GetActorLocation(), PosR, PosTheta, PosPhi);
-		FVector NorthVector;
-		PolarToCartesian(PosR, PosTheta - 0.1f, PosPhi, NorthVector);
-		FVector EastVector;
+			GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, TEXT("moving"));
+	float PosR;
+	float PosTheta;
+	float PosPhi;
+	CartesianToPolar(GetActorLocation(), PosR, PosTheta, PosPhi);
+	FVector NorthVector;
+	PolarToCartesian(PosR, PosTheta - 0.1f, PosPhi, NorthVector);
+	FVector EastVector;
+	if (bIsInverted)
+	{
+		PolarToCartesian(PosR, PosTheta, PosPhi + 0.1f, EastVector);
+	}
+	else
+	{
 		PolarToCartesian(PosR, PosTheta, PosPhi - 0.1f, EastVector);
-		AddMovementInput(NorthVector, MovementVector.Y);
-		AddMovementInput(EastVector, MovementVector.X);
+	}
+	AddMovementInput(NorthVector, MovementVector.Y);
+	AddMovementInput(EastVector, MovementVector.X);
 	}
 
 	//const FRotator Rotation = CameraBoom->GetComponentRotation();
