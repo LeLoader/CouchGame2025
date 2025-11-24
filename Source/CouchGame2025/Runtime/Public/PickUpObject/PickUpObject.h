@@ -42,7 +42,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AActor> Socket;
 
-
+protected:
+	bool bCanBePickedUp = true;
 #pragma region MultiPlayerHolding
 
 public:

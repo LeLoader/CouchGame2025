@@ -56,8 +56,7 @@ void UPickupComponent::TryPickUp()
 	FHitResult* Hit = new FHitResult();
 	FVector StartLocation = GetOwner()->GetActorLocation()+GetForwardVector()*100;
 	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector() * TraceLength;
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(Player);
+
 	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(TraceWidth));
 
 	//GetWorld()->LineTraceSingleByChannel(*Hit, StartLocation, EndLocation, ECC_Visibility);
@@ -87,10 +86,6 @@ void UPickupComponent::TryPickUp()
 			}
 
 		} else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Can Not Be Picked up");
-		}
-		else
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Cannot be interacted with");
 		}

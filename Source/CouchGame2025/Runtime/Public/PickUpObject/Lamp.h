@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "PickUpObject.h"
 #include "CouchGame2025/Runtime/Public/Interface/Usable.h"
+#include "Global/CouchGame2025Character.h"
 #include "Lamp.generated.h"
 
 class IBurnable;
@@ -21,7 +22,7 @@ public:
 	ALamp();
 	void Tick(float DeltaTime) override;
 	virtual void StartPickUp(ACouchGame2025Character* Player);
-	virtual void StopPickUp();
+	virtual void StopPickUp(ACouchGame2025Character* Player);
 
 	void StartUse() override;
 	void Use() override;
