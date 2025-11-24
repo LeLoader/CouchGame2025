@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "CouchGame2025/Runtime/Public/PickUpObject/PickUpObject.h"
+#include "PickUpObject/PickUpObject.h"
 
 #include <string>
 
@@ -33,7 +33,7 @@ void APickUpObject::BeginPlay()
 	bIsGrabbedByBoth = false;
 }
 
-void APickUpObject::Interact(ACouchGame2025Character* Player)
+bool APickUpObject::Interact(ACouchGame2025Character* Player)
 {
 	if (Player == nullptr) return;
 
