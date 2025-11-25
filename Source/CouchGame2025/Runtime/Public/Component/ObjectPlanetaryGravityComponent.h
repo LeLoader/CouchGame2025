@@ -19,7 +19,7 @@ public:
     FVector PlanetCenter = FVector::ZeroVector;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Gravity")
-    float GravityForce = 981.0f;
+    float GravityForce = 5000.0f;
 
 protected:
     void ApplyGravity();

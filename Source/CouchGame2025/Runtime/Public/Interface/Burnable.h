@@ -7,9 +7,6 @@
 
 #include "Burnable.generated.h"
 
-class ACouchGame2025Character;
-class UBurnComponent;
-
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UBurnable : public UInterface
@@ -26,7 +23,6 @@ class COUCHGAME2025_API IBurnable
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	virtual void Burn(float DeltaTime) = 0;
-	virtual UBurnComponent* GetBurnComponent() = 0;
-
+	
+	virtual void Burn() = 0;
 };

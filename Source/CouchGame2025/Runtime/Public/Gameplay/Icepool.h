@@ -8,9 +8,9 @@
 
 #include "Icepool.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnElementUpdatedSignature, float, IceAmount, float, WaterAmount);
+
 class UBoxComponent;
-class ACouchGame2025Character;
-class URessourceContainerComponent;
 
 UCLASS(Blueprintable)
 class COUCHGAME2025_API AIcepool : public AActor, public IBurnable
@@ -21,34 +21,33 @@ protected:
 	AIcepool();
 
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY()
 	UBoxComponent* WaterTriggerBox;
-
-	UPROPERTY(EditAnywhere)
-	UBurnComponent* BurnComponent;
 
 	UFUNCTION()
 	void OnWaterBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION()
-	void OnWaterBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	URessourceContainerComponent* WaterContainer;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	URessourceContainerComponent* IceContainer;
-
-// Start of IBurnable implementation
 
 public:
 	UFUNCTION(BlueprintCallable)
-	virtual void Burn(float DeltaTime) override;
+	virtual void Burn() override;
 
-	UFUNCTION(BlueprintCallable)
-	UBurnComponent* GetBurnComponent() override;
+	UPROPERTY(BlueprintAssignable)
+	FOnElementUpdatedSignature OnElementUpdated;
 
-// End of IBurnable implementation
+protected:
+	void StartGatherWater();
 
+	UFUNCTION(BlueprintCallable, Category = "Icepool")
+	float GatherWater(float MaxGatheredWater);
+
+	void ElementUpdated();
+
+	UPROPERTY(VisibleAnywhere, Category = "Icepool")
+	float IceAmount = 1;
+
+	UPROPERTY(VisibleAnywhere, Category = "Icepool")
+	float WaterAmount = 0;
 };

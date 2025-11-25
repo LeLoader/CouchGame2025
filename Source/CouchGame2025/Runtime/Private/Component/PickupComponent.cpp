@@ -20,7 +20,7 @@ UPickupComponent::UPickupComponent()
 	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName("PhysicsHandle"), true);
 	
 	//PhysicsHandle->AddToRoot();
-
+	
 	// ...
 }
 
@@ -42,7 +42,7 @@ void UPickupComponent::BeginPlay()
 
 // Called every frame
 void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-	FActorComponentTickFunction* ThisTickFunction)
+                                     FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
@@ -56,13 +56,11 @@ void UPickupComponent::TryPickUp()
 	FHitResult* Hit = new FHitResult();
 	FVector StartLocation = GetOwner()->GetActorLocation()+GetForwardVector()*100;
 	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector() * TraceLength;
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(Player);
-	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(TraceWidth));
-
+	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(TraceWidth)/*, Params*/);
+	
 	//GetWorld()->LineTraceSingleByChannel(*Hit, StartLocation, EndLocation, ECC_Visibility);
 	DrawDebugSphere(GetWorld(), StartLocation, TraceWidth, 8, FColor::White);
-
+	
 	if (Hit->bBlockingHit == true && IsValid(Hit->GetActor()))
 	{
 		DrawDebugSphere(GetWorld(), Hit->Location, TraceWidth, 8, FColor::Green);
@@ -90,12 +88,8 @@ void UPickupComponent::TryPickUp()
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Can Not Be Picked up");
 		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Cannot be interacted with");
-		}
-	}
-	else
+		
+	} else
 	{
 		DrawDebugSphere(GetWorld(), EndLocation, TraceWidth, 8, FColor::Red);
 
