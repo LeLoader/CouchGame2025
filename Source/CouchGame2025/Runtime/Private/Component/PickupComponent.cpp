@@ -63,7 +63,6 @@ void UPickupComponent::TraceToFindNearestInteractable()
 	FHitResult* Hit = new FHitResult();
 	FVector StartLocation = GetOwner()->GetActorLocation();
 	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector() * TraceLength;
-	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(Player);
 	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Interactable, FCollisionShape::MakeSphere(TraceWidth));
 
@@ -105,7 +104,6 @@ void UPickupComponent::TryPickUp()
 			} else if (Cast<ACouchGame2025Character>(PickedActor))
 			{
 				PickedUpPlayer = Cast<ACouchGame2025Character>(PickedActor);
-				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Blue, Hit->GetComponent()->GetName());
 				PickedUpPlayer->GrabbedByOtherPlayer(Player);
 			}
 			else {

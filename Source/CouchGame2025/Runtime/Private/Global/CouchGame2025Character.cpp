@@ -315,9 +315,9 @@ void ACouchGame2025Character::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	SceneComponent->SetWorldLocation(GetActorLocation());
 }
-void ACouchGame2025Character::Interact(ACouchGame2025Character* A)
+bool ACouchGame2025Character::Interact(ACouchGame2025Character* A)
 {
-	
+	return false;
 }
 	
 void ACouchGame2025Character::ThrowPlayer()

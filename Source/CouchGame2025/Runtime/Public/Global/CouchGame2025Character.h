@@ -92,9 +92,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	bool bHidePickupComponent;
-	/** Pickup Component **/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UPickupComponent* PickupComponent;
 
 	/** Projectile Movement Component **/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -194,7 +191,7 @@ private:
 	ACouchGame2025Character* OtherPlayer;
 
 protected:
-	virtual void Interact(ACouchGame2025Character* A) override;
+	virtual bool Interact(ACouchGame2025Character* A) override;
 	
 #pragma endregion Grab	
 };
