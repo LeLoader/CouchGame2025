@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Logging/LogMacros.h"
+#include "Component/RessourceContainerComponent.h"
+#include "Interface/CameraFollowable.h"
 #include "CouchGame2025Character.generated.h"
 
 class UPickupComponent;
@@ -17,17 +19,17 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ACouchGame2025Character : public ACharacter
+class ACouchGame2025Character : public ACharacter, public ICameraFollowable
 {
 	GENERATED_BODY()
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USceneComponent* CameraBoomRoot;
-
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
+
+	/** Scene component for relative rotation of camera*/
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	USceneComponent* SceneComponent;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -51,23 +53,38 @@ class ACouchGame2025Character : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
 
-	/** Look Input Action */
+	/** Interact Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* InteractAction;
 
-	/** Look Input Action */
+	/** Use Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* UseAction;
+
+	/** Rope Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* RopeAction;
+
+	/** Bridge Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* BridgeAction;
 
 #pragma endregion Inputs
 
 public:
 	ACouchGame2025Character();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition = "bHidePickupComponent", EditConditionHides))
 	UPickupComponent* PickupComponent;
 
+	UPROPERTY(EditDefaultsOnly)
+	bool bHidePickupComponent;
+
 protected:
+
+	virtual void BeginPlay() override;
+
+	virtual void Tick(float DeltaTime) override;
 
 	/** Called for movement */
 	void Move(const FInputActionValue& Value);
@@ -77,6 +94,12 @@ protected:
 	
 	/** Called for interacting */
 	void Interact(const FInputActionValue& Value);
+
+	void PolarToCartesian(float r, float theta, float phi, FVector& OutVector);
+	void CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi);
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsInverted;
 
 #pragma region Rope
 
@@ -99,10 +122,39 @@ protected:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	virtual FVector GetFollowPosition() override;
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+#pragma region Water
+
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	URessourceContainerComponent* WaterTank;
+
+#pragma endregion Water
+
+#pragma region Grab
+
+public:	
+	UFUNCTION()
+	void MoveWhenGrabbing(FVector2D Movement);
+
+	UPROPERTY()
+	FVector2D InputMovement;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsGrabbing;
+
+private:
+
+	UFUNCTION()
+	void StopMove();
+	
+#pragma endregion Grab	
 };
 

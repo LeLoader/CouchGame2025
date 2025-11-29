@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
 #include "GameFramework/Actor.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "PickUpObject.generated.h"
 
 UCLASS()
@@ -16,14 +17,22 @@ public:
 	// Sets default values for this actor's properties
 	APickUpObject();
 
-	virtual void Interact(ACouchGame2025Character* Player) override;
+	bool Interact(ACouchGame2025Character* Player) override;
 
-	void StopPickUp();
+	UFUNCTION(BlueprintCallable)
+	virtual void StartPickUp(ACouchGame2025Character* Player);
+
+	UFUNCTION(BlueprintCallable)
+	void StopPickUp(ACouchGame2025Character* Player);
+	
+	UPROPERTY()
+	ACouchGame2025Character* Interactor;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* Mesh;
 
 public:
@@ -33,7 +42,35 @@ public:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<AActor> Socket;
 
-private:
+protected:
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	bool bCanBePickedUp = true;
+
+#pragma region MultiPlayerHolding
+
+public:
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool NeedsTwoPlayersToBePickedUp;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsAPlayerHolding;
+
 	UPROPERTY()
-	ACouchGame2025Character* Interactor;
+	bool bIsPickedUp;
+
+private:
+
+	UPROPERTY()
+	TArray<ACouchGame2025Character*> PlayersHolding;
+
+	UFUNCTION()
+	void ReleaseObjectFromOnePlayer(ACouchGame2025Character* PlayerReleasing);
+
+	UPROPERTY()
+	bool bIsGrabbedByBoth;
+
+	UPROPERTY()
+	FVector2D PlayersAverageInput;
+#pragma endregion
 };

@@ -6,7 +6,10 @@
 #include "KismetTraceUtils.h"
 #include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
 #include "CouchGame2025/Runtime/Public/PickUpObject/PickUpObject.h"
+#include <CouchGame2025/Runtime/Public/Interface/Usable.h>
+#include <Logging/StructuredLog.h>
 
+#define ECC_Interactable ECC_GameTraceChannel2
 
 // Sets default values for this component's properties
 UPickupComponent::UPickupComponent()
@@ -15,9 +18,10 @@ UPickupComponent::UPickupComponent()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName("PhysicsHandle"));
-	//PhysicsHandle->AddToRoot();
+	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName("PhysicsHandle"), true);
 	
+	//PhysicsHandle->AddToRoot();
+
 	// ...
 }
 
@@ -37,61 +41,119 @@ void UPickupComponent::BeginPlay()
 
 // Called every frame
 void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
-                                     FActorComponentTickFunction* ThisTickFunction)
+	FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (IsGrabbingObject)
+	TraceToFindNearestInteractable();
+	
+	// if (IsGrabbingObject)
+	// {
+	// 	PhysicsHandle->SetTargetLocationAndRotation(GetComponentLocation(), GetForwardVector().Rotation());
+	// 	DrawDebugSphere(GetWorld(), GetComponentLocation(), 20, 16, FColor::Red);
+	// 	DrawDebugLine(GetWorld(), GetComponentLocation(), GetComponentLocation() + GetForwardVector() * 100, FColor::Blue);
+	// 	//passe
+	// }
+}
+
+void UPickupComponent::TraceToFindNearestInteractable()
+{
+	FHitResult* Hit = new FHitResult();
+	FVector StartLocation = GetOwner()->GetActorLocation();
+	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector() * TraceLength;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(Player);
+	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Interactable, FCollisionShape::MakeSphere(TraceWidth));
+
+	if (Hit->bBlockingHit == true && IsValid(Hit->GetActor()))
 	{
-		PhysicsHandle->SetTargetLocation(GetComponentLocation());
-		//passe
+		if (CurrentInteractionTarget != Hit->GetActor()){
+			OnNewInteractionTarget.Broadcast(Hit->GetActor(), CurrentInteractionTarget);
+		}
+		CurrentInteractionTarget = Hit->GetActor();
+	}
+	else
+	{
+		if (IsValid(CurrentInteractionTarget)) {
+			OnNewInteractionTarget.Broadcast(nullptr, CurrentInteractionTarget);
+		}
+		CurrentInteractionTarget = nullptr;
 	}
 }
 
 void UPickupComponent::TryPickUp()
 {
-	FHitResult* Hit = new FHitResult();
-	FVector StartLocation = GetOwner()->GetActorLocation();
-	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector()*250;
-	
-	GetWorld()->LineTraceSingleByChannel(*Hit, StartLocation, EndLocation, ECC_Visibility);
-	
-	if (Hit->bBlockingHit == true && IsValid(Hit->GetActor()))
-	{
-		DrawDebugLine(GetWorld(), StartLocation, Hit->Location, FColor::Red);
-		DrawDebugSphere(GetWorld(), Hit->Location, 5, 5, FColor::Red);
+	if (IsValid(PickedUpObject)) {
+		return;
+	}
 
-		AActor* PickedActor = Hit->GetActor();
+	if (CurrentInteractionTarget != nullptr)
+	{
+		AActor* PickedActor = CurrentInteractionTarget;
 
 		if (IInteractable* PickupObject = Cast<IInteractable>(PickedActor))
 		{
-			PickedUpObject = Cast<APickUpObject>(PickedActor);
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, Hit->GetComponent()->GetName());
-			PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
-			
-			PickupObject->Interact(Player);
-		} else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Can Not Be Picked up");
+			if (PickupObject->Interact(Player)) {
+				PickedUpObject = Cast<APickUpObject>(PickedActor);
+				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, CurrentInteractionTarget->GetName());
+				//PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
+				//PhysicsHandle->Activate();
+			}
+			else {
+				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Can Not Be Picked up");
+			}
 		}
-		
-	} else
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Cannot be interacted with");
+		}
+	}
+	else
 	{
-		DrawDebugLine(GetWorld(), StartLocation, EndLocation, FColor::Red);
-		DrawDebugSphere(GetWorld(), EndLocation, 5, 5, FColor::White);
+
 		GEngine->AddOnScreenDebugMessage(
 			-1,
 			3.f,
 			FColor::Cyan,
 			TEXT("Not Found"));
 	}
-	
 }
-void UPickupComponent::StopPickUp()
+
+void UPickupComponent::StartUse() {
+	if (IUsable* UsableObject = Cast<IUsable>(PickedUpObject)) {
+		UsableObject->StartUse();
+	}
+}
+
+void UPickupComponent::Use() {
+	if (IUsable* UsableObject = Cast<IUsable>(PickedUpObject)) {
+		UsableObject->Use();
+	}
+}
+
+void UPickupComponent::StopUse() {
+	if (IUsable* UsableObject = Cast<IUsable>(PickedUpObject)) {
+		UsableObject->StopUse();
+	}
+}
+
+void UPickupComponent::HandleInputCompleted(ACouchGame2025Character* Instigator) {
+	if (!bCanBeReleased)
+		bCanBeReleased = true;
+
+	StopPickUp(Instigator);
+}
+
+void UPickupComponent::StopPickUp(ACouchGame2025Character* Instigator)
 {
-	if (PickedUpObject == nullptr) return;
-	PickedUpObject->StopPickUp();
+	if (!IsValid(PickedUpObject) || !bCanBeReleased) {
+		return;
+	}
+
+	PickedUpObject->StopPickUp(Instigator);
 	PhysicsHandle->ReleaseComponent();
+	PickedUpObject = nullptr;
 	IsGrabbingObject = false;
+	bCanBeReleased = false;
 }
 

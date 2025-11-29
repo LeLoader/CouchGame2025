@@ -11,8 +11,10 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include <CouchGame2025/Runtime/Public/Interface/Interactable.h>
-
+#include "Kismet/KismetMathLibrary.h"
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
+
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -28,6 +30,7 @@ ACouchGame2025Character::ACouchGame2025Character()
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
+	bIsGrabbing = false;
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
@@ -42,15 +45,14 @@ ACouchGame2025Character::ACouchGame2025Character()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoomRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraBoomRoot"));
-	CameraBoomRoot->SetupAttachment(RootComponent);
+	SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Scene component"));
+	SceneComponent->SetupAttachment(RootComponent);
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(CameraBoomRoot);
+	CameraBoom->SetupAttachment(SceneComponent);
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	CameraBoom->bUsePawnControlRotation = false; // Rotate the arm based on the controller
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -62,6 +64,9 @@ ACouchGame2025Character::ACouchGame2025Character()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+
+	WaterTank = CreateDefaultSubobject<URessourceContainerComponent>(TEXT("WaterTank"));
+	WaterTank->SetRessourceType(FRessourceType::WATER);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -92,19 +97,27 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::StopMove);
 
 		// Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Look);
+		//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Look);
 
-		// Pickup
+		// Pickup & release
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::TryPickUp);
-		//EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Triggered, PickupComponent, &UPickupComponent::TryPickUp);
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::StopPickUp);
+		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::HandleInputCompleted, this);
+
+		// Use (Move everything in a specific imc that's added on pickup
+		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::StartUse);
+		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Triggered, PickupComponent, &UPickupComponent::Use);
+		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::StopUse);
 
 		// Rope
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Started, this, &ACouchGame2025Character::ToggleRopeMode);
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ToggleRopeMode);
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Canceled, this, &ACouchGame2025Character::ToggleRopeMode);
+
+		// Bridge
+		//EnhancedInputComponent->BindAction(BridgeAction, ETriggerEvent::Started, this, &AABridge::ToggleBridge);
 	}
 	else
 	{
@@ -116,41 +129,96 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
-	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, TEXT("moving"));
+	InputMovement = MovementVector;
 
-	if (Controller != nullptr)
+	if (Controller != nullptr /*&& !bIsGrabbing*/)
 	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		//const FRotator YawRotation(Rotation.Roll, Rotation.Yaw, Rotation.Pitch);
-		const FRotator YawRotation(Rotation);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
-
+			GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, TEXT("moving"));
+	float PosR;
+	float PosTheta;
+	float PosPhi;
+	CartesianToPolar(GetActorLocation(), PosR, PosTheta, PosPhi);
+	FVector NorthVector;
+	PolarToCartesian(PosR, PosTheta - 0.1f, PosPhi, NorthVector);
+	FVector EastVector;
+	if (bIsInverted)
+	{
+		PolarToCartesian(PosR, PosTheta, PosPhi + 0.1f, EastVector);
 	}
+	else
+	{
+		PolarToCartesian(PosR, PosTheta, PosPhi - 0.1f, EastVector);
+	}
+	AddMovementInput(NorthVector, MovementVector.Y);
+	AddMovementInput(EastVector, MovementVector.X);
+	}
+
+	//const FRotator Rotation = CameraBoom->GetComponentRotation();
+	//FRotator RotationToAdd = (CameraBoom->GetUpVector() - GetActorUpVector()).Rotation();
+	//FRotator FinalRotation = Rotation + RotationToAdd;
+	////const FRotator YawRotation(0.f, FinalRotation.Yaw, 0.f);
+	//const FVector ForwardDirection = FRotationMatrix(FinalRotation).GetUnitAxis(EAxis::X);
+	//const FVector RightDirection = FRotationMatrix(FinalRotation).GetUnitAxis(EAxis::Y);
+	//AddMovementInput(ForwardDirection, MovementVector.Y);
+	//AddMovementInput(RightDirection, MovementVector.X);
+	//if (Controller != nullptr)
+	//{
+	//	// find out which way is forward
+	//	const FRotator Rotation = Controller->GetControlRotation();
+	//	
+	//	FRotator RotationToAdd = (GetActorUpVector() - FVector::UpVector).Rotation();
+	//	FRotator FinalRotation = Rotation + RotationToAdd;
+	//	const FRotator YawRotation(0.f, FinalRotation.Yaw, 0.f);
+	//	//const FRotator YawRotation(Rotation);
+	//
+	//	// get forward vector
+	//	const FVector ForwardDirection = FRotationMatrix(Rotation).GetUnitAxis(EAxis::X);
+	//
+	//	// get right vector 
+	//	const FVector RightDirection = FRotationMatrix(Rotation).GetUnitAxis(EAxis::Y);
+	//
+	//	// add movement 
+	//	AddMovementInput(ForwardDirection, MovementVector.Y);
+	//	AddMovementInput(RightDirection, MovementVector.X);
+	//
+	//}
+}
+
+void ACouchGame2025Character::PolarToCartesian(float r, float theta, float phi, FVector& OutVector)
+{
+	OutVector.X = r * FMath::Sin(theta) * FMath::Cos(phi);
+	OutVector.Y = r * FMath::Sin(theta) * FMath::Sin(phi);
+	OutVector.Z = r * FMath::Cos(theta);
+}
+
+void ACouchGame2025Character::CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi)
+{
+	OutR = Vector.Length();
+	OutTheta = FMath::Acos(Vector.Z / OutR);
+	OutPhi = FMath::Atan2(Vector.Y, Vector.X);
 }
 
 void ACouchGame2025Character::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-
-	if (Controller != nullptr)
-	{
-		// add yaw and pitch input to controller
-		// 
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
-	}
+	FRotator NewRotation = SceneComponent->GetRelativeRotation();
+	NewRotation.Pitch -= LookAxisVector.Y;
+	NewRotation.Yaw += LookAxisVector.X;
+	SceneComponent->SetRelativeRotation(NewRotation);
+	Controller->SetControlRotation(NewRotation);
+	FVector Up = GetActorLocation();
+	Up.Normalize();
+	FVector Forward = SceneComponent->GetForwardVector();
+	FRotator Rotation = UKismetMathLibrary::MakeRotFromXZ(Forward, Up);
+	SceneComponent->SetWorldRotation(Rotation);
+	
+	//if (Controller != nullptr)
+	//{
+	//	// add yaw and pitch input to controller
+	//	AddControllerYawInput(LookAxisVector.X);
+	//	AddControllerPitchInput(LookAxisVector.Y);
+	//}
 }
 
 void ACouchGame2025Character::Interact(const FInputActionValue& Value)
@@ -173,4 +241,49 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
 	bIsRopeFree = !bIsRopeFree;
+}
+
+void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
+{
+	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Emerald, TEXT("moving but grabbing"));
+	if (Controller != nullptr)
+	{
+		// find out which way is forward
+		const FRotator Rotation = Controller->GetControlRotation();
+		//const FRotator YawRotation(Rotation.Roll, Rotation.Yaw, Rotation.Pitch);
+		const FRotator YawRotation(Rotation);
+
+		// get forward vector
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+	
+		// get right vector 
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		// add movement 
+		AddMovementInput(ForwardDirection, Movement.Y);
+		AddMovementInput(RightDirection, Movement.X);
+	}
+}
+
+void ACouchGame2025Character::StopMove()
+{
+	InputMovement = FVector2D::ZeroVector;
+}
+
+FVector ACouchGame2025Character::GetFollowPosition()
+{
+	return GetActorLocation();
+}
+
+void ACouchGame2025Character::BeginPlay()
+{
+	Super::BeginPlay();
+	FDetachmentTransformRules rules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+	SceneComponent->DetachFromComponent(rules);
+}
+
+void ACouchGame2025Character::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	SceneComponent->SetWorldLocation(GetActorLocation());
 }

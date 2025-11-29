@@ -33,7 +33,15 @@
 		{
 			"Name": "HDRIBackdrop",
 			"Enabled": true
-		}
+		},
+		{
+			"Name": "CommonUI",
+			"Enabled": true
+		},
+		{
+			"Name": "NiagaraFluids",
+			"Enabled": true
+		},
 	],
 	"AdditionalPluginDirectories": [
 		"Source"
