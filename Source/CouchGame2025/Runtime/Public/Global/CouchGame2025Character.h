@@ -169,12 +169,37 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsGrabbingPlayer;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsAnyThrowTriggerToggled;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bAreBothTriggerToggled;
+	
 	
 	UFUNCTION()
 	void GrabbedByOtherPlayer(ACouchGame2025Character* Other);
 
+	// UFUNCTION()
+	// void UpdateLeftTrigger();
+	//
+	// UPROPERTY()
+	// bool bIsLeft
+	//
+	// UFUNCTION()
+	// void UpdateRightTrigger();
+
+	UFUNCTION()
+	void ReleaseTrigger();
+	
+	UFUNCTION()
+	void CheckForThrowPlayer();
+	
 	UFUNCTION()
 	void ThrowPlayer();
+
+	UFUNCTION()
+	void StopThrow();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float frontLaunchForce;

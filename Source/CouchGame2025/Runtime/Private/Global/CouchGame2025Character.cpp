@@ -32,6 +32,8 @@ ACouchGame2025Character::ACouchGame2025Character()
 	bUseControllerRotationRoll = false;
 	bIsGrabbing = false;
 	bIsGrabbingPlayer = false;
+	bIsAnyThrowTriggerToggled = false;
+	bAreBothTriggerToggled = false;
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
@@ -120,7 +122,10 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Canceled, this, &ACouchGame2025Character::ToggleRopeMode);
 
 		// Throw Player
-		EnhancedInputComponent->BindAction(ThrowLeftAction, ETriggerEvent::Started, this, &ACouchGame2025Character::ThrowPlayer);
+		EnhancedInputComponent->BindAction(ThrowLeftAction, ETriggerEvent::Started, this, &ACouchGame2025Character::CheckForThrowPlayer);
+		EnhancedInputComponent->BindAction(ThrowRightAction, ETriggerEvent::Started, this, &ACouchGame2025Character::CheckForThrowPlayer);
+		EnhancedInputComponent->BindAction(ThrowLeftAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ReleaseTrigger);
+		EnhancedInputComponent->BindAction(ThrowRightAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ReleaseTrigger);
 	}
 	else
 	{
@@ -272,26 +277,25 @@ void ACouchGame2025Character::GrabbedByOtherPlayer(ACouchGame2025Character* Othe
 {
 	Other->OtherPlayer = this;
 	Other->bIsGrabbingPlayer = true;
-	this->AttachToActor(
-	Other,
-	FAttachmentTransformRules(
-		EAttachmentRule::SnapToTarget,
-		EAttachmentRule::SnapToTarget,
-		EAttachmentRule::SnapToTarget,
-		true),
-		"Hand_Pos");
-	// this->AttachToComponent(
-	// 	Other->GetMesh(),
-	// 	FAttachmentTransformRules(
-	// 		EAttachmentRule::SnapToTarget,
-	// 		EAttachmentRule::SnapToTarget,
-	// 		EAttachmentRule::SnapToTarget,
-	// 		true),
-	// 		"Hand_Pos");
-	SetActorEnableCollision(false);
+	//SetActorEnableCollision(false);
+	// this->AttachToActor(
+	// Other,
+	// FAttachmentTransformRules(
+	// 	EAttachmentRule::SnapToTarget,
+	// 	EAttachmentRule::SnapToTarget,
+	// 	EAttachmentRule::SnapToTarget,
+	// 	true),
+	// 	"Throw_Pos");
+	this->AttachToComponent(
+		Other->GetMesh(),
+		FAttachmentTransformRules(
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			true),
+			"Throw_Pos");
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
 }
-
 
 void ACouchGame2025Character::StopMove()
 {
@@ -315,20 +319,55 @@ void ACouchGame2025Character::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	SceneComponent->SetWorldLocation(GetActorLocation());
 }
+
 bool ACouchGame2025Character::Interact(ACouchGame2025Character* A)
 {
 	return false;
+}
+
+void ACouchGame2025Character::CheckForThrowPlayer()
+{
+	if (bIsAnyThrowTriggerToggled)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("2"));
+		bAreBothTriggerToggled = true;
+		ThrowPlayer();
+	} else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("1"));
+		bIsAnyThrowTriggerToggled = true;
+	}
+}
+
+void ACouchGame2025Character::ReleaseTrigger()
+{
+	if (bAreBothTriggerToggled)
+	{
+		bAreBothTriggerToggled = false;
+	} else
+	{
+		bIsAnyThrowTriggerToggled = false;
+	}
+}
+
+void ACouchGame2025Character::StopThrow()
+{
+	if (bIsAnyThrowTriggerToggled)
+	{
+		
+	}
 }
 	
 void ACouchGame2025Character::ThrowPlayer()
 {
 	if (OtherPlayer == nullptr) return;
-	
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Magenta, TEXT("Throwing player"));
 	SetActorEnableCollision(true);
 	OtherPlayer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	OtherPlayer->SetActorRotation(FRotator(0, 0, 0));
 	OtherPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	//OtherPlayer->ProjectileMovement->Activate();
+	OtherPlayer->ProjectileMovement->SetVelocityInLocalSpace(OtherPlayer->GetActorForwardVector());
+	OtherPlayer->ProjectileMovement->Activate();
 
 	PickupComponent->PickedUpPlayer = nullptr;
 	OtherPlayer->bIsGrabbingPlayer = false;
