@@ -18,6 +18,12 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void SetCharacters(AActor* FirstCharacter, AActor* SecondCharacter);
 
+	UFUNCTION(BlueprintCallable)
+	void InvertCamera();
+
+	UFUNCTION(BlueprintCallable)
+	void Move(FVector2D Input);
+
 protected:
 	UFUNCTION()
 	void PolarToCartesian(float r, float theta, float phi, FVector& OutVector);
@@ -25,11 +31,7 @@ protected:
 	UFUNCTION()
 	void CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi);
 
-	UFUNCTION(BlueprintCallable)
-	void InvertCamera();
 
-	UFUNCTION(BlueprintCallable)
-	void Move(FVector2D Input);
 
 	UFUNCTION(BlueprintCallable)
 	void Zoom(float Input);
