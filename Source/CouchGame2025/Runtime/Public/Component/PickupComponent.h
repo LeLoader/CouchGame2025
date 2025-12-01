@@ -8,11 +8,8 @@
 #include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
 #include "CouchGame2025/Runtime/Public/PickUpObject/PickUpObject.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
-#include "Delegates/Delegate.h"
-
+#include "CollisionQueryParams.h"
 #include "PickupComponent.generated.h"
-
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNewInteractionTargetSignature, AActor*, NewInteractionTarget, AActor*, OldInteractionTarget);
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -32,14 +29,6 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
-
-	void TraceToFindNearestInteractable();
-
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<AActor> CurrentInteractionTarget;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnNewInteractionTargetSignature OnNewInteractionTarget;
 
 	UFUNCTION(BlueprintCallable)
 	void TryPickUp();
@@ -72,10 +61,16 @@ public:
 	bool IsGrabbingObject = false;
 
 	bool bCanBeReleased = false;
+
+	UPROPERTY()
+	ACouchGame2025Character* PickedUpPlayer;
 private:
 	UPROPERTY()
-	ACouchGame2025Character* Player;
-
+	ACouchGame2025Character* Player; // Owner Player
+	
+	// UPROPERTY()
+	FCollisionQueryParams Params;
+	
 	UPROPERTY()
 	APickUpObject* PickedUpObject;
 
