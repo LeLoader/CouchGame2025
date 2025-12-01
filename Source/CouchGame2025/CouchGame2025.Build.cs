@@ -8,8 +8,8 @@ public class CouchGame2025 : ModuleRules
     public CouchGame2025(ReadOnlyTargetRules Target) : base(Target)
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
-
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "MultiplayerModule", "CableComponent", "CommonUI"});
+            
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "MultiplayerModule", "CableComponent", "CommonUI", "DeveloperSettings"});
 
 
         PrivateIncludePaths.AddRange(new string[]
