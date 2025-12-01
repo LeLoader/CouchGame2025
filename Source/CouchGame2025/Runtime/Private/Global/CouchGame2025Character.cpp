@@ -366,7 +366,7 @@ void ACouchGame2025Character::ThrowPlayer()
 	OtherPlayer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	OtherPlayer->SetActorRotation(FRotator(0, 0, 0));
 	OtherPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	OtherPlayer->ProjectileMovement->SetVelocityInLocalSpace(OtherPlayer->GetActorForwardVector());
+	//OtherPlayer->ProjectileMovement->SetVelocityInLocalSpace(OtherPlayer->GetActorForwardVector());
 	OtherPlayer->ProjectileMovement->Activate();
 
 	PickupComponent->PickedUpPlayer = nullptr;
