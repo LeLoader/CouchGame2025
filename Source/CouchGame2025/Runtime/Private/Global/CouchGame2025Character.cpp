@@ -12,8 +12,12 @@
 #include "InputActionValue.h"
 #include <CouchGame2025/Runtime/Public/Interface/Interactable.h>
 #include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
+#include "CouchGame2025/Runtime/Public/Gameplay/CouchCameraActor.h"
+#include "CouchGame2025/Runtime/Public/Component/PlanetaryMovementComponent.h"
 
+#define ECC_Interactable ECC_GameTraceChannel2
 
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
@@ -100,7 +104,7 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::StopMove);
 
 		// Looking
-		//EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Look);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ACouchGame2025Character::Look);
 
 		// Pickup & release
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::TryPickUp);
@@ -116,6 +120,9 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ToggleRopeMode);
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Canceled, this, &ACouchGame2025Character::ToggleRopeMode);
 
+		//Transfert
+		EnhancedInputComponent->BindAction(TransfertAction, ETriggerEvent::Started, this, &ACouchGame2025Character::Transfert);
+
 		// Bridge
 		//EnhancedInputComponent->BindAction(BridgeAction, ETriggerEvent::Started, this, &AABridge::ToggleBridge);
 	}
@@ -127,6 +134,7 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 void ACouchGame2025Character::Move(const FInputActionValue& Value)
 {
+	if (bIsWaiting) return;
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	InputMovement = MovementVector;
@@ -152,36 +160,6 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 	AddMovementInput(NorthVector, MovementVector.Y);
 	AddMovementInput(EastVector, MovementVector.X);
 	}
-
-	//const FRotator Rotation = CameraBoom->GetComponentRotation();
-	//FRotator RotationToAdd = (CameraBoom->GetUpVector() - GetActorUpVector()).Rotation();
-	//FRotator FinalRotation = Rotation + RotationToAdd;
-	////const FRotator YawRotation(0.f, FinalRotation.Yaw, 0.f);
-	//const FVector ForwardDirection = FRotationMatrix(FinalRotation).GetUnitAxis(EAxis::X);
-	//const FVector RightDirection = FRotationMatrix(FinalRotation).GetUnitAxis(EAxis::Y);
-	//AddMovementInput(ForwardDirection, MovementVector.Y);
-	//AddMovementInput(RightDirection, MovementVector.X);
-	//if (Controller != nullptr)
-	//{
-	//	// find out which way is forward
-	//	const FRotator Rotation = Controller->GetControlRotation();
-	//	
-	//	FRotator RotationToAdd = (GetActorUpVector() - FVector::UpVector).Rotation();
-	//	FRotator FinalRotation = Rotation + RotationToAdd;
-	//	const FRotator YawRotation(0.f, FinalRotation.Yaw, 0.f);
-	//	//const FRotator YawRotation(Rotation);
-	//
-	//	// get forward vector
-	//	const FVector ForwardDirection = FRotationMatrix(Rotation).GetUnitAxis(EAxis::X);
-	//
-	//	// get right vector 
-	//	const FVector RightDirection = FRotationMatrix(Rotation).GetUnitAxis(EAxis::Y);
-	//
-	//	// add movement 
-	//	AddMovementInput(ForwardDirection, MovementVector.Y);
-	//	AddMovementInput(RightDirection, MovementVector.X);
-	//
-	//}
 }
 
 void ACouchGame2025Character::PolarToCartesian(float r, float theta, float phi, FVector& OutVector)
@@ -202,23 +180,7 @@ void ACouchGame2025Character::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-	FRotator NewRotation = SceneComponent->GetRelativeRotation();
-	NewRotation.Pitch -= LookAxisVector.Y;
-	NewRotation.Yaw += LookAxisVector.X;
-	SceneComponent->SetRelativeRotation(NewRotation);
-	Controller->SetControlRotation(NewRotation);
-	FVector Up = GetActorLocation();
-	Up.Normalize();
-	FVector Forward = SceneComponent->GetForwardVector();
-	FRotator Rotation = UKismetMathLibrary::MakeRotFromXZ(Forward, Up);
-	SceneComponent->SetWorldRotation(Rotation);
-	
-	//if (Controller != nullptr)
-	//{
-	//	// add yaw and pitch input to controller
-	//	AddControllerYawInput(LookAxisVector.X);
-	//	AddControllerPitchInput(LookAxisVector.Y);
-	//}
+	Camera->Move(LookAxisVector);
 }
 
 void ACouchGame2025Character::Interact(const FInputActionValue& Value)
@@ -280,10 +242,59 @@ void ACouchGame2025Character::BeginPlay()
 	Super::BeginPlay();
 	FDetachmentTransformRules rules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, true);
 	SceneComponent->DetachFromComponent(rules);
+	TArray<AActor*> ResultActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACouchCameraActor::StaticClass(), ResultActors);
+	Camera = Cast<ACouchCameraActor>(ResultActors[0]);
+	UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(Camera);
 }
 
 void ACouchGame2025Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	SceneComponent->SetWorldLocation(GetActorLocation());
+}
+
+void ACouchGame2025Character::Transfert(const FInputActionValue& Value)
+{
+	FHitResult Hit;
+	FVector TraceStart = GetActorLocation();
+	FVector TraceEnd = GetActorLocation() + GetActorForwardVector() * 1000.0f;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Interactable, QueryParams);
+
+	if (Hit.bBlockingHit) {
+		if (IInteractable* Interactable = Cast<IInteractable>(Hit.GetActor())) {
+			Interactable->Interact(this);
+		}
+	}
+}
+
+void ACouchGame2025Character::InvertCharacter()
+{
+	bIsInverted = !bIsInverted;
+	UPlanetaryMovementComponent* MovementComponent;
+	MovementComponent = Cast<UPlanetaryMovementComponent>(GetMovementComponent());
+	MovementComponent->UseExternalGravityDirection = !MovementComponent->UseExternalGravityDirection;
+}
+
+void ACouchGame2025Character::InvertCamera()
+{
+	Camera->InvertCamera();
+}
+
+void ACouchGame2025Character::CallEventEndMovingAlongSpline()
+{
+	OnEndMovingAlongSpline.Broadcast();
+}
+
+void ACouchGame2025Character::SetGameplayCameraAsCamera(float TimeToBlend)
+{
+	UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(Camera, TimeToBlend, BlendType);
+}
+
+void ACouchGame2025Character::SetSpecialCameraAsCamera(float TimeToBlend, AActor* InActor)
+{
+	UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(InActor, TimeToBlend, BlendType);
 }
