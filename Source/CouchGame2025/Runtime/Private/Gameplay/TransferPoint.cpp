@@ -18,6 +18,11 @@ ATransfertPoint::ATransfertPoint()
 	CameraComponent->SetupAttachment(RootComponent);
 }
 
+int ATransfertPoint::GetPriority()
+{
+	return 5;
+}
+
 void ATransfertPoint::BeginPlay()
 {
 	Super::BeginPlay();

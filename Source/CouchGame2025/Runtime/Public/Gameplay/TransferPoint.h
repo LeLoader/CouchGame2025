@@ -20,6 +20,9 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UBoxComponent> BoxComponent;
 
+
+    int GetPriority() override;
+
 protected:
     virtual void BeginPlay() override;
 

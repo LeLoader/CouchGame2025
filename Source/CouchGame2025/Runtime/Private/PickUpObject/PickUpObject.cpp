@@ -4,6 +4,8 @@
 #include "PickUpObject/PickUpObject.h"
 
 #include <string>
+
+
 #include "CouchGame2025/Runtime/Public/Component/ObjectPlanetaryGravityComponent.h"
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
 #include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
@@ -33,12 +35,12 @@ void APickUpObject::BeginPlay()
 
 bool APickUpObject::Interact(ACouchGame2025Character* Player)
 {
-	if (!bCanBePickedUp || Player == nullptr) return false;
+	if (Player == nullptr && !bCanBePickedUp) return false;
 
 	if (!NeedsTwoPlayersToBePickedUp)
 	{
 		StartPickUp(Player);
-        return true;
+		return true;
 	}
 	else
 	{
@@ -58,7 +60,6 @@ bool APickUpObject::Interact(ACouchGame2025Character* Player)
 			// "Hand_Pos");
 			PlayersHolding.Add(Player); // Will be first index if first to pick up
 			bIsAPlayerHolding = true;
-
 			return true;
 		} else // If a Player is already holding the object
 		{
@@ -71,9 +72,9 @@ bool APickUpObject::Interact(ACouchGame2025Character* Player)
 			FAttachmentTransformRules
 			(EAttachmentRule::SnapToTarget,
 			EAttachmentRule::SnapToTarget,
-			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::KeepWorld,
 			true),
-			"Hand_Pos");
+			"Throw_Pos");
 			PlayersHolding.Add(Player);
 			PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 			this->AttachToComponent(
@@ -81,13 +82,13 @@ bool APickUpObject::Interact(ACouchGame2025Character* Player)
 				FAttachmentTransformRules
 				(EAttachmentRule::SnapToTarget,
 				EAttachmentRule::SnapToTarget,
-				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::KeepWorld,
 				true),
-				"Hand_Pos");
-
+				"Throw_Pos");
 			return true;
 		}
 	}
+	
 }
 
 void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
@@ -96,6 +97,7 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	
 	Interactor = Player;
 	Interactor->bIsGrabbing = true;
+	Interactor->PickupComponent->PickedUpObject = this;
 	PlayersHolding.Add(Player);
 	this->AttachToComponent(
 		Player->GetMesh(),
@@ -103,10 +105,10 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 		(
 		EAttachmentRule::SnapToTarget,
 		EAttachmentRule::SnapToTarget,
-		EAttachmentRule::SnapToTarget,
+		EAttachmentRule::KeepWorld,
 		true
 		),
-		"Hand_Pos"
+		"Throw_Pos"
 		);
 	
 	SetActorEnableCollision(false);
@@ -115,7 +117,7 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 
 void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 {
-	if (PlayersHolding.Num() < 2 && PlayersHolding.Num() > 0)
+	/*if (PlayersHolding.Num() < 2 && PlayersHolding.Num() > 0)
 	{
 		PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		PlayersHolding[0]->bIsGrabbing = false;
@@ -127,7 +129,55 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 		bIsAPlayerHolding = false;
 		return;
 	}
-	ReleaseObjectFromOnePlayer(Player);
+	ReleaseObjectFromOnePlayer(Player);*/
+	if (PlayersHolding.Num() == 2 || PlayersHolding.Num() == 0) return;
+	Player->PickupComponent->PickedUpObject = nullptr;
+	//DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	
+	PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	PlayersHolding[0]->bIsGrabbing = false;
+	PlayersHolding.Empty();
+	this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	SetActorEnableCollision(true);
+	Mesh->BodyInstance.bLockRotation = false;
+	bIsGrabbedByBoth = false;
+	bIsAPlayerHolding = false;
+	
+	/*UCharacterMovementComponent* Move = Player->GetCharacterMovement();
+	FVector4 CharacterMovementValues = FVector4(Move->BrakingFrictionFactor, Move->GroundFriction, Move->BrakingFrictionFactor, Move->BrakingDecelerationWalking);
+	Move->BrakingFrictionFactor = 0.f;
+	Move->GroundFriction = 0.f;
+	Move->BrakingFriction = 0.f;
+	Move->BrakingDecelerationWalking = 0.f;
+
+
+	Player->GetCharacterMovement()->SetMovementMode(MOVE_Walking);*/
+	FVector FwdVector = Player->GetActorForwardVector();
+	/*Player->LaunchCharacter(FVector(
+		Player->FrontLaunchForce * 500.f * FwdVector.X,
+		Player->FrontLaunchForce * 500.f * FwdVector.Y,
+		Player->UpLaunchForce * 500.f),
+		true,
+		true);*/
+
+
+	/*Move->BrakingFrictionFactor = CharacterMovementValues[0];
+	Move->GroundFriction = CharacterMovementValues[1];
+	Move->BrakingFriction = CharacterMovementValues[2];
+	Move->BrakingDecelerationWalking = CharacterMovementValues[3];*/
+
+	Mesh->AddImpulse(FVector(
+		Player->FrontLaunchForce* FwdVector.X / 2,
+		Player->FrontLaunchForce* FwdVector.Y / 2,
+		Player->UpLaunchForce) * LaunchForce * 1000.f);
+	//Player->SetActorEnableCollision(true);
+
+	Player->bIsGrabbing = false;
+}
+
+int APickUpObject::GetPriority()
+{
+	return 10;
 }
 
 // Called every frame
