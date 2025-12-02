@@ -202,7 +202,7 @@ public:
 	void StopThrow();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float frontLaunchForce;
+	float FrontLaunchForce;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float UpLaunchForce;

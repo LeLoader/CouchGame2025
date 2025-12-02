@@ -286,6 +286,7 @@ void ACouchGame2025Character::GrabbedByOtherPlayer(ACouchGame2025Character* Othe
 	// 	EAttachmentRule::SnapToTarget,
 	// 	true),
 	// 	"Throw_Pos");
+	SetActorEnableCollision(false);
 	this->AttachToComponent(
 		Other->GetMesh(),
 		FAttachmentTransformRules(
@@ -361,13 +362,39 @@ void ACouchGame2025Character::StopThrow()
 void ACouchGame2025Character::ThrowPlayer()
 {
 	if (OtherPlayer == nullptr) return;
-	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Magenta, TEXT("Throwing player"));
-	SetActorEnableCollision(true);
+	//SetActorEnableCollision(true);
 	OtherPlayer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	OtherPlayer->SetActorRotation(FRotator(0, 0, 0));
-	OtherPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	//OtherPlayer->SetActorRotation(FRotator(0, 0, 0));
 	//OtherPlayer->ProjectileMovement->SetVelocityInLocalSpace(OtherPlayer->GetActorForwardVector());
-	OtherPlayer->ProjectileMovement->Activate();
+	//OtherPlayer->ProjectileMovement->Activate();
+	//FVector FForce = (OtherPlayer->GetActorForwardVector() * FrontLaunchForce, OtherPlayer->GetActorUpVector() * UpLaunchForce);
+	//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::Printf(TEXT("FForce: %s"), *FForce.ToString()));
+	//OtherPlayer->GetCharacterMovement()->Launch(FForce);
+#pragma region test
+	//UCharacterMovementComponent OtherPlayerCharacterMovement = *OtherPlayer->GetCharacterMovement();
+	
+	UCharacterMovementComponent* Move = OtherPlayer->GetCharacterMovement();
+	FVector4 CharacterMovementValues = FVector4(Move->BrakingFrictionFactor, Move->GroundFriction, Move->BrakingFrictionFactor, Move->BrakingDecelerationWalking);
+	Move->BrakingFrictionFactor = 0.f;
+	Move->GroundFriction = 0.f;
+	Move->BrakingFriction = 0.f;
+	Move->BrakingDecelerationWalking = 0.f;
+
+
+	OtherPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	FVector FwdVector = OtherPlayer->GetActorForwardVector();
+	OtherPlayer->LaunchCharacter(FVector(
+		FrontLaunchForce * 500.f * FwdVector.X,
+		FrontLaunchForce * 500.f * FwdVector.Y,
+		UpLaunchForce * 500.f),
+		true,
+		true);
+	Move->BrakingFrictionFactor = CharacterMovementValues[0];
+	Move->GroundFriction = CharacterMovementValues[1];
+	Move->BrakingFriction = CharacterMovementValues[2];
+	Move->BrakingDecelerationWalking = CharacterMovementValues[3];
+	OtherPlayer->SetActorEnableCollision(true);
+#pragma endregion
 
 	PickupComponent->PickedUpPlayer = nullptr;
 	OtherPlayer->bIsGrabbingPlayer = false;
