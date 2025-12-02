@@ -11,6 +11,9 @@
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
 #include <CouchGame2025/Runtime/Public/Interface/Interactable.h>
+
+#include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
+#include "ProfilingDebugging/CookStats.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
@@ -54,14 +57,15 @@ ACouchGame2025Character::ACouchGame2025Character()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	SceneComponent = CreateDefaultSubobject<USceneComponent>(TEXT("Scene component"));
-	SceneComponent->SetupAttachment(RootComponent);
+	// Create a camera boom (pulls in towards the player if there is a collision)
+	CameraBoomRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraBoomRoot"));
+	CameraBoomRoot->SetupAttachment(RootComponent);
 
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(SceneComponent);
+	CameraBoom->SetupAttachment(CameraBoomRoot);
 	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = false; // Rotate the arm based on the controller
+	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
@@ -70,10 +74,6 @@ ACouchGame2025Character::ACouchGame2025Character()
 
 	PickupComponent = CreateDefaultSubobject<UPickupComponent>(TEXT("PickupComponent"));
 	PickupComponent->SetupAttachment(GetCapsuleComponent());
-
-	/* Create a SceneComponent to Hold AimLine Elements for better visibility*/
-	AimLine = CreateDefaultSubobject<USceneComponent>(TEXT("AimLine"));
-	AimLine->SetupAttachment(GetCapsuleComponent());
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -129,6 +129,8 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ToggleRopeMode);
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Canceled, this, &ACouchGame2025Character::ToggleRopeMode);
 
+		// Throw Player
+		EnhancedInputComponent->BindAction(ThrowLeftAction, ETriggerEvent::Started, this, &ACouchGame2025Character::ThrowPlayer);
 		//Transfert
 		EnhancedInputComponent->BindAction(TransfertAction, ETriggerEvent::Started, this, &ACouchGame2025Character::Transfert);
 
@@ -153,9 +155,9 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	InputMovement = MovementVector;
 
-	if (Controller != nullptr /*&& !bIsGrabbing*/)
-	{
-			GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, TEXT("moving"));
+	//if (Controller != nullptr && !bIsGrabbing)
+	//{} 
+	//}
 	float PosR;
 	float PosTheta;
 	float PosPhi;
@@ -176,20 +178,6 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 	}
 }
 
-void ACouchGame2025Character::PolarToCartesian(float r, float theta, float phi, FVector& OutVector)
-{
-	OutVector.X = r * FMath::Sin(theta) * FMath::Cos(phi);
-	OutVector.Y = r * FMath::Sin(theta) * FMath::Sin(phi);
-	OutVector.Z = r * FMath::Cos(theta);
-}
-
-void ACouchGame2025Character::CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi)
-{
-	OutR = Vector.Length();
-	OutTheta = FMath::Acos(Vector.Z / OutR);
-	OutPhi = FMath::Atan2(Vector.Y, Vector.X);
-}
-
 void ACouchGame2025Character::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
@@ -205,6 +193,7 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(this);
 
+	GetWorld()->LineTraceSingleByObjectType(Hit, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams);
 	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_WorldStatic, QueryParams);
 
 	if (Hit.bBlockingHit) {
@@ -217,6 +206,11 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
 	bIsRopeFree = !bIsRopeFree;
+}
+
+void ACouchGame2025Character::AddWater(float AddedWaterAmount)
+{
+	CurrentWaterAmount = FMath::Clamp(CurrentWaterAmount + AddedWaterAmount, 0, MaxWaterAmount);
 }
 
 void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
@@ -258,8 +252,8 @@ void ACouchGame2025Character::GrabbedByOtherPlayer(ACouchGame2025Character* Othe
 	this->AttachToComponent(
 		Other->GetMesh(),
 		FAttachmentTransformRules(
-			EAttachmentRule::SnapToTarget,
-			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::KeepWorld,
+			EAttachmentRule::KeepWorld,
 			EAttachmentRule::SnapToTarget,
 			true),
 			"Throw_Pos");
@@ -271,9 +265,23 @@ void ACouchGame2025Character::StopMove()
 	InputMovement = FVector2D::ZeroVector;
 }
 
-FVector ACouchGame2025Character::GetFollowPosition()
+void ACouchGame2025Character::Interact(ACouchGame2025Character* A)
 {
-	return GetActorLocation();
+	
+}
+	
+void ACouchGame2025Character::ThrowPlayer()
+{
+	if (OtherPlayer == nullptr) return;
+	
+	SetActorEnableCollision(true);
+	OtherPlayer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	OtherPlayer->SetActorRotation(FRotator(0, 0, 0));
+	OtherPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	//OtherPlayer->ProjectileMovement->Activate();
+
+	PickupComponent->PickedUpPlayer = nullptr;
+	OtherPlayer->bIsGrabbingPlayer = false;
 }
 
 void ACouchGame2025Character::BeginPlay()

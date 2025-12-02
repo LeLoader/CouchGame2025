@@ -4,6 +4,8 @@
 #include "PickUpObject/PickUpObject.h"
 
 #include <string>
+
+
 #include "CouchGame2025/Runtime/Public/Component/ObjectPlanetaryGravityComponent.h"
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
 #include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
@@ -33,12 +35,11 @@ void APickUpObject::BeginPlay()
 
 bool APickUpObject::Interact(ACouchGame2025Character* Player)
 {
-	if (!bCanBePickedUp || Player == nullptr) return false;
+	if (Player == nullptr) return;
 
 	if (!NeedsTwoPlayersToBePickedUp)
 	{
 		StartPickUp(Player);
-        return true;
 	}
 	else
 	{
@@ -58,8 +59,6 @@ bool APickUpObject::Interact(ACouchGame2025Character* Player)
 			// "Hand_Pos");
 			PlayersHolding.Add(Player); // Will be first index if first to pick up
 			bIsAPlayerHolding = true;
-
-			return true;
 		} else // If a Player is already holding the object
 		{
 			bIsGrabbedByBoth = true;
@@ -84,10 +83,9 @@ bool APickUpObject::Interact(ACouchGame2025Character* Player)
 				EAttachmentRule::SnapToTarget,
 				true),
 				"Hand_Pos");
-
-			return true;
 		}
 	}
+	
 }
 
 void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
@@ -96,7 +94,6 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	
 	Interactor = Player;
 	Interactor->bIsGrabbing = true;
-	PlayersHolding.Add(Player);
 	this->AttachToComponent(
 		Player->GetMesh(),
 		FAttachmentTransformRules
@@ -115,7 +112,7 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 
 void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 {
-	if (PlayersHolding.Num() < 2 && PlayersHolding.Num() > 0)
+	if (PlayersHolding.Num() < 2)
 	{
 		PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
 		PlayersHolding[0]->bIsGrabbing = false;

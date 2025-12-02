@@ -13,8 +13,6 @@
 #include "CollisionQueryParams.h"
 #include "PickupComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNewInteractionTargetSignature, AActor*, NewInteractionTarget, AActor*, OldInteractionTarget);
-
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class COUCHGAME2025_API UPickupComponent : public USceneComponent
@@ -33,14 +31,6 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
-
-	void TraceToFindNearestInteractable();
-
-	UPROPERTY(VisibleAnywhere)
-	TObjectPtr<AActor> CurrentInteractionTarget;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnNewInteractionTargetSignature OnNewInteractionTarget;
 
 	UFUNCTION(BlueprintCallable)
 	void TryPickUp();

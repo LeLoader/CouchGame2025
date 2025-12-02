@@ -7,8 +7,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Logging/LogMacros.h"
-#include "Component/RessourceContainerComponent.h"
-#include "Interface/CameraFollowable.h"
+#include "../Component/RessourceContainerComponent.h"
 #include "CouchGame2025Character.generated.h"
 
 class UPickupComponent;
@@ -30,11 +29,11 @@ private:
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
+	USceneComponent* CameraBoomRoot;
 
-	/** Scene component for relative rotation of camera*/
+	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USceneComponent* SceneComponent;
+	USpringArmComponent* CameraBoom;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -93,11 +92,13 @@ private:
 public:
 	ACouchGame2025Character();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition = "bHidePickupComponent", EditConditionHides))
+	/** Pickup Component **/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPickupComponent* PickupComponent;
 
-	UPROPERTY(EditDefaultsOnly)
-	bool bHidePickupComponent;
+	/** Projectile Movement Component **/
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UProjectileMovementComponent* ProjectileMovement;
 
 #pragma region Transfert
 
@@ -130,10 +131,6 @@ protected:
 	UProjectileMovementComponent* ProjectileMovement;
 
 protected:
-
-	virtual void BeginPlay() override;
-
-	virtual void Tick(float DeltaTime) override;
 
 	/** Called for movement */
 	void Move(const FInputActionValue& Value);
@@ -180,8 +177,6 @@ protected:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	virtual FVector GetFollowPosition() override;
-
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -200,7 +195,7 @@ private:
 #pragma region Water
 
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere)
 	URessourceContainerComponent* WaterTank;
 
 #pragma endregion Water
