@@ -41,14 +41,16 @@ void AIcepool::BeginPlay()
 
 void AIcepool::OnWaterBoxBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (ACouchGame2025Character* Character = Cast<ACouchGame2025Character>(OtherActor)) {
+	if (Cast<ACouchGame2025Character>(OtherActor)) {
+		ACouchGame2025Character* Character = Cast<ACouchGame2025Character>(OtherActor);
 		WaterContainer->StartMovingRessource(Character->WaterTank);
 	}
 }
 
 void AIcepool::OnWaterBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
-	if (ACouchGame2025Character* Character = Cast<ACouchGame2025Character>(OtherActor)) {
+	if (Cast<ACouchGame2025Character>(OtherActor)) {
+		ACouchGame2025Character* Character = Cast<ACouchGame2025Character>(OtherActor);
 		WaterContainer->StopMovingRessource(Character->WaterTank);
 	}
 }

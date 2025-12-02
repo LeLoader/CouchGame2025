@@ -10,6 +10,7 @@
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Delegates/Delegate.h"
 
+#include "CollisionQueryParams.h"
 #include "PickupComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNewInteractionTargetSignature, AActor*, NewInteractionTarget, AActor*, OldInteractionTarget);
@@ -72,10 +73,16 @@ public:
 	bool IsGrabbingObject = false;
 
 	bool bCanBeReleased = false;
+
+	UPROPERTY()
+	ACouchGame2025Character* PickedUpPlayer;
 private:
 	UPROPERTY()
-	ACouchGame2025Character* Player;
-
+	ACouchGame2025Character* Player; // Owner Player
+	
+	// UPROPERTY()
+	FCollisionQueryParams Params;
+	
 	UPROPERTY()
 	APickUpObject* PickedUpObject;
 
