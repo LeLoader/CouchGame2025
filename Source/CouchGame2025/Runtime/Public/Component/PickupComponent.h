@@ -4,14 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
-#include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
-#include "CouchGame2025/Runtime/Public/PickUpObject/PickUpObject.h"
+#include "Global/CouchGame2025Character.h"
+#include "Interface/Interactable.h"
+#include "PickUpObject/PickUpObject.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Delegates/Delegate.h"
 
 #include "CollisionQueryParams.h"
 #include "PickupComponent.generated.h"
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNewInteractionTargetSignature, AActor*, NewInteractionTarget, AActor*, OldInteractionTarget);
 
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -32,6 +34,14 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
 
+	void TraceToFindNearestInteractable();
+
+	UPROPERTY(VisibleAnywhere)
+	TObjectPtr<AActor> CurrentInteractionTarget;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnNewInteractionTargetSignature OnNewInteractionTarget;
+
 	UFUNCTION(BlueprintCallable)
 	void TryPickUp();
 
@@ -40,6 +50,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, meta = (Units = "cm"))
 	float TraceWidth = 100;
+
+	
 
 	// Use
 	UFUNCTION()
@@ -64,8 +76,11 @@ public:
 
 	bool bCanBeReleased = false;
 
-	UPROPERTY()
+	UPROPERTY(VisibleAnywhere)
 	ACouchGame2025Character* PickedUpPlayer;
+	
+	UPROPERTY(VisibleAnywhere)
+	APickUpObject* PickedUpObject;
 private:
 	UPROPERTY()
 	ACouchGame2025Character* Player; // Owner Player
@@ -73,8 +88,6 @@ private:
 	// UPROPERTY()
 	FCollisionQueryParams Params;
 	
-	UPROPERTY()
-	APickUpObject* PickedUpObject;
 
 };
 

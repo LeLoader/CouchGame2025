@@ -129,8 +129,6 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ToggleRopeMode);
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Canceled, this, &ACouchGame2025Character::ToggleRopeMode);
 
-		// Throw Player
-		EnhancedInputComponent->BindAction(ThrowLeftAction, ETriggerEvent::Started, this, &ACouchGame2025Character::ThrowPlayer);
 		//Transfert
 		EnhancedInputComponent->BindAction(TransfertAction, ETriggerEvent::Started, this, &ACouchGame2025Character::Transfert);
 
@@ -146,6 +144,25 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 	{
 		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
 	}
+}
+
+void ACouchGame2025Character::PolarToCartesian(float r, float theta, float phi, FVector& OutVector)
+{
+	OutVector.X = r * FMath::Sin(theta) * FMath::Cos(phi);
+	OutVector.Y = r * FMath::Sin(theta) * FMath::Sin(phi);
+	OutVector.Z = r * FMath::Cos(theta);
+}
+
+void ACouchGame2025Character::CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi)
+{
+	OutR = Vector.Length();
+	OutTheta = FMath::Acos(Vector.Z / OutR);
+	OutPhi = FMath::Atan2(Vector.Y, Vector.X);
+}
+
+int ACouchGame2025Character::GetPriority()
+{
+	return 0;
 }
 
 void ACouchGame2025Character::Move(const FInputActionValue& Value)
@@ -175,7 +192,6 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 	}
 	AddMovementInput(NorthVector, MovementVector.Y);
 	AddMovementInput(EastVector, MovementVector.X);
-	}
 }
 
 void ACouchGame2025Character::Look(const FInputActionValue& Value)
@@ -206,11 +222,6 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
 	bIsRopeFree = !bIsRopeFree;
-}
-
-void ACouchGame2025Character::AddWater(float AddedWaterAmount)
-{
-	CurrentWaterAmount = FMath::Clamp(CurrentWaterAmount + AddedWaterAmount, 0, MaxWaterAmount);
 }
 
 void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
@@ -252,9 +263,9 @@ void ACouchGame2025Character::GrabbedByOtherPlayer(ACouchGame2025Character* Othe
 	this->AttachToComponent(
 		Other->GetMesh(),
 		FAttachmentTransformRules(
-			EAttachmentRule::KeepWorld,
-			EAttachmentRule::KeepWorld,
 			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::KeepWorld,
 			true),
 			"Throw_Pos");
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
@@ -265,30 +276,11 @@ void ACouchGame2025Character::StopMove()
 	InputMovement = FVector2D::ZeroVector;
 }
 
-void ACouchGame2025Character::Interact(ACouchGame2025Character* A)
-{
-	
-}
-	
-void ACouchGame2025Character::ThrowPlayer()
-{
-	if (OtherPlayer == nullptr) return;
-	
-	SetActorEnableCollision(true);
-	OtherPlayer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	OtherPlayer->SetActorRotation(FRotator(0, 0, 0));
-	OtherPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	//OtherPlayer->ProjectileMovement->Activate();
-
-	PickupComponent->PickedUpPlayer = nullptr;
-	OtherPlayer->bIsGrabbingPlayer = false;
-}
-
 void ACouchGame2025Character::BeginPlay()
 {
 	Super::BeginPlay();
-	FDetachmentTransformRules rules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, true);
-	SceneComponent->DetachFromComponent(rules);
+	// FDetachmentTransformRules rules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+	// SceneComponent->DetachFromComponent(rules);
 	TArray<AActor*> ResultActors;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACouchCameraActor::StaticClass(), ResultActors);
 	Camera = Cast<ACouchCameraActor>(ResultActors[0]);
@@ -298,7 +290,7 @@ void ACouchGame2025Character::BeginPlay()
 void ACouchGame2025Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	SceneComponent->SetWorldLocation(GetActorLocation());
+	// SceneComponent->SetWorldLocation(GetActorLocation());
 }
 
 void ACouchGame2025Character::Transfert(const FInputActionValue& Value)
@@ -345,6 +337,7 @@ void ACouchGame2025Character::SetSpecialCameraAsCamera(float TimeToBlend, AActor
 {
 	UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(InActor, TimeToBlend, BlendType);
 }
+
 bool ACouchGame2025Character::Interact(ACouchGame2025Character* A)
 {
 	return false;
@@ -356,6 +349,10 @@ void ACouchGame2025Character::CheckForThrowPlayer()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("2"));
 		bAreBothTriggerToggled = true;
+
+		if (bIsGrabbing && !bIsGrabbingPlayer) {
+			PickupComponent->PickedUpObject->StopPickUp(this);
+		}
 		ThrowPlayer();
 	} else
 	{
@@ -422,20 +419,4 @@ void ACouchGame2025Character::ThrowPlayer()
 
 	PickupComponent->PickedUpPlayer = nullptr;
 	OtherPlayer->bIsGrabbingPlayer = false;
-}
-
-void ACouchGame2025Character::InitAimLine()
-{
-	FVector StartLocation = GetMesh()->GetSocketLocation("Throw_Pos");
-	FVector LaunchVelocity = FVector(
-		FrontLaunchForce * 500.f * GetActorForwardVector().X,
-		FrontLaunchForce * 500.f * GetActorForwardVector().Y,
-		UpLaunchForce * 500.f);
-	FPredictProjectilePathParams ProjectilePathParams = FPredictProjectilePathParams(5.f, StartLocation, LaunchVelocity, 5.f);
-	ProjectilePathParams.SimFrequency = 50.f;
-
-	// FPredictProjectilePathResult ProjectilePathResult = FPredictProjectilePathResult(
-	// 	Ai);
-	//
-	// UGameplayStatics::PredictProjectilePath(GetWorld(), ProjectilePathParams, )
 }

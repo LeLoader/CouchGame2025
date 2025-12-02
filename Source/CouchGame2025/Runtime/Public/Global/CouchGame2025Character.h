@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
+#include "Interface/Interactable.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Logging/LogMacros.h"
-#include "../Component/RessourceContainerComponent.h"
+#include "Component/RessourceContainerComponent.h"
 #include "CouchGame2025Character.generated.h"
 
 class UPickupComponent;
@@ -22,10 +22,13 @@ struct FInputActionValue;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ACouchGame2025Character : public ACharacter, public ICameraFollowable, public IInteractable
+class ACouchGame2025Character : public ACharacter, public IInteractable
 {
 private:
 	GENERATED_BODY()
+
+	void BeginPlay() override;
+	void Tick(float DeltaTime) override;
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -96,10 +99,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPickupComponent* PickupComponent;
 
-	/** Projectile Movement Component **/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UProjectileMovementComponent* ProjectileMovement;
-
 #pragma region Transfert
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -126,9 +125,8 @@ protected:
 	UPROPERTY(EditAnywhere)
 	TEnumAsByte<EViewTargetBlendFunction> BlendType;
 #pragma endregion
-	/** Projectile Movement Component **/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UProjectileMovementComponent* ProjectileMovement;
+
+	int GetPriority() override;
 
 protected:
 
@@ -195,7 +193,7 @@ private:
 #pragma region Water
 
 public:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	URessourceContainerComponent* WaterTank;
 
 #pragma endregion Water
@@ -264,16 +262,5 @@ protected:
 	virtual bool Interact(ACouchGame2025Character* A) override;
 	
 #pragma endregion Grab
-#pragma region AimLine
-private:	
-	UFUNCTION()
-	void InitAimLine();
-
-	UPROPERTY()
-	USceneComponent* AimLine;
-	
-	UPROPERTY()
-	TArray<AActor*> AimLineElements;
-#pragma endregion AimLine	
 };
 

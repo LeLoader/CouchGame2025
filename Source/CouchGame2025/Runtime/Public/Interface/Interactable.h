@@ -27,5 +27,8 @@ class COUCHGAME2025_API IInteractable
 public:
 	UFUNCTION(BlueprintCallable)
 	virtual bool Interact(ACouchGame2025Character* Instigator) = 0;
+
+	UFUNCTION(BlueprintCallable)
+	virtual int GetPriority() = 0;
 	
 };
