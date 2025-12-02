@@ -218,6 +218,17 @@ private:
 protected:
 	virtual bool Interact(ACouchGame2025Character* A) override;
 	
-#pragma endregion Grab	
+#pragma endregion Grab
+#pragma region AimLine
+private:	
+	UFUNCTION()
+	void InitAimLine();
+
+	UPROPERTY()
+	USceneComponent* AimLine;
+	
+	UPROPERTY()
+	TArray<AActor*> AimLineElements;
+#pragma endregion AimLine	
 };
 

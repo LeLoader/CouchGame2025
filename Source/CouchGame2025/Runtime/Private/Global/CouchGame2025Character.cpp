@@ -13,6 +13,8 @@
 #include <CouchGame2025/Runtime/Public/Interface/Interactable.h>
 #include "Kismet/KismetMathLibrary.h"
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/GameplayStaticsTypes.h"
 #include "ProfilingDebugging/CookStats.h"
 
 
@@ -65,7 +67,9 @@ ACouchGame2025Character::ACouchGame2025Character()
 	PickupComponent = CreateDefaultSubobject<UPickupComponent>(TEXT("PickupComponent"));
 	PickupComponent->SetupAttachment(GetCapsuleComponent());
 
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
+	/* Create a SceneComponent to Hold AimLine Elements for better visibility*/
+	AimLine = CreateDefaultSubobject<USceneComponent>(TEXT("AimLine"));
+	AimLine->SetupAttachment(GetCapsuleComponent());
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -313,6 +317,8 @@ void ACouchGame2025Character::BeginPlay()
 	Super::BeginPlay();
 	FDetachmentTransformRules rules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, true);
 	SceneComponent->DetachFromComponent(rules);
+
+	InitAimLine();
 }
 
 void ACouchGame2025Character::Tick(float DeltaTime)
@@ -398,4 +404,20 @@ void ACouchGame2025Character::ThrowPlayer()
 
 	PickupComponent->PickedUpPlayer = nullptr;
 	OtherPlayer->bIsGrabbingPlayer = false;
+}
+
+void ACouchGame2025Character::InitAimLine()
+{
+	FVector StartLocation = GetMesh()->GetSocketLocation("Throw_Pos");
+	FVector LaunchVelocity = FVector(
+		FrontLaunchForce * 500.f * GetActorForwardVector().X,
+		FrontLaunchForce * 500.f * GetActorForwardVector().Y,
+		UpLaunchForce * 500.f);
+	FPredictProjectilePathParams ProjectilePathParams = FPredictProjectilePathParams(5.f, StartLocation, LaunchVelocity, 5.f);
+	ProjectilePathParams.SimFrequency = 50.f;
+
+	// FPredictProjectilePathResult ProjectilePathResult = FPredictProjectilePathResult(
+	// 	Ai);
+	//
+	// UGameplayStatics::PredictProjectilePath(GetWorld(), ProjectilePathParams, )
 }
