@@ -1,7 +1,6 @@
 #include "CouchGame2025/Runtime/Public/Component/RessourceContainerComponent.h"
 
 
-
 // Sets default values for this component's properties
 URessourceContainerComponent::URessourceContainerComponent()
 {
@@ -17,8 +16,8 @@ URessourceContainerComponent::URessourceContainerComponent()
 void URessourceContainerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	
+
+	// ...
 
 }
 
@@ -42,7 +41,6 @@ float URessourceContainerComponent::AddRessource(float Amount)
 	float OldRessourceAmount = CurrentRessourceAmount;
 	CurrentRessourceAmount = FMath::Clamp(CurrentRessourceAmount + Amount, 0, MaxRessourceAmount);
 	OnRessourceUpdated.Broadcast(CurrentRessourceAmount, OldRessourceAmount);
-	
 	if (IsContainerFull()) {
 		OnContainerFull.Broadcast();
 		OnContainerFullBP.Broadcast();
