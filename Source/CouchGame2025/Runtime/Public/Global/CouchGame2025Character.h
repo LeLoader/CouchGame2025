@@ -16,6 +16,7 @@ class UInputMappingContext;
 class UInputAction;
 class ACouchCameraActor;
 class USplineComponent;
+class UTransfertSettings;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -28,10 +29,6 @@ class ACouchGame2025Character : public ACharacter, public ICameraFollowable
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
-
-	/** Scene component for relative rotation of camera*/
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USceneComponent* SceneComponent;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -86,6 +83,12 @@ public:
 	UPROPERTY(EditDefaultsOnly)
 	bool bHidePickupComponent;
 
+	UPROPERTY()
+	FVector RespawnPoint;
+
+	UFUNCTION()
+	void SetRespawnLocation(FVector InLocation);
+
 #pragma region Transfert
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -108,9 +111,11 @@ public:
 	UFUNCTION()
 	void InvertCamera();
 
-protected:
-	UPROPERTY(EditAnywhere)
-	TEnumAsByte<EViewTargetBlendFunction> BlendType;
+	UFUNCTION()
+	void Wait();
+
+	UFUNCTION()
+	void StopWait();
 #pragma endregion
 
 protected:
@@ -175,9 +180,16 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsWaiting;
 
+	UPROPERTY(BlueprintReadOnly)
+	const UTransfertSettings* TransfertSettings;
+
+	UFUNCTION()
+	void ResetPlayer();
+
 private:
 	UFUNCTION(BlueprintCallable)
 	void InvertCharacter();
+
 
 
 

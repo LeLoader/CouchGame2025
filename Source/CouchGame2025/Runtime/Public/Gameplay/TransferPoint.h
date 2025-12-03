@@ -8,6 +8,7 @@
 class UBoxComponent;
 class USplineComponent;
 class UCameraComponent;
+class UTransfertSettings;
 
 UCLASS()
 class COUCHGAME2025_API ATransfertPoint : public AActor, public IInteractable
@@ -64,4 +65,7 @@ private:
 
     UFUNCTION()
     void OnMovementAlongSplineOver();
+
+    UPROPERTY()
+    const UTransfertSettings* TransfertSettings;
 };
