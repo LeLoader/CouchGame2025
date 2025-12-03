@@ -17,6 +17,7 @@ class UInputMappingContext;
 class UInputAction;
 class ACouchCameraActor;
 class USplineComponent;
+class UTransfertSettings;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -99,6 +100,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPickupComponent* PickupComponent;
 
+	UPROPERTY(EditDefaultsOnly)
+	bool bHidePickupComponent;
+
+	UPROPERTY()
+	FVector RespawnPoint;
+
+	UFUNCTION()
+	void SetRespawnLocation(FVector InLocation);
+
 #pragma region Transfert
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -121,9 +131,11 @@ public:
 	UFUNCTION()
 	void InvertCamera();
 
-protected:
-	UPROPERTY(EditAnywhere)
-	TEnumAsByte<EViewTargetBlendFunction> BlendType;
+	UFUNCTION()
+	void Wait();
+
+	UFUNCTION()
+	void StopWait();
 #pragma endregion
 
 	int GetPriority() override;
@@ -184,9 +196,16 @@ public:
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsWaiting;
 
+	UPROPERTY(BlueprintReadOnly)
+	const UTransfertSettings* TransfertSettings;
+
+	UFUNCTION()
+	void ResetPlayer();
+
 private:
 	UFUNCTION(BlueprintCallable)
 	void InvertCharacter();
+
 
 
 

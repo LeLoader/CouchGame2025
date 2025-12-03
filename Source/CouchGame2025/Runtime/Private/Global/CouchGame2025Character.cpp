@@ -19,6 +19,7 @@
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
 #include "CouchGame2025/Runtime/Public/Gameplay/CouchCameraActor.h"
 #include "CouchGame2025/Runtime/Public/Component/PlanetaryMovementComponent.h"
+#include "CouchGame2025/Editor/Public/TransfertSettings.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/GameplayStaticsTypes.h"
 #include "ProfilingDebugging/CookStats.h"
@@ -278,19 +279,16 @@ void ACouchGame2025Character::StopMove()
 
 void ACouchGame2025Character::BeginPlay()
 {
+	TransfertSettings = GetDefault<UTransfertSettings>();
 	Super::BeginPlay();
-	// FDetachmentTransformRules rules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, true);
-	// SceneComponent->DetachFromComponent(rules);
-	TArray<AActor*> ResultActors;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACouchCameraActor::StaticClass(), ResultActors);
-	Camera = Cast<ACouchCameraActor>(ResultActors[0]);
-	UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(Camera);
+	Camera = ACouchCameraActor::CurrentCamera;
+	SetRespawnLocation(GetActorLocation());
+
 }
 
 void ACouchGame2025Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	// SceneComponent->SetWorldLocation(GetActorLocation());
 }
 
 void ACouchGame2025Character::Transfert(const FInputActionValue& Value)
@@ -330,12 +328,40 @@ void ACouchGame2025Character::CallEventEndMovingAlongSpline()
 
 void ACouchGame2025Character::SetGameplayCameraAsCamera(float TimeToBlend)
 {
-	UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(Camera, TimeToBlend, BlendType);
+	UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(Camera, TimeToBlend, TransfertSettings->CameraBlendType, 1.f, true);
 }
 
 void ACouchGame2025Character::SetSpecialCameraAsCamera(float TimeToBlend, AActor* InActor)
 {
-	UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(InActor, TimeToBlend, BlendType);
+	UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(InActor, TimeToBlend, TransfertSettings->CameraBlendType, 1.f, true);
+}
+
+void ACouchGame2025Character::Wait()
+{
+	bIsWaiting = true;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Interactable, ECollisionResponse::ECR_Ignore);
+}
+
+void ACouchGame2025Character::StopWait()
+{
+	bIsWaiting = false;
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Interactable, ECollisionResponse::ECR_Block);
+}
+
+void ACouchGame2025Character::SetRespawnLocation(FVector InLocation)
+{
+	RespawnPoint = InLocation;
+}
+
+void ACouchGame2025Character::ResetPlayer()
+{
+	if (bIsInverted)
+	{
+		UPlanetaryMovementComponent* MovementComponent = Cast<UPlanetaryMovementComponent>(GetMovementComponent());
+		MovementComponent->UseExternalGravityDirection = false;
+		MovementComponent->SetGravityDirection(-MovementComponent->GetGravityDirection());
+		MovementComponent->StopMovementImmediately();
+	}
 }
 
 bool ACouchGame2025Character::Interact(ACouchGame2025Character* A)
