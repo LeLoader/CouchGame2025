@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerController.h"
 #include "Math/UnrealMathUtility.h"
 
+ACouchCameraActor* ACouchCameraActor::CurrentCamera = nullptr;
 
 ACouchCameraActor::ACouchCameraActor(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -23,7 +24,6 @@ void ACouchCameraActor::PolarToCartesian(float r, float theta, float phi, FVecto
 	OutVector.X = r * FMath::Sin(theta) * FMath::Cos(phi);
 	OutVector.Y = r * FMath::Sin(theta) * FMath::Sin(phi);
 	OutVector.Z = r * FMath::Cos(theta);
-
 }
 
 void ACouchCameraActor::CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi)
@@ -40,72 +40,14 @@ void ACouchCameraActor::CartesianToPolar(FVector Vector, float& OutR, float& Out
 void ACouchCameraActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//FVector LookAtPosition = CalculateAveragePositions();
-	//float Zoom = 750.f;
-	//FVector CameraDestination;
-	//
-	//FVector LocalUpVector(LookAtPosition);
-	//LocalUpVector.Normalize();
-	//
-	//CameraDestination += Zoom * LocalUpVector;
-	//DrawDebugSphere(GetWorld(), CameraDestination, 16, 32, FColor::Red, false, -1.f, 32);
-	//float TargetR = 0.f;
-	//float TargetTheta = 0.f;
-	//float TargetPhi = 0.f;
-	//CartesianToPolar(CameraDestination, TargetR, TargetTheta, TargetPhi);
-	//TargetTheta = TargetTheta + FMath::DegreesToRadians(90 - Angle);
-	//FVector FwdLookAtNormalized = FVector::ZeroVector;
-	//if (UGameplayStatics::GetPlayerPawn(GetWorld(), 0) != nullptr) {
-	//	FwdLookAtNormalized = UGameplayStatics::GetPlayerPawn(GetWorld(), 0)->GetActorForwardVector();
-	//}
-	//else {
-	//	FwdLookAtNormalized = FVector::ForwardVector;
-	//}
-	//FwdLookAtNormalized *= -1;
-	//float FwdR = 0.f;
-	//float FwdTheta = 0.f;
-	//float FwdPhi = 0.f;
-	//CartesianToPolar(FwdLookAtNormalized, FwdR, FwdTheta, FwdPhi);
-	//TargetPhi = FwdPhi;
-	//
-	//PolarToCartesian(TargetR, TargetTheta, TargetPhi, CameraDestination);
-	//CameraDestination += LookAtPosition;
-	//CartesianToPolar(CameraDestination, TargetR, TargetTheta, TargetPhi);
-	//float CurrentR = 0.f;
-	//float CurrentTheta = 0.f;
-	//float CurrentPhi = 0.f;
-	//CartesianToPolar(GetActorLocation(), CurrentR, CurrentTheta, CurrentPhi);
-	//CurrentR = FMath::FInterpTo(CurrentR, TargetR, DeltaTime, LerpSpeed);
-	//CurrentTheta = FMath::FInterpTo(CurrentTheta, TargetTheta, DeltaTime, LerpSpeed);
-	//CurrentPhi = FMath::FInterpTo(CurrentPhi, TargetPhi, DeltaTime, LerpSpeed);
-	//FVector NewPosition;
-	//PolarToCartesian(CurrentR, CurrentTheta, CurrentPhi, NewPosition);
-	//SetActorLocation(NewPosition);
-	//APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
-	//if (PC->GetPawn() != nullptr)
-	//{
-	//	FVector2D Position = FVector2D::ZeroVector;
-	//	PC->ProjectWorldLocationToScreen(PC->GetPawn()->GetActorLocation(), Position);
-	//	if (IsInWholeCamera(Position) && !isInCenterCamera(Position))
-	//	{
-	//		GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::White, TEXT("In borders"));
-	//	}
-	//}
 }
 
 void ACouchCameraActor::BeginPlay()
 {
 	Super::BeginPlay();
-	TArray<AActor*> Points;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), AInterestPoint::StaticClass(), Points);
-	for (AActor* Point : Points)
-	{
-		AInterestPoint* CurrentPoint = Cast<AInterestPoint>(Point);
-		if (CurrentPoint != nullptr)
-		{
-			CurrentPoint->OnInfluenceZoneEnteredEvent.AddDynamic(this, &ACouchCameraActor::ChangeDestination);
-		}
-	}
+	ACouchCameraActor::CurrentCamera = this;
+	
+
 }
 
 void ACouchCameraActor::ChangeDestination(AInterestPoint* NewInterestPoint)
@@ -180,24 +122,6 @@ void ACouchCameraActor::Zoom(float Input)
 	SetActorLocation(NewPosition);
 }
 
-bool ACouchCameraActor::IsInWholeCamera(FVector2D Position)
-{
-	int sizeX;
-	int sizeY;
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetViewportSize(sizeX, sizeY);
-	return Position.X > 0 && Position.Y > 0 && Position.X < sizeX && Position.Y < sizeY;
-}
-
-bool ACouchCameraActor::isInCenterCamera(FVector2D Position)
-{
-	int sizeX;
-	int sizeY;
-	UGameplayStatics::GetPlayerController(GetWorld(), 0)->GetViewportSize(sizeX, sizeY);
-	int sizeXBordered = sizeX / 5;
-	int sizeYBordered = sizeY / 5;
-	return Position.X > sizeXBordered && Position.Y > sizeYBordered && Position.X < sizeX - sizeXBordered && Position.Y < sizeY - sizeYBordered;
-}
-
 void ACouchCameraActor::InvertCamera()
 {
 	float R;
@@ -218,12 +142,7 @@ void ACouchCameraActor::InvertCamera()
 	bisInverted = !bisInverted;
 }
 
-//{
-//	UP * zoom qui donnent la sommet de la sphere
-//  on passe en polaire
-//	on ajoute (90 - angle des GD) en radians a theta pour avoir l'inclinaison
-//	on prend le forward du joueur 1
-//	on passe en polaire, on prend son phi, on le negate et on le set à notre camera destination
-//	on repasse tout en cartésien
-//  
-//}
+ACouchCameraActor* ACouchCameraActor::GetCurrentCamera()
+{
+	return ACouchCameraActor::CurrentCamera;
+}
