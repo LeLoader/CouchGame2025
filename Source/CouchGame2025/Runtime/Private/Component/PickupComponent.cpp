@@ -19,7 +19,7 @@ UPickupComponent::UPickupComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	PhysicsHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName("PhysicsHandle"), true);
-	
+
 	//PhysicsHandle->AddToRoot();
 
 	// ...
@@ -36,7 +36,7 @@ void UPickupComponent::BeginPlay()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5, FColor::Red, "Player Is InValid");
 	}
-	
+
 	Params.AddIgnoredActor(Player);
 }
 
@@ -48,7 +48,7 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	TraceToFindNearestInteractable();
-	
+
 	// if (IsGrabbingObject)
 	// {
 	// 	PhysicsHandle->SetTargetLocationAndRotation(GetComponentLocation(), GetForwardVector().Rotation());
@@ -60,18 +60,28 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UPickupComponent::TraceToFindNearestInteractable()
 {
-	FHitResult* Hit = new FHitResult();
+	TArray<FHitResult> Hits;
 	FVector StartLocation = GetOwner()->GetActorLocation();
 	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector() * TraceLength;
 	Params.AddIgnoredActor(Player);
-	GetWorld()->SweepSingleByChannel(*Hit, StartLocation, EndLocation, FQuat::Identity, ECC_Interactable, FCollisionShape::MakeSphere(TraceWidth), Params);
+	GetWorld()->SweepMultiByChannel(Hits, StartLocation, EndLocation, FQuat::Identity, ECC_Interactable, FCollisionShape::MakeSphere(TraceWidth), Params);
 
-	if (Hit->bBlockingHit == true && IsValid(Hit->GetActor()))
+	if (Hits.Num() != 0)
 	{
-		if (CurrentInteractionTarget != Hit->GetActor()){
-			OnNewInteractionTarget.Broadcast(Hit->GetActor(), CurrentInteractionTarget);
+		AActor* PrioritaryInteractableActor = Hits[0].GetActor();
+		for (FHitResult Hit : Hits)
+		{
+			if (IInteractable* Interactable = Cast<IInteractable>(Hit.GetActor())) {
+				if (Cast<IInteractable>(PrioritaryInteractableActor)->GetPriority() < Interactable->GetPriority()) {
+					PrioritaryInteractableActor = Hit.GetActor();
+				}
+			}
 		}
-		CurrentInteractionTarget = Hit->GetActor();
+
+		if (CurrentInteractionTarget != PrioritaryInteractableActor) {
+			OnNewInteractionTarget.Broadcast(PrioritaryInteractableActor, CurrentInteractionTarget);
+		}
+		CurrentInteractionTarget = PrioritaryInteractableActor;
 	}
 	else
 	{
@@ -84,44 +94,24 @@ void UPickupComponent::TraceToFindNearestInteractable()
 
 void UPickupComponent::TryPickUp()
 {
-	if (IsValid(PickedUpObject) || IsValid(PickedUpPlayer)) {
+	if ((IsValid(PickedUpObject) || IsValid(PickedUpPlayer) || CurrentInteractionTarget == GetOwner()) && CurrentInteractionTarget != nullptr) {
 		return;
 	}
 
-	if (CurrentInteractionTarget != nullptr)
+	if (IInteractable* PickupObject = Cast<IInteractable>(CurrentInteractionTarget))
 	{
-		AActor* PickedActor = CurrentInteractionTarget;
-
-		if (PickedActor == GetOwner()) return;
-		
-		if (IInteractable* PickupObject = Cast<IInteractable>(PickedActor))
+		if (PickupObject->Interact(Player))
 		{
-			if (PickupObject->Interact(Player)) {
-				PickedUpObject = Cast<APickUpObject>(PickedActor);
-				//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, CurrentInteractionTarget->GetName());
-				//PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
-				//PhysicsHandle->Activate();
-			} else if (Cast<ACouchGame2025Character>(PickedActor))
-			{
-				PickedUpPlayer = Cast<ACouchGame2025Character>(PickedActor);
-				PickedUpPlayer->GrabbedByOtherPlayer(Player);
-			}
-			else {
-				GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Can Not Be Picked up");
-			} 
-		} else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "Cannot be interacted with");
+			PickedUpObject = Cast<APickUpObject>(CurrentInteractionTarget);
+			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, CurrentInteractionTarget->GetName());
+			//PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
+			//PhysicsHandle->Activate();
 		}
-	}
-	else
-	{
-
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			3.f,
-			FColor::Cyan,
-			TEXT("Not Found"));
+		else if (Cast<ACouchGame2025Character>(CurrentInteractionTarget))
+		{
+			PickedUpPlayer = Cast<ACouchGame2025Character>(CurrentInteractionTarget);
+			PickedUpPlayer->GrabbedByOtherPlayer(Player);
+		}
 	}
 }
 
