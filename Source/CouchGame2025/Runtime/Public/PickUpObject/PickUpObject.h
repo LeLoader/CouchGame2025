@@ -17,7 +17,7 @@ public:
 	// Sets default values for this actor's properties
 	APickUpObject();
 
-	bool Interact(ACouchGame2025Character* Player) override;
+	bool Interact(ACouchGame2025Character* A) override;
 
 	UFUNCTION(BlueprintCallable)
 	virtual void StartPickUp(ACouchGame2025Character* Player);
@@ -27,6 +27,9 @@ public:
 	
 	UPROPERTY()
 	ACouchGame2025Character* Interactor;
+
+
+	int GetPriority() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -39,12 +42,9 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<AActor> Socket;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	float LaunchForce;
 
-protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-	bool bCanBePickedUp = true;
 
 #pragma region MultiPlayerHolding
 
@@ -58,6 +58,9 @@ public:
 
 	UPROPERTY()
 	bool bIsPickedUp;
+
+	UPROPERTY()
+	bool bCanBePickedUp;
 
 private:
 
