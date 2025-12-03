@@ -15,6 +15,8 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class ACouchCameraActor;
+class USplineComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -77,6 +79,14 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* RopeAction;
 
+	/** Bridge Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* BridgeAction;
+
+	/** Transfert Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* TransfertAction;
+
 #pragma endregion Inputs
 
 public:
@@ -90,6 +100,33 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UProjectileMovementComponent* ProjectileMovement;
 
+#pragma region Transfert
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void MoveAlongSpline(USplineComponent* Spline, bool IsMovingForward);
+
+	UFUNCTION()
+	void SetGameplayCameraAsCamera(float TimeToBlend);
+
+	UFUNCTION()
+	void SetSpecialCameraAsCamera(float TimeToBlend, AActor* InActor);
+
+
+	DECLARE_MULTICAST_DELEGATE(FOnEndMovingAlongSpline);
+
+	FOnEndMovingAlongSpline OnEndMovingAlongSpline;
+
+	UFUNCTION(BlueprintCallable)
+	void CallEventEndMovingAlongSpline();
+
+	UFUNCTION()
+	void InvertCamera();
+
+protected:
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<EViewTargetBlendFunction> BlendType;
+#pragma endregion
+
 protected:
 
 	/** Called for movement */
@@ -100,6 +137,21 @@ protected:
 	
 	/** Called for interacting */
 	void Interact(const FInputActionValue& Value);
+
+	/** Called for Transfering */
+	void Transfert(const FInputActionValue& Value);
+
+	void PolarToCartesian(float r, float theta, float phi, FVector& OutVector);
+	void CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi);
+
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsInverted;
+
+	UPROPERTY()
+	TObjectPtr<ACouchCameraActor> Camera;
+
 
 #pragma region Rope
 
@@ -127,6 +179,15 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsWaiting;
+
+private:
+	UFUNCTION(BlueprintCallable)
+	void InvertCharacter();
+
+
 
 #pragma region Water
 
