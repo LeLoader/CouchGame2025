@@ -28,181 +28,194 @@ APickUpObject::APickUpObject()
 // Called when the game starts or when spawned
 void APickUpObject::BeginPlay()
 {
-	Super::BeginPlay();
-	bIsPickedUp = false;
-	bIsGrabbedByBoth = false;
+ Super::BeginPlay();
+ bIsPickedUp = false;
+ bIsGrabbedByBoth = false;
 }
 
+// Interact - partie où le deuxième joueur saisit l'objet (modifiée)
 bool APickUpObject::Interact(ACouchGame2025Character* Player)
 {
-	if (Player == nullptr && !bCanBePickedUp) return false;
+ if (Player == nullptr && !bCanBePickedUp) return false;
 
-	if (!NeedsTwoPlayersToBePickedUp)
-	{
-		StartPickUp(Player);
-		return true;
-	}
-	else
-	{
-		// If two players are needed to move the object around
-		
-		if (!bIsAPlayerHolding){ // If Player is the first one to hold the object
-			Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
-			Player->GetCharacterMovement()->SetMovementMode(MOVE_None);
-			Player->bIsGrabbing = true;
-			// this->AttachToComponent(
-			// Player->GetMesh(),
-			// FAttachmentTransformRules
-			// (EAttachmentRule::SnapToTarget,
-			// EAttachmentRule::SnapToTarget,
-			// EAttachmentRule::SnapToTarget,
-			// true),
-			// "Hand_Pos");
-			PlayersHolding.Add(Player); // Will be first index if first to pick up
-			bIsAPlayerHolding = true;
-			return true;
-		} else // If a Player is already holding the object
-		{
-			bIsGrabbedByBoth = true;
-			Mesh->BodyInstance.bLockRotation = true;
-			SetActorEnableCollision(false);
-			Player->bIsGrabbing = true;
-			this->AttachToComponent(
-			Player->GetMesh(),
-			FAttachmentTransformRules
-			(EAttachmentRule::SnapToTarget,
-			EAttachmentRule::SnapToTarget,
-			EAttachmentRule::KeepWorld,
-			true),
-			"Throw_Pos");
-			PlayersHolding.Add(Player);
-			PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-			this->AttachToComponent(
-				PlayersHolding[0]->GetMesh(),
-				FAttachmentTransformRules
-				(EAttachmentRule::SnapToTarget,
-				EAttachmentRule::SnapToTarget,
-				EAttachmentRule::KeepWorld,
-				true),
-				"Throw_Pos");
-			return true;
-		}
-	}
-	
+ if (!NeedsTwoPlayersToBePickedUp)
+ {
+  StartPickUp(Player);
+  return true;
+ }
+ else
+ {
+  if (!bIsAPlayerHolding){ // If Player is the first one to hold the object
+   Mesh->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+   Player->GetCharacterMovement()->SetMovementMode(MOVE_None);
+   Player->bIsGrabbing = true;
+   PlayersHolding.Add(Player); // Will be first index if first to pick up
+   bIsAPlayerHolding = true;
+   return true;
+  } else // If a Player is already holding the object
+  {
+   bIsGrabbedByBoth = true;
+
+   // Lock rotation + translations and disable physics to avoid drift
+   Mesh->BodyInstance.bLockRotation = true;
+   Mesh->BodyInstance.bLockXTranslation = true;
+   Mesh->BodyInstance.bLockYTranslation = true;
+   Mesh->BodyInstance.bLockZTranslation = true;
+   Mesh->SetSimulatePhysics(false);
+   Mesh->SetEnableGravity(false);
+   Mesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector);
+   Mesh->SetAllPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+
+   SetActorEnableCollision(false);
+   Player->bIsGrabbing = true;
+   this->AttachToComponent(
+    Player->GetMesh(),
+    FAttachmentTransformRules
+    (EAttachmentRule::SnapToTarget,
+    EAttachmentRule::SnapToTarget,
+    EAttachmentRule::KeepWorld,
+    true),
+    "Throw_Pos");
+   PlayersHolding.Add(Player);
+   PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+   this->AttachToComponent(
+    PlayersHolding[0]->GetMesh(),
+    FAttachmentTransformRules
+    (EAttachmentRule::SnapToTarget,
+    EAttachmentRule::SnapToTarget,
+    EAttachmentRule::KeepWorld,
+    true),
+    "Throw_Pos");
+   return true;
+  }
+ }
 }
 
+// StartPickUp - verrouille la physique et les translations/rotations
 void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 
-	// Will only be called when a single player is needed to pick up the object
-	
-	Interactor = Player;
-	Interactor->bIsGrabbing = true;
-	Interactor->PickupComponent->PickedUpObject = this;
-	PlayersHolding.Add(Player);
-	this->AttachToComponent(
-		Player->GetMesh(),
-		FAttachmentTransformRules
-		(
-		EAttachmentRule::SnapToTarget,
-		EAttachmentRule::SnapToTarget,
-		EAttachmentRule::KeepWorld,
-		true
-		),
-		"Throw_Pos"
-		);
-	
-	SetActorEnableCollision(false);
-	Mesh->BodyInstance.bLockRotation = true;
+ // Will only be called when a single player is needed to pick up the object
+
+ Interactor = Player;
+ Interactor->bIsGrabbing = true;
+ Interactor->PickupComponent->PickedUpObject = this;
+ PlayersHolding.Add(Player);
+
+ // Attach and snap location, rotation and scale to the socket
+ this->AttachToComponent(
+  Player->GetMesh(),
+  FAttachmentTransformRules
+  (
+   EAttachmentRule::SnapToTarget,
+   EAttachmentRule::SnapToTarget,
+   EAttachmentRule::SnapToTarget,
+   true
+  ),
+  "Throw_Pos"
+ );
+
+ // Disable collision/physics and lock translations + rotation to keep relative transform fixed
+ SetActorEnableCollision(false);
+
+ // Disable physics + gravity and zero velocities to prevent drift
+ Mesh->SetSimulatePhysics(false);
+ Mesh->SetEnableGravity(false);
+ Mesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector);
+ Mesh->SetAllPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
+
+ // Lock translations and rotation on the body instance
+ Mesh->BodyInstance.bLockXTranslation = true;
+ Mesh->BodyInstance.bLockYTranslation = true;
+ Mesh->BodyInstance.bLockZTranslation = true;
+ Mesh->BodyInstance.bLockRotation = true;
 }
 
+// StopPickUp - déverrouille la physique et restaure le comportement précédent
 void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 {
-	/*if (PlayersHolding.Num() < 2 && PlayersHolding.Num() > 0)
-	{
-		PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-		PlayersHolding[0]->bIsGrabbing = false;
-		PlayersHolding.Empty();
-		this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-		SetActorEnableCollision(true);
-		Mesh->BodyInstance.bLockRotation = false;
-		bIsGrabbedByBoth = false;
-		bIsAPlayerHolding = false;
-		return;
-	}
-	ReleaseObjectFromOnePlayer(Player);*/
-	if (PlayersHolding.Num() == 2 || PlayersHolding.Num() == 0) return;
-	Player->PickupComponent->PickedUpObject = nullptr;
-	//DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	
-	PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	PlayersHolding[0]->bIsGrabbing = false;
-	PlayersHolding.Empty();
-	this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	SetActorEnableCollision(true);
-	Mesh->BodyInstance.bLockRotation = false;
-	bIsGrabbedByBoth = false;
-	bIsAPlayerHolding = false;
-	
-	/*UCharacterMovementComponent* Move = Player->GetCharacterMovement();
-	FVector4 CharacterMovementValues = FVector4(Move->BrakingFrictionFactor, Move->GroundFriction, Move->BrakingFrictionFactor, Move->BrakingDecelerationWalking);
-	Move->BrakingFrictionFactor = 0.f;
-	Move->GroundFriction = 0.f;
-	Move->BrakingFriction = 0.f;
-	Move->BrakingDecelerationWalking = 0.f;
+ if (PlayersHolding.Num() == 2 || PlayersHolding.Num() == 0) return;
+ Player->PickupComponent->PickedUpObject = nullptr;
 
+ PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+ PlayersHolding[0]->bIsGrabbing = false;
+ PlayersHolding.Empty();
+ this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
-	Player->GetCharacterMovement()->SetMovementMode(MOVE_Walking);*/
-	FVector FwdVector = Player->GetActorForwardVector();
-	/*Player->LaunchCharacter(FVector(
-		Player->FrontLaunchForce * 500.f * FwdVector.X,
-		Player->FrontLaunchForce * 500.f * FwdVector.Y,
-		Player->UpLaunchForce * 500.f),
-		true,
-		true);*/
+ // Réactiver collision et physique
+ SetActorEnableCollision(true);
 
+ // Réactiver la simulation physique et la gravité
+ Mesh->SetSimulatePhysics(true);
+ Mesh->SetEnableGravity(true);
 
-	/*Move->BrakingFrictionFactor = CharacterMovementValues[0];
-	Move->GroundFriction = CharacterMovementValues[1];
-	Move->BrakingFriction = CharacterMovementValues[2];
-	Move->BrakingDecelerationWalking = CharacterMovementValues[3];*/
+ // Déverrouiller translations/rotation
+ Mesh->BodyInstance.bLockRotation = false;
+ Mesh->BodyInstance.bLockXTranslation = false;
+ Mesh->BodyInstance.bLockYTranslation = false;
+ Mesh->BodyInstance.bLockZTranslation = false;
 
-	Mesh->AddImpulse(FVector(
-		Player->FrontLaunchForce* FwdVector.X / 2,
-		Player->FrontLaunchForce* FwdVector.Y / 2,
-		Player->UpLaunchForce) * LaunchForce * 1000.f);
-	//Player->SetActorEnableCollision(true);
+ bIsGrabbedByBoth = false;
+ bIsAPlayerHolding = false;
 
-	Player->bIsGrabbing = false;
+ FVector FwdVector = Player->GetActorForwardVector();
+
+ Mesh->AddImpulse(FVector(
+  Player->FrontLaunchForce* FwdVector.X / 2,
+  Player->FrontLaunchForce* FwdVector.Y / 2,
+  Player->UpLaunchForce) * LaunchForce * 1000.f);
+
+ Player->bIsGrabbing = false;
+}
+
+// ReleaseObjectFromOnePlayer - déverrouille également quand un joueur relâche et un autre reste
+void APickUpObject::ReleaseObjectFromOnePlayer(ACouchGame2025Character* PlayerReleasing)
+{
+ Mesh->BodyInstance.bLockRotation = false;
+ Mesh->BodyInstance.bLockXTranslation = false;
+ Mesh->BodyInstance.bLockYTranslation = false;
+ Mesh->BodyInstance.bLockZTranslation = false;
+
+ SetActorEnableCollision(true);
+ PlayerReleasing->bIsGrabbing = false;
+ int PlayerReleasingIndex = PlayersHolding.Find(PlayerReleasing);
+ PlayersHolding.RemoveAt(PlayerReleasingIndex);
+ this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+ if (PlayersHolding.Num() > 0)
+ {
+  this->AttachToComponent(
+   PlayersHolding[0]->GetMesh(),
+   FAttachmentTransformRules
+   (EAttachmentRule::SnapToTarget,
+   EAttachmentRule::SnapToTarget,
+   EAttachmentRule::SnapToTarget,
+   true),
+   "Hand_Pos");
+  PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_None);
+
+  // Si un joueur reste, on lock encore l'objet pour qu'il reste fixé
+  Mesh->SetSimulatePhysics(false);
+  Mesh->SetEnableGravity(false);
+  Mesh->BodyInstance.bLockRotation = true;
+  Mesh->BodyInstance.bLockXTranslation = true;
+  Mesh->BodyInstance.bLockYTranslation = true;
+  Mesh->BodyInstance.bLockZTranslation = true;
+  bIsGrabbedByBoth = false;
+ }
+ else
+ {
+  // Aucun joueur restant : réactiver la physique
+  Mesh->SetSimulatePhysics(true);
+  Mesh->SetEnableGravity(true);
+  Mesh->BodyInstance.bLockRotation = false;
+  bIsGrabbedByBoth = false;
+ }
 }
 
 int APickUpObject::GetPriority()
 {
-	return 10;
+ return 1;
 }
-
-// Called every frame
-
-void APickUpObject::ReleaseObjectFromOnePlayer(ACouchGame2025Character* PlayerReleasing)
-{
-	Mesh->BodyInstance.bLockRotation = false;
-	SetActorEnableCollision(true);
-	PlayerReleasing->bIsGrabbing = false;
-	int PlayerReleasingIndex = PlayersHolding.Find(PlayerReleasing);
-	PlayersHolding.RemoveAt(PlayerReleasingIndex);
-	this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	
-	this->AttachToComponent(
-	PlayersHolding[0]->GetMesh(),
-	FAttachmentTransformRules
-	(EAttachmentRule::SnapToTarget,
-	EAttachmentRule::SnapToTarget,
-	EAttachmentRule::SnapToTarget,
-	true),
-	"Hand_Pos");
-	PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_None);
-	bIsGrabbedByBoth = false;
-}
-
 
 void APickUpObject::Tick(float DeltaTime)
 {
