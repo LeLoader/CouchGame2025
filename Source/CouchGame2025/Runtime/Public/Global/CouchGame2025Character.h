@@ -3,11 +3,11 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
+#include "Interface/Interactable.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Logging/LogMacros.h"
-#include "../Component/RessourceContainerComponent.h"
+#include "Component/RessourceContainerComponent.h"
 #include "CouchGame2025Character.generated.h"
 
 class UPickupComponent;
@@ -15,6 +15,8 @@ class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
 class UInputAction;
+class ACouchCameraActor;
+class USplineComponent;
 struct FInputActionValue;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
@@ -24,6 +26,9 @@ class ACouchGame2025Character : public ACharacter, public IInteractable
 {
 private:
 	GENERATED_BODY()
+
+	void BeginPlay() override;
+	void Tick(float DeltaTime) override;
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
@@ -77,6 +82,14 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* RopeAction;
 
+	/** Bridge Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* BridgeAction;
+
+	/** Transfert Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* TransfertAction;
+
 #pragma endregion Inputs
 
 public:
@@ -86,9 +99,34 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPickupComponent* PickupComponent;
 
-	/** Projectile Movement Component **/
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UProjectileMovementComponent* ProjectileMovement;
+#pragma region Transfert
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void MoveAlongSpline(USplineComponent* Spline, bool IsMovingForward);
+
+	UFUNCTION()
+	void SetGameplayCameraAsCamera(float TimeToBlend);
+
+	UFUNCTION()
+	void SetSpecialCameraAsCamera(float TimeToBlend, AActor* InActor);
+
+
+	DECLARE_MULTICAST_DELEGATE(FOnEndMovingAlongSpline);
+
+	FOnEndMovingAlongSpline OnEndMovingAlongSpline;
+
+	UFUNCTION(BlueprintCallable)
+	void CallEventEndMovingAlongSpline();
+
+	UFUNCTION()
+	void InvertCamera();
+
+protected:
+	UPROPERTY(EditAnywhere)
+	TEnumAsByte<EViewTargetBlendFunction> BlendType;
+#pragma endregion
+
+	int GetPriority() override;
 
 protected:
 
@@ -100,6 +138,21 @@ protected:
 	
 	/** Called for interacting */
 	void Interact(const FInputActionValue& Value);
+
+	/** Called for Transfering */
+	void Transfert(const FInputActionValue& Value);
+
+	void PolarToCartesian(float r, float theta, float phi, FVector& OutVector);
+	void CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi);
+
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsInverted;
+
+	UPROPERTY()
+	TObjectPtr<ACouchCameraActor> Camera;
+
 
 #pragma region Rope
 
@@ -128,10 +181,19 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
+	UPROPERTY(BlueprintReadWrite)
+	bool bIsWaiting;
+
+private:
+	UFUNCTION(BlueprintCallable)
+	void InvertCharacter();
+
+
+
 #pragma region Water
 
 public:
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	URessourceContainerComponent* WaterTank;
 
 #pragma endregion Water
@@ -150,15 +212,40 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsGrabbingPlayer;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsAnyThrowTriggerToggled;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bAreBothTriggerToggled;
+	
 	
 	UFUNCTION()
 	void GrabbedByOtherPlayer(ACouchGame2025Character* Other);
 
+	// UFUNCTION()
+	// void UpdateLeftTrigger();
+	//
+	// UPROPERTY()
+	// bool bIsLeft
+	//
+	// UFUNCTION()
+	// void UpdateRightTrigger();
+
+	UFUNCTION()
+	void ReleaseTrigger();
+	
+	UFUNCTION()
+	void CheckForThrowPlayer();
+	
 	UFUNCTION()
 	void ThrowPlayer();
 
+	UFUNCTION()
+	void StopThrow();
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	float frontLaunchForce;
+	float FrontLaunchForce;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float UpLaunchForce;
@@ -172,8 +259,8 @@ private:
 	ACouchGame2025Character* OtherPlayer;
 
 protected:
-	virtual void Interact(ACouchGame2025Character* A) override;
+	virtual bool Interact(ACouchGame2025Character* A) override;
 	
-#pragma endregion Grab	
+#pragma endregion Grab
 };
 

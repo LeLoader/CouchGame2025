@@ -35,8 +35,9 @@ void AABlackHole::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 		return;
 	}
 
-	if (ACouchGame2025Character* DeadCharacter = Cast<ACouchGame2025Character>(OtherActor))
+	if (Cast<ACouchGame2025Character>(OtherActor))
 	{
+		ACouchGame2025Character* DeadCharacter = Cast<ACouchGame2025Character>(OtherActor);
 		ACharacter* OtherCharacter = nullptr;
 		if (DeadCharacter == UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)) {
 			OtherCharacter = UGameplayStatics::GetPlayerCharacter(GetWorld(), 1);

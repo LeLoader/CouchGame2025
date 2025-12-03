@@ -14,6 +14,17 @@
 
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
 #include "ProfilingDebugging/CookStats.h"
+#include "Kismet/KismetMathLibrary.h"
+#include "Kismet/GameplayStatics.h"
+#include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
+#include "CouchGame2025/Runtime/Public/Gameplay/CouchCameraActor.h"
+#include "CouchGame2025/Runtime/Public/Component/PlanetaryMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/GameplayStaticsTypes.h"
+#include "ProfilingDebugging/CookStats.h"
+
+#define ECC_Interactable ECC_GameTraceChannel2
+
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -30,6 +41,8 @@ ACouchGame2025Character::ACouchGame2025Character()
 	bUseControllerRotationRoll = false;
 	bIsGrabbing = false;
 	bIsGrabbingPlayer = false;
+	bIsAnyThrowTriggerToggled = false;
+	bAreBothTriggerToggled = false;
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
@@ -61,8 +74,6 @@ ACouchGame2025Character::ACouchGame2025Character()
 
 	PickupComponent = CreateDefaultSubobject<UPickupComponent>(TEXT("PickupComponent"));
 	PickupComponent->SetupAttachment(GetCapsuleComponent());
-
-	ProjectileMovement = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("ProjectileMovement"));
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
@@ -118,8 +129,16 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ToggleRopeMode);
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Canceled, this, &ACouchGame2025Character::ToggleRopeMode);
 
+		//Transfert
+		EnhancedInputComponent->BindAction(TransfertAction, ETriggerEvent::Started, this, &ACouchGame2025Character::Transfert);
+
+		// Bridge
+		//EnhancedInputComponent->BindAction(BridgeAction, ETriggerEvent::Started, this, &AABridge::ToggleBridge);
 		// Throw Player
-		EnhancedInputComponent->BindAction(ThrowLeftAction, ETriggerEvent::Started, this, &ACouchGame2025Character::ThrowPlayer);
+		EnhancedInputComponent->BindAction(ThrowLeftAction, ETriggerEvent::Started, this, &ACouchGame2025Character::CheckForThrowPlayer);
+		EnhancedInputComponent->BindAction(ThrowRightAction, ETriggerEvent::Started, this, &ACouchGame2025Character::CheckForThrowPlayer);
+		EnhancedInputComponent->BindAction(ThrowLeftAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ReleaseTrigger);
+		EnhancedInputComponent->BindAction(ThrowRightAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ReleaseTrigger);
 	}
 	else
 	{
@@ -127,46 +146,59 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 	}
 }
 
+void ACouchGame2025Character::PolarToCartesian(float r, float theta, float phi, FVector& OutVector)
+{
+	OutVector.X = r * FMath::Sin(theta) * FMath::Cos(phi);
+	OutVector.Y = r * FMath::Sin(theta) * FMath::Sin(phi);
+	OutVector.Z = r * FMath::Cos(theta);
+}
+
+void ACouchGame2025Character::CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi)
+{
+	OutR = Vector.Length();
+	OutTheta = FMath::Acos(Vector.Z / OutR);
+	OutPhi = FMath::Atan2(Vector.Y, Vector.X);
+}
+
+int ACouchGame2025Character::GetPriority()
+{
+	return 0;
+}
+
 void ACouchGame2025Character::Move(const FInputActionValue& Value)
 {
+	if (bIsWaiting) return;
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	InputMovement = MovementVector;
 
-	if (Controller != nullptr && !bIsGrabbing)
+	//if (Controller != nullptr && !bIsGrabbing)
+	//{} 
+	//}
+	float PosR;
+	float PosTheta;
+	float PosPhi;
+	CartesianToPolar(GetActorLocation(), PosR, PosTheta, PosPhi);
+	FVector NorthVector;
+	PolarToCartesian(PosR, PosTheta - 0.1f, PosPhi, NorthVector);
+	FVector EastVector;
+	if (bIsInverted)
 	{
-		GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::Blue, TEXT("moving"));
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		//const FRotator YawRotation(Rotation.Roll, Rotation.Yaw, Rotation.Pitch);
-		const FRotator YawRotation(Rotation);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
-
+		PolarToCartesian(PosR, PosTheta, PosPhi + 0.1f, EastVector);
 	}
+	else
+	{
+		PolarToCartesian(PosR, PosTheta, PosPhi - 0.1f, EastVector);
+	}
+	AddMovementInput(NorthVector, MovementVector.Y);
+	AddMovementInput(EastVector, MovementVector.X);
 }
 
 void ACouchGame2025Character::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
-
-
-	if (Controller != nullptr)
-	{
-		// add yaw and pitch input to controller
-		// 
-		AddControllerYawInput(LookAxisVector.X);
-		AddControllerPitchInput(LookAxisVector.Y);
-	}
+	Camera->Move(LookAxisVector);
 }
 
 void ACouchGame2025Character::Interact(const FInputActionValue& Value)
@@ -190,11 +222,6 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
 	bIsRopeFree = !bIsRopeFree;
-}
-
-void ACouchGame2025Character::AddWater(float AddedWaterAmount)
-{
-	CurrentWaterAmount = FMath::Clamp(CurrentWaterAmount + AddedWaterAmount, 0, MaxWaterAmount);
 }
 
 void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
@@ -223,46 +250,172 @@ void ACouchGame2025Character::GrabbedByOtherPlayer(ACouchGame2025Character* Othe
 {
 	Other->OtherPlayer = this;
 	Other->bIsGrabbingPlayer = true;
-	this->AttachToActor(
-	Other,
-	FAttachmentTransformRules(
-		EAttachmentRule::SnapToTarget,
-		EAttachmentRule::SnapToTarget,
-		EAttachmentRule::SnapToTarget,
-		true),
-		"Hand_Pos");
-	// this->AttachToComponent(
-	// 	Other->GetMesh(),
-	// 	FAttachmentTransformRules(
-	// 		EAttachmentRule::SnapToTarget,
-	// 		EAttachmentRule::SnapToTarget,
-	// 		EAttachmentRule::SnapToTarget,
-	// 		true),
-	// 		"Hand_Pos");
+	//SetActorEnableCollision(false);
+	// this->AttachToActor(
+	// Other,
+	// FAttachmentTransformRules(
+	// 	EAttachmentRule::SnapToTarget,
+	// 	EAttachmentRule::SnapToTarget,
+	// 	EAttachmentRule::SnapToTarget,
+	// 	true),
+	// 	"Throw_Pos");
 	SetActorEnableCollision(false);
+	this->AttachToComponent(
+		Other->GetMesh(),
+		FAttachmentTransformRules(
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::SnapToTarget,
+			EAttachmentRule::KeepWorld,
+			true),
+			"Throw_Pos");
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
 }
-
 
 void ACouchGame2025Character::StopMove()
 {
 	InputMovement = FVector2D::ZeroVector;
 }
 
-void ACouchGame2025Character::Interact(ACouchGame2025Character* A)
+void ACouchGame2025Character::BeginPlay()
 {
-	
+	Super::BeginPlay();
+	// FDetachmentTransformRules rules = FDetachmentTransformRules(EDetachmentRule::KeepWorld, true);
+	// SceneComponent->DetachFromComponent(rules);
+	TArray<AActor*> ResultActors;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ACouchCameraActor::StaticClass(), ResultActors);
+	Camera = Cast<ACouchCameraActor>(ResultActors[0]);
+	UGameplayStatics::GetPlayerController(this, 0)->SetViewTarget(Camera);
+}
+
+void ACouchGame2025Character::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	// SceneComponent->SetWorldLocation(GetActorLocation());
+}
+
+void ACouchGame2025Character::Transfert(const FInputActionValue& Value)
+{
+	FHitResult Hit;
+	FVector TraceStart = GetActorLocation();
+	FVector TraceEnd = GetActorLocation() + GetActorForwardVector() * 1000.0f;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(this);
+
+	GetWorld()->LineTraceSingleByChannel(Hit, TraceStart, TraceEnd, ECC_Interactable, QueryParams);
+
+	if (Hit.bBlockingHit) {
+		if (IInteractable* Interactable = Cast<IInteractable>(Hit.GetActor())) {
+			Interactable->Interact(this);
+		}
+	}
+}
+
+void ACouchGame2025Character::InvertCharacter()
+{
+	bIsInverted = !bIsInverted;
+	UPlanetaryMovementComponent* MovementComponent;
+	MovementComponent = Cast<UPlanetaryMovementComponent>(GetMovementComponent());
+	MovementComponent->UseExternalGravityDirection = !MovementComponent->UseExternalGravityDirection;
+}
+
+void ACouchGame2025Character::InvertCamera()
+{
+	Camera->InvertCamera();
+}
+
+void ACouchGame2025Character::CallEventEndMovingAlongSpline()
+{
+	OnEndMovingAlongSpline.Broadcast();
+}
+
+void ACouchGame2025Character::SetGameplayCameraAsCamera(float TimeToBlend)
+{
+	UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(Camera, TimeToBlend, BlendType);
+}
+
+void ACouchGame2025Character::SetSpecialCameraAsCamera(float TimeToBlend, AActor* InActor)
+{
+	UGameplayStatics::GetPlayerController(this, 0)->SetViewTargetWithBlend(InActor, TimeToBlend, BlendType);
+}
+
+bool ACouchGame2025Character::Interact(ACouchGame2025Character* A)
+{
+	return false;
+}
+
+void ACouchGame2025Character::CheckForThrowPlayer()
+{
+	if (bIsAnyThrowTriggerToggled)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("2"));
+		bAreBothTriggerToggled = true;
+
+		if (bIsGrabbing && !bIsGrabbingPlayer) {
+			PickupComponent->PickedUpObject->StopPickUp(this);
+		}
+		ThrowPlayer();
+	} else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, TEXT("1"));
+		bIsAnyThrowTriggerToggled = true;
+	}
+}
+
+void ACouchGame2025Character::ReleaseTrigger()
+{
+	if (bAreBothTriggerToggled)
+	{
+		bAreBothTriggerToggled = false;
+	} else
+	{
+		bIsAnyThrowTriggerToggled = false;
+	}
+}
+
+void ACouchGame2025Character::StopThrow()
+{
+	if (bIsAnyThrowTriggerToggled)
+	{
+		
+	}
 }
 	
 void ACouchGame2025Character::ThrowPlayer()
 {
 	if (OtherPlayer == nullptr) return;
-	
-	SetActorEnableCollision(true);
+	//SetActorEnableCollision(true);
 	OtherPlayer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	OtherPlayer->SetActorRotation(FRotator(0, 0, 0));
-	OtherPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	//OtherPlayer->SetActorRotation(FRotator(0, 0, 0));
+	//OtherPlayer->ProjectileMovement->SetVelocityInLocalSpace(OtherPlayer->GetActorForwardVector());
 	//OtherPlayer->ProjectileMovement->Activate();
+	//FVector FForce = (OtherPlayer->GetActorForwardVector() * FrontLaunchForce, OtherPlayer->GetActorUpVector() * UpLaunchForce);
+	//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::Printf(TEXT("FForce: %s"), *FForce.ToString()));
+	//OtherPlayer->GetCharacterMovement()->Launch(FForce);
+#pragma region test
+	//UCharacterMovementComponent OtherPlayerCharacterMovement = *OtherPlayer->GetCharacterMovement();
+	
+	UCharacterMovementComponent* Move = OtherPlayer->GetCharacterMovement();
+	FVector4 CharacterMovementValues = FVector4(Move->BrakingFrictionFactor, Move->GroundFriction, Move->BrakingFrictionFactor, Move->BrakingDecelerationWalking);
+	Move->BrakingFrictionFactor = 0.f;
+	Move->GroundFriction = 0.f;
+	Move->BrakingFriction = 0.f;
+	Move->BrakingDecelerationWalking = 0.f;
+
+
+	OtherPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
+	FVector FwdVector = OtherPlayer->GetActorForwardVector();
+	OtherPlayer->LaunchCharacter(FVector(
+		FrontLaunchForce * 500.f * FwdVector.X,
+		FrontLaunchForce * 500.f * FwdVector.Y,
+		UpLaunchForce * 500.f),
+		true,
+		true);
+	Move->BrakingFrictionFactor = CharacterMovementValues[0];
+	Move->GroundFriction = CharacterMovementValues[1];
+	Move->BrakingFriction = CharacterMovementValues[2];
+	Move->BrakingDecelerationWalking = CharacterMovementValues[3];
+	OtherPlayer->SetActorEnableCollision(true);
+#pragma endregion
 
 	PickupComponent->PickedUpPlayer = nullptr;
 	OtherPlayer->bIsGrabbingPlayer = false;
