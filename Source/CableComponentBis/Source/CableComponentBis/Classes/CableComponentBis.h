@@ -8,6 +8,7 @@
 
 class FPrimitiveSceneProxy;
 class USphereComponent;
+class UPhysicsConstraintComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogCableComponentBis, Log, All);
 
@@ -29,7 +30,7 @@ struct FCableParticle
 };
 
 /** Component that allows you to specify custom triangle mesh geometry */
-UCLASS(hidecategories=(Object, Physics, Activation, "Components|Activation"), editinlinenew, meta=(BlueprintSpawnableComponent), ClassGroup=Rendering)
+UCLASS(hidecategories=(Object, Physics, Activation, "Components|Activation"), editinlinenew, meta=(BlueprintSpawnableComponent), ClassGroup=Rendering, Blueprintable)
 class CABLECOMPONENTBIS_API UCableComponentBis : public UMeshComponent
 {
 	GENERATED_UCLASS_BODY()
@@ -177,6 +178,16 @@ public:
 	/** How many times to repeat the material along the length of the cable */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Cable Rendering", meta=(UIMin = "0.1", UIMax = "8"))
 	float TileMaterial;
+
+#pragma region Gameplay
+
+	UFUNCTION()
+	void TryToggleRope();
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsAttached = false;
+
+#pragma endregion Gameplay
 
 private:
 	void SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance);
