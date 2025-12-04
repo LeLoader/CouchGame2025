@@ -60,20 +60,20 @@ ACouchGame2025Character::ACouchGame2025Character()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoomRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraBoomRoot"));
-	CameraBoomRoot->SetupAttachment(RootComponent);
-
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(CameraBoomRoot);
-	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
-	// Create a follow camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	// // Create a camera boom (pulls in towards the player if there is a collision)
+	// CameraBoomRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraBoomRoot"));
+	// CameraBoomRoot->SetupAttachment(RootComponent);
+	// 
+	// // Create a camera boom (pulls in towards the player if there is a collision)
+	// CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	// CameraBoom->SetupAttachment(CameraBoomRoot);
+	// CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
+	// CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	// 
+	// // Create a follow camera
+	// FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	// FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	// FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	PickupComponent = CreateDefaultSubobject<UPickupComponent>(TEXT("PickupComponent"));
 	PickupComponent->SetupAttachment(GetCapsuleComponent());
@@ -86,6 +86,8 @@ ACouchGame2025Character::ACouchGame2025Character()
 
 	CableComponent = CreateDefaultSubobject<UCableComponentBis>(TEXT("CableComponent"));
 	CableComponent->SetupAttachment(GetMesh(), FName("RopeSocket"));
+	CableComponent->CableLength = 0;
+	CableComponent->EndLocation = FVector::Zero();
 }
 
 //////////////////////////////////////////////////////////////////////////

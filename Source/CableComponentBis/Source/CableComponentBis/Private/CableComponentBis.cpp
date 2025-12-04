@@ -740,7 +740,7 @@ void UCableComponentBis::TryToggleRope()
 {
 	if (bIsAttached) { // Detached
 		SetVisibility(false);
-		SetAttachEndTo(nullptr, FName(NAME_None));
+		//SetAttachEndTo(nullptr, FName(NAME_None));
 		bIsAttached = false;
 	}
 	else { // Try attach
@@ -748,7 +748,7 @@ void UCableComponentBis::TryToggleRope()
 			if (GetOwner() != UGameplayStatics::GetPlayerCharacter(GetWorld(), i)) {
 				ACharacter* Target = UGameplayStatics::GetPlayerCharacter(GetWorld(), i);
 				SetVisibility(true);
-				SetAttachEndTo(Target, Target->GetRootComponent()->GetFName());
+				SetAttachEndToComponent(Target->GetMesh(), FName("RopeSocket"));
 				bIsAttached = true;
 				break;
 			}
