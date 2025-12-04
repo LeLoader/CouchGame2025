@@ -19,6 +19,8 @@ class ACouchCameraActor;
 class USplineComponent;
 class UTransfertSettings;
 struct FInputActionValue;
+class UCableComponentBis;
+class UPhysicsConstraintComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -43,7 +45,12 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FollowCamera;
 
+	/** Cable component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCableComponentBis* CableComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UPhysicsConstraintComponent* PhysicsConstraintComponent;
 	
 #pragma region Inputs
 
