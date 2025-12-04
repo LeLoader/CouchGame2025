@@ -12,6 +12,9 @@ DECLARE_MULTICAST_DELEGATE(FOnContainerEmptySignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnContainerEmptySignatureBP);
 DECLARE_MULTICAST_DELEGATE(FOnContainerFullSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnContainerFullSignatureBP);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRessourceStartMovingSignatureBP);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRessourceStopMovingSignatureBP);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRessourceMoveInstantSignatureBP);
 
 UENUM(BlueprintType)
 enum class FRessourceType : uint8 {
@@ -69,6 +72,15 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnContainerFullSignatureBP OnContainerFullBP;
 	FOnContainerFullSignature OnContainerFull;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnRessourceStartMovingSignatureBP OnRessourceStartMovingBP;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnRessourceStopMovingSignatureBP OnRessourceStopMovingBP;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnRessourceMoveInstantSignatureBP OnRessourceMoveInstantBP;
 
 #pragma region Getter/Setter
 
