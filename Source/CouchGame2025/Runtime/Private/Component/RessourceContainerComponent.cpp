@@ -75,7 +75,7 @@ float URessourceContainerComponent::InstantMoveRessource(float DeltaTime, UResso
 		float RessourceAdded = Target->AddRessource(RessourceRemoved);
 		float OverflowDuringTransaction = RessourceRemoved - RessourceAdded;
 		AddRessource(OverflowDuringTransaction);
-
+		OnRessourceMoveInstantBP.Broadcast();
 		return RessourceAdded;
 	}
 	// Target is not valid, destroy ressource
@@ -90,6 +90,7 @@ void URessourceContainerComponent::StartMovingRessource(URessourceContainerCompo
 {
 	if (Target->RessourceType == RessourceType) {
 		TargetContainers.AddUnique(Target);
+		OnRessourceStartMovingBP.Broadcast();
 	}
 }
 
@@ -97,6 +98,7 @@ void URessourceContainerComponent::StopMovingRessource(URessourceContainerCompon
 {
 	if (Target->RessourceType == RessourceType) {
 		TargetContainers.Remove(Target);
+		OnRessourceStopMovingBP.Broadcast();
 	}
 }
 
