@@ -108,7 +108,7 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
   (
    EAttachmentRule::SnapToTarget,
    EAttachmentRule::SnapToTarget,
-   EAttachmentRule::SnapToTarget,
+   EAttachmentRule::KeepWorld,
    true
   ),
   "Throw_Pos"
