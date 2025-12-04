@@ -57,8 +57,6 @@ void ALamp::Tick(float DeltaTime)
 		// Check new burnable target
 		for (FHitResult Hit : Hits) {
 			if (IBurnable* Burnable = Cast<IBurnable>(Hit.GetActor())) {
-
-
 				if (!CurrentBurnTarget.Contains(Burnable)) {
 					CurrentBurnTarget.AddUnique(Burnable);
 					Burnable->GetBurnComponent()->StartBurn(Interactor);

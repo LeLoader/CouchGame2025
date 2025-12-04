@@ -8,6 +8,7 @@
 class UBoxComponent;
 class USplineComponent;
 class UCameraComponent;
+class UTransfertSettings;
 
 UCLASS()
 class COUCHGAME2025_API ATransfertPoint : public AActor, public IInteractable
@@ -19,6 +20,9 @@ public:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
     TObjectPtr<UBoxComponent> BoxComponent;
+
+
+    int GetPriority() override;
 
 protected:
     virtual void BeginPlay() override;
@@ -64,4 +68,7 @@ private:
 
     UFUNCTION()
     void OnMovementAlongSplineOver();
+
+    UPROPERTY()
+    const UTransfertSettings* TransfertSettings;
 };
