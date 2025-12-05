@@ -21,6 +21,7 @@
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
+#include <Kismet/GameplayStatics.h>
 
 DEFINE_RENDER_COMMAND_PIPE(CableBis, ERenderCommandPipeFlags::None);
 
@@ -735,6 +736,26 @@ void UCableComponentBis::VerletIntegrate(float InSubstepTime, const FVector& Gra
 	}
 }
 
+void UCableComponentBis::TryToggleRope()
+{
+	if (bIsAttached) { // Detached
+		SetVisibility(false);
+		//SetAttachEndTo(nullptr, FName(NAME_None));
+		bIsAttached = false;
+	}
+	else { // Try attach
+		for (int i = 0; i < UGameplayStatics::GetNumPlayerControllers(GetWorld()); i++) {
+			if (GetOwner() != UGameplayStatics::GetPlayerCharacter(GetWorld(), i)) {
+				ACharacter* Target = UGameplayStatics::GetPlayerCharacter(GetWorld(), i);
+				SetVisibility(true);
+				SetAttachEndToComponent(Target->GetMesh(), FName("RopeSocket"));
+				bIsAttached = true;
+				break;
+			}
+		}
+	}
+}
+
 /** Solve a single distance constraint between a pair of particles */
 FORCEINLINE void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance)
 {
@@ -766,12 +787,12 @@ FORCEINLINE void UCableComponentBis::SolveDistanceConstraint(FCableParticle& Par
 	}
 	else if (ParticleB.bFree) // Character
 	{
-		ParticleB.Position -= 0.5 * VectorCorrection;
-		if (CanStretch && GetAttachedActor() != nullptr) {
-			if (ACharacter* Character = Cast<ACharacter>(GetOwner())) {
-				Character->GetCharacterMovement()->Velocity = Character->GetCharacterMovement()->Velocity + VectorCorrection;
-			}
-		}
+		ParticleB.Position -= VectorCorrection;
+		// if (CanStretch && GetAttachedActor() != nullptr) {
+		// 	if (ACharacter* Character = Cast<ACharacter>(GetOwner())) {
+		// 		Character->GetCharacterMovement()->Velocity = Character->GetCharacterMovement()->Velocity + VectorCorrection;
+		// 	}
+		// }
 	}
 }
 

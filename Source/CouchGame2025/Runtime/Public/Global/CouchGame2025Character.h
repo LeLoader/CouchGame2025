@@ -19,6 +19,8 @@ class ACouchCameraActor;
 class USplineComponent;
 class UTransfertSettings;
 struct FInputActionValue;
+class UCableComponentBis;
+class UPhysicsConstraintComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
@@ -31,19 +33,17 @@ private:
 	void BeginPlay() override;
 	void Tick(float DeltaTime) override;
 
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USceneComponent* CameraBoomRoot;
-
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
-
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
-
-
+	// /** Camera boom positioning the camera behind the character */
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	// USceneComponent* CameraBoomRoot;
+	// 
+	// /** Camera boom positioning the camera behind the character */
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	// USpringArmComponent* CameraBoom;
+	// 
+	// /** Follow camera */
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	// UCameraComponent* FollowCamera;
 	
 #pragma region Inputs
 
@@ -140,6 +140,9 @@ public:
 
 	int GetPriority() override;
 
+
+	bool CanBeInteractWithSomethingInHand() override;
+
 protected:
 
 	/** Called for movement */
@@ -171,13 +174,6 @@ protected:
 	/** Called to toggle rope*/
 	void ToggleRopeMode(const FInputActionValue& Value);
 
-	/**  */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool bIsConnectedToARope;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool bIsRopeFree;
-
 #pragma endregion Rope
 			
 
@@ -188,10 +184,10 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	// /** Returns CameraBoom subobject **/
+	// FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	// /** Returns FollowCamera subobject **/
+	// FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsWaiting;
@@ -225,6 +221,9 @@ public:
 
 	UPROPERTY()
 	FVector2D InputMovement;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsGrabbedByAnotherPlayer;
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsGrabbing;

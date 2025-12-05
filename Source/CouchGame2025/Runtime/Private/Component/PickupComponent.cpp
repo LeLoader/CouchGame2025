@@ -60,6 +60,7 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UPickupComponent::TraceToFindNearestInteractable()
 {
+	if (Player->bIsGrabbedByAnotherPlayer) return;
 	TArray<FHitResult> Hits;
 	FVector StartLocation = GetOwner()->GetActorLocation();
 	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector() * TraceLength;
@@ -94,7 +95,10 @@ void UPickupComponent::TraceToFindNearestInteractable()
 
 void UPickupComponent::TryPickUp()
 {
-	if ((IsValid(PickedUpObject) || IsValid(PickedUpPlayer) || CurrentInteractionTarget == GetOwner()) && CurrentInteractionTarget != nullptr) {
+	if (CurrentInteractionTarget == nullptr
+		|| (IsValid(PickedUpObject) && !Cast<IInteractable>(CurrentInteractionTarget)->CanBeInteractWithSomethingInHand())
+		|| IsValid(PickedUpPlayer)
+		|| CurrentInteractionTarget == GetOwner()){
 		return;
 	}
 

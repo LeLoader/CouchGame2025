@@ -23,6 +23,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/GameplayStaticsTypes.h"
 #include "ProfilingDebugging/CookStats.h"
+#include "Runtime/Engine/Classes/PhysicsEngine/PhysicsConstraintComponent.h"
+#include "CableComponentBis/Source/CableComponentBis/Classes/CableComponentBis.h"
 
 #define ECC_Interactable ECC_GameTraceChannel2
 
@@ -58,20 +60,20 @@ ACouchGame2025Character::ACouchGame2025Character()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoomRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraBoomRoot"));
-	CameraBoomRoot->SetupAttachment(RootComponent);
-
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(CameraBoomRoot);
-	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
-	// Create a follow camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	// // Create a camera boom (pulls in towards the player if there is a collision)
+	// CameraBoomRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraBoomRoot"));
+	// CameraBoomRoot->SetupAttachment(RootComponent);
+	// 
+	// // Create a camera boom (pulls in towards the player if there is a collision)
+	// CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	// CameraBoom->SetupAttachment(CameraBoomRoot);
+	// CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
+	// CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	// 
+	// // Create a follow camera
+	// FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	// FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	// FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	PickupComponent = CreateDefaultSubobject<UPickupComponent>(TEXT("PickupComponent"));
 	PickupComponent->SetupAttachment(GetCapsuleComponent());
@@ -127,8 +129,6 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Rope
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Started, this, &ACouchGame2025Character::ToggleRopeMode);
-		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ToggleRopeMode);
-		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Canceled, this, &ACouchGame2025Character::ToggleRopeMode);
 
 		//Transfert
 		EnhancedInputComponent->BindAction(TransfertAction, ETriggerEvent::Started, this, &ACouchGame2025Character::Transfert);
@@ -164,6 +164,11 @@ void ACouchGame2025Character::CartesianToPolar(FVector Vector, float& OutR, floa
 int ACouchGame2025Character::GetPriority()
 {
 	return 0;
+}
+
+bool ACouchGame2025Character::CanBeInteractWithSomethingInHand()
+{
+	return false;
 }
 
 void ACouchGame2025Character::Move(const FInputActionValue& Value)
@@ -204,6 +209,7 @@ void ACouchGame2025Character::Look(const FInputActionValue& Value)
 
 void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 {
+	// PAS UTILISER
 	FHitResult Hit;
 	FVector TraceStart = GetActorLocation();
 	FVector TraceEnd = GetActorLocation() + GetActorForwardVector() * 1000.0f;
@@ -222,7 +228,7 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
-	bIsRopeFree = !bIsRopeFree;
+	// CableComponent->TryToggleRope();
 }
 
 void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
@@ -250,6 +256,7 @@ void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
 void ACouchGame2025Character::GrabbedByOtherPlayer(ACouchGame2025Character* Other)
 {
 	if (bIsWaiting) return;
+	bIsGrabbedByAnotherPlayer = true;
 	Other->OtherPlayer = this;
 	Other->bIsGrabbingPlayer = true;
 	SetActorEnableCollision(false);
@@ -412,6 +419,7 @@ void ACouchGame2025Character::ThrowPlayer()
 	
 	if (OtherPlayer == nullptr || !bIsGrabbingPlayer) return;
 	//SetActorEnableCollision(true);
+	OtherPlayer->bIsGrabbedByAnotherPlayer = false;
 	OtherPlayer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 #pragma region test
 	UCharacterMovementComponent* Move = OtherPlayer->GetCharacterMovement();
@@ -425,7 +433,7 @@ void ACouchGame2025Character::ThrowPlayer()
 	OtherPlayer->LaunchCharacter(FVector(
 		FrontLaunchForce * 500.f * FwdVector.X,
 		FrontLaunchForce * 500.f * FwdVector.Y,
-		UpLaunchForce * 500.f),
+		UpLaunchForce * 500.f * FwdVector.Z),
 		true,
 		true);
 	Move->BrakingFrictionFactor = CharacterMovementValues[0];

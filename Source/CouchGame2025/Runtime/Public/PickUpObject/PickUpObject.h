@@ -31,6 +31,9 @@ public:
 
 	int GetPriority() override;
 
+
+	bool CanBeInteractWithSomethingInHand() override;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
