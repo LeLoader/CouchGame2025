@@ -7170,18 +7170,6 @@
 			"Type": "RequiredResource"
 		},
 		{
-			"Path": "$(EngineDir)/Plugins/Runtime/CableComponent/Binaries/Win64/UnrealEditor-CableComponent.dll",
-			"Type": "DynamicLibrary"
-		},
-		{
-			"Path": "$(EngineDir)/Plugins/Runtime/CableComponent/Binaries/Win64/UnrealEditor-CableComponent.pdb",
-			"Type": "SymbolFile"
-		},
-		{
-			"Path": "$(EngineDir)/Plugins/Runtime/CableComponent/Binaries/Win64/UnrealEditor.modules",
-			"Type": "RequiredResource"
-		},
-		{
 			"Path": "$(EngineDir)/Plugins/Runtime/ChunkDownloader/Binaries/Win64/UnrealEditor-ChunkDownloader.dll",
 			"Type": "DynamicLibrary"
 		},

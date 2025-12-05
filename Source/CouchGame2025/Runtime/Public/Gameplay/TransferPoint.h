@@ -24,6 +24,9 @@ public:
 
     int GetPriority() override;
 
+
+    bool CanBeInteractWithSomethingInHand() override;
+
 protected:
     virtual void BeginPlay() override;
 

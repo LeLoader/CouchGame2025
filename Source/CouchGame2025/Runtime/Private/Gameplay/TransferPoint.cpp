@@ -25,6 +25,11 @@ int ATransfertPoint::GetPriority()
 	return 5;
 }
 
+bool ATransfertPoint::CanBeInteractWithSomethingInHand()
+{
+	return true;
+}
+
 void ATransfertPoint::BeginPlay()
 {
 	Super::BeginPlay();
