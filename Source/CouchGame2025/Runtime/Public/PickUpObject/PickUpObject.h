@@ -8,6 +8,8 @@
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "PickUpObject.generated.h"
 
+class ACouchGame2025Character;
+
 UCLASS()
 class COUCHGAME2025_API APickUpObject : public AActor, public IInteractable
 {
@@ -30,6 +32,9 @@ public:
 
 
 	int GetPriority() override;
+
+
+	bool CanBeInteractWithSomethingInHand() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -75,5 +80,8 @@ private:
 
 	UPROPERTY()
 	FVector2D PlayersAverageInput;
+
+	UFUNCTION()
+	void EnableCollision();
 #pragma endregion
 };

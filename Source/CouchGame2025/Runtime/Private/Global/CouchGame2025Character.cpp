@@ -60,20 +60,20 @@ ACouchGame2025Character::ACouchGame2025Character()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
 
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoomRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraBoomRoot"));
-	CameraBoomRoot->SetupAttachment(RootComponent);
-
-	// Create a camera boom (pulls in towards the player if there is a collision)
-	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
-	CameraBoom->SetupAttachment(CameraBoomRoot);
-	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
-	// Create a follow camera
-	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	// // Create a camera boom (pulls in towards the player if there is a collision)
+	// CameraBoomRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraBoomRoot"));
+	// CameraBoomRoot->SetupAttachment(RootComponent);
+	// 
+	// // Create a camera boom (pulls in towards the player if there is a collision)
+	// CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
+	// CameraBoom->SetupAttachment(CameraBoomRoot);
+	// CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
+	// CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
+	// 
+	// // Create a follow camera
+	// FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
+	// FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	// FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	PickupComponent = CreateDefaultSubobject<UPickupComponent>(TEXT("PickupComponent"));
 	PickupComponent->SetupAttachment(GetCapsuleComponent());
@@ -83,9 +83,6 @@ ACouchGame2025Character::ACouchGame2025Character()
 
 	WaterTank = CreateDefaultSubobject<URessourceContainerComponent>(TEXT("WaterTank"));
 	WaterTank->SetRessourceType(FRessourceType::WATER);
-
-	CableComponent = CreateDefaultSubobject<UCableComponentBis>(TEXT("CableComponent"));
-	CableComponent->SetupAttachment(GetMesh(), FName("RopeSocket"));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -169,6 +166,11 @@ int ACouchGame2025Character::GetPriority()
 	return 0;
 }
 
+bool ACouchGame2025Character::CanBeInteractWithSomethingInHand()
+{
+	return false;
+}
+
 void ACouchGame2025Character::Move(const FInputActionValue& Value)
 {
 	if (bIsWaiting) return;
@@ -207,6 +209,7 @@ void ACouchGame2025Character::Look(const FInputActionValue& Value)
 
 void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 {
+	// PAS UTILISER
 	FHitResult Hit;
 	FVector TraceStart = GetActorLocation();
 	FVector TraceEnd = GetActorLocation() + GetActorForwardVector() * 1000.0f;
@@ -225,7 +228,7 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
-	CableComponent->TryToggleRope();
+	// CableComponent->TryToggleRope();
 }
 
 void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
@@ -252,17 +255,10 @@ void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
 
 void ACouchGame2025Character::GrabbedByOtherPlayer(ACouchGame2025Character* Other)
 {
+	if (bIsWaiting) return;
+	bIsGrabbedByAnotherPlayer = true;
 	Other->OtherPlayer = this;
 	Other->bIsGrabbingPlayer = true;
-	//SetActorEnableCollision(false);
-	// this->AttachToActor(
-	// Other,
-	// FAttachmentTransformRules(
-	// 	EAttachmentRule::SnapToTarget,
-	// 	EAttachmentRule::SnapToTarget,
-	// 	EAttachmentRule::SnapToTarget,
-	// 	true),
-	// 	"Throw_Pos");
 	SetActorEnableCollision(false);
 	this->AttachToComponent(
 		Other->GetMesh(),
@@ -272,7 +268,16 @@ void ACouchGame2025Character::GrabbedByOtherPlayer(ACouchGame2025Character* Othe
 			EAttachmentRule::KeepWorld,
 			true),
 			"Throw_Pos");
+	//this->AttachToComponent(
+	//	Other->GetMesh(),
+	//	FAttachmentTransformRules(
+	//		EAttachmentRule::SnapToTarget,
+	//		EAttachmentRule::SnapToTarget,
+	//		EAttachmentRule::SnapToTarget,
+	//		true),
+	//		"Throw_Pos");
 	GetCharacterMovement()->SetMovementMode(MOVE_None);
+	Other->bIsGrabbingPlayer = true;
 }
 
 void ACouchGame2025Character::StopMove()
@@ -411,32 +416,24 @@ void ACouchGame2025Character::StopThrow()
 	
 void ACouchGame2025Character::ThrowPlayer()
 {
-	if (OtherPlayer == nullptr) return;
-	//SetActorEnableCollision(true);
-	OtherPlayer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	//OtherPlayer->SetActorRotation(FRotator(0, 0, 0));
-	//OtherPlayer->ProjectileMovement->SetVelocityInLocalSpace(OtherPlayer->GetActorForwardVector());
-	//OtherPlayer->ProjectileMovement->Activate();
-	//FVector FForce = (OtherPlayer->GetActorForwardVector() * FrontLaunchForce, OtherPlayer->GetActorUpVector() * UpLaunchForce);
-	//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Yellow, FString::Printf(TEXT("FForce: %s"), *FForce.ToString()));
-	//OtherPlayer->GetCharacterMovement()->Launch(FForce);
-#pragma region test
-	//UCharacterMovementComponent OtherPlayerCharacterMovement = *OtherPlayer->GetCharacterMovement();
 	
+	if (OtherPlayer == nullptr || !bIsGrabbingPlayer) return;
+	//SetActorEnableCollision(true);
+	OtherPlayer->bIsGrabbedByAnotherPlayer = false;
+	OtherPlayer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+#pragma region test
 	UCharacterMovementComponent* Move = OtherPlayer->GetCharacterMovement();
 	FVector4 CharacterMovementValues = FVector4(Move->BrakingFrictionFactor, Move->GroundFriction, Move->BrakingFrictionFactor, Move->BrakingDecelerationWalking);
 	Move->BrakingFrictionFactor = 0.f;
 	Move->GroundFriction = 0.f;
 	Move->BrakingFriction = 0.f;
 	Move->BrakingDecelerationWalking = 0.f;
-
-
 	OtherPlayer->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
-	FVector FwdVector = OtherPlayer->GetActorForwardVector();
+	FVector FwdVector = GetActorForwardVector();
 	OtherPlayer->LaunchCharacter(FVector(
 		FrontLaunchForce * 500.f * FwdVector.X,
 		FrontLaunchForce * 500.f * FwdVector.Y,
-		UpLaunchForce * 500.f),
+		FrontLaunchForce * 500.f * FwdVector.Z),
 		true,
 		true);
 	Move->BrakingFrictionFactor = CharacterMovementValues[0];
@@ -447,5 +444,5 @@ void ACouchGame2025Character::ThrowPlayer()
 #pragma endregion
 
 	PickupComponent->PickedUpPlayer = nullptr;
-	OtherPlayer->bIsGrabbingPlayer = false;
+	bIsGrabbingPlayer = false;
 }
