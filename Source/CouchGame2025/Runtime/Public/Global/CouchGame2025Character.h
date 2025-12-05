@@ -140,6 +140,9 @@ public:
 
 	int GetPriority() override;
 
+
+	bool CanBeInteractWithSomethingInHand() override;
+
 protected:
 
 	/** Called for movement */
@@ -218,6 +221,9 @@ public:
 
 	UPROPERTY()
 	FVector2D InputMovement;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsGrabbedByAnotherPlayer;
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsGrabbing;

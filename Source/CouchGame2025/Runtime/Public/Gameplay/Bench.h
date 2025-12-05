@@ -34,6 +34,9 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	ACouchGame2025Character* Seat2UsedBy = nullptr;
 	
+
+	bool CanBeInteractWithSomethingInHand() override;
+
 public:
 	bool Interact(ACouchGame2025Character* A) override;
 

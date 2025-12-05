@@ -31,6 +31,11 @@ void ABench::Tick(float DeltaTime)
 
 }
 
+bool ABench::CanBeInteractWithSomethingInHand()
+{
+	return true;
+}
+
 bool ABench::Interact(ACouchGame2025Character* A)
 {
 	if (Seat1UsedBy == A || Seat2UsedBy == A) {

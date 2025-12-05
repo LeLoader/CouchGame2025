@@ -83,11 +83,6 @@ ACouchGame2025Character::ACouchGame2025Character()
 
 	WaterTank = CreateDefaultSubobject<URessourceContainerComponent>(TEXT("WaterTank"));
 	WaterTank->SetRessourceType(FRessourceType::WATER);
-
-	CableComponent = CreateDefaultSubobject<UCableComponentBis>(TEXT("CableComponent"));
-	CableComponent->SetupAttachment(GetMesh(), FName("RopeSocket"));
-	CableComponent->CableLength = 0;
-	CableComponent->EndLocation = FVector::Zero();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -171,6 +166,11 @@ int ACouchGame2025Character::GetPriority()
 	return 0;
 }
 
+bool ACouchGame2025Character::CanBeInteractWithSomethingInHand()
+{
+	return false;
+}
+
 void ACouchGame2025Character::Move(const FInputActionValue& Value)
 {
 	if (bIsWaiting) return;
@@ -209,6 +209,7 @@ void ACouchGame2025Character::Look(const FInputActionValue& Value)
 
 void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 {
+	// PAS UTILISER
 	FHitResult Hit;
 	FVector TraceStart = GetActorLocation();
 	FVector TraceEnd = GetActorLocation() + GetActorForwardVector() * 1000.0f;
@@ -255,6 +256,7 @@ void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
 void ACouchGame2025Character::GrabbedByOtherPlayer(ACouchGame2025Character* Other)
 {
 	if (bIsWaiting) return;
+	bIsGrabbedByAnotherPlayer = true;
 	Other->OtherPlayer = this;
 	Other->bIsGrabbingPlayer = true;
 	SetActorEnableCollision(false);
@@ -417,6 +419,7 @@ void ACouchGame2025Character::ThrowPlayer()
 	
 	if (OtherPlayer == nullptr || !bIsGrabbingPlayer) return;
 	//SetActorEnableCollision(true);
+	OtherPlayer->bIsGrabbedByAnotherPlayer = false;
 	OtherPlayer->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 #pragma region test
 	UCharacterMovementComponent* Move = OtherPlayer->GetCharacterMovement();
