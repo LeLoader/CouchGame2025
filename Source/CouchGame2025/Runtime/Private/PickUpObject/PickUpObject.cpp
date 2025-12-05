@@ -96,7 +96,8 @@ bool APickUpObject::Interact(ACouchGame2025Character* Player)
 void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 
 	// Will only be called when a single player is needed to pick up the object
-
+	if (Interactor != nullptr && Interactor->bIsGrabbedByAnotherPlayer) return;
+	
 	Interactor = Player;
 	Interactor->bIsGrabbing = true;
 	Interactor->PickupComponent->PickedUpObject = this;
@@ -147,7 +148,7 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 
 	// Réactiver la simulation physique et la gravité
 	Mesh->SetSimulatePhysics(true);
-	// Mesh->SetEnableGravity(true);
+	SetActorEnableCollision(false);
 
 	// Déverrouiller translations/rotation
 	Mesh->BodyInstance.bLockRotation = false;
@@ -165,6 +166,9 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 		Player->FrontLaunchForce * FwdVector.Y / 2,
 		Player->UpLaunchForce) * LaunchForce * 1000.f);
 
+	FTimerHandle TimerHandle;
+	GetWorldTimerManager().SetTimer(TimerHandle, this, &APickUpObject::EnableCollision, 2.f, false);
+	
 	Player->bIsGrabbing = false;
 }
 
@@ -211,6 +215,11 @@ void APickUpObject::ReleaseObjectFromOnePlayer(ACouchGame2025Character* PlayerRe
 		Mesh->BodyInstance.bLockRotation = false;
 		bIsGrabbedByBoth = false;
 	}
+}
+
+void APickUpObject::EnableCollision()
+{
+	SetActorEnableCollision(true);
 }
 
 int APickUpObject::GetPriority()
