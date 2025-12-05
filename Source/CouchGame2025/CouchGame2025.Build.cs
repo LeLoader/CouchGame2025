@@ -9,7 +9,7 @@ public class CouchGame2025 : ModuleRules
     {
         PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
             
-        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "MultiplayerModule", "CableComponent", "CommonUI", "DeveloperSettings"});
+        PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "MultiplayerModule", "CableComponentBis", "CommonUI", "DeveloperSettings"});
 
 
         PrivateIncludePaths.AddRange(new string[]

@@ -23,6 +23,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/GameplayStaticsTypes.h"
 #include "ProfilingDebugging/CookStats.h"
+#include "Runtime/Engine/Classes/PhysicsEngine/PhysicsConstraintComponent.h"
+#include "CableComponentBis/Source/CableComponentBis/Classes/CableComponentBis.h"
 
 #define ECC_Interactable ECC_GameTraceChannel2
 
@@ -81,6 +83,9 @@ ACouchGame2025Character::ACouchGame2025Character()
 
 	WaterTank = CreateDefaultSubobject<URessourceContainerComponent>(TEXT("WaterTank"));
 	WaterTank->SetRessourceType(FRessourceType::WATER);
+
+	CableComponent = CreateDefaultSubobject<UCableComponentBis>(TEXT("CableComponent"));
+	CableComponent->SetupAttachment(GetMesh(), FName("RopeSocket"));
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -127,8 +132,6 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Rope
 		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Started, this, &ACouchGame2025Character::ToggleRopeMode);
-		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ToggleRopeMode);
-		EnhancedInputComponent->BindAction(RopeAction, ETriggerEvent::Canceled, this, &ACouchGame2025Character::ToggleRopeMode);
 
 		//Transfert
 		EnhancedInputComponent->BindAction(TransfertAction, ETriggerEvent::Started, this, &ACouchGame2025Character::Transfert);
@@ -222,7 +225,7 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
-	bIsRopeFree = !bIsRopeFree;
+	CableComponent->TryToggleRope();
 }
 
 void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
