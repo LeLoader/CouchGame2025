@@ -227,7 +227,7 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
-	CableComponent->TryToggleRope();
+	// CableComponent->TryToggleRope();
 }
 
 void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
@@ -430,7 +430,7 @@ void ACouchGame2025Character::ThrowPlayer()
 	OtherPlayer->LaunchCharacter(FVector(
 		FrontLaunchForce * 500.f * FwdVector.X,
 		FrontLaunchForce * 500.f * FwdVector.Y,
-		UpLaunchForce * 500.f),
+		UpLaunchForce * 500.f * FwdVector.Z),
 		true,
 		true);
 	Move->BrakingFrictionFactor = CharacterMovementValues[0];

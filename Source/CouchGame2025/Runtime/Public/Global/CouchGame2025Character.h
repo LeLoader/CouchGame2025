@@ -44,13 +44,6 @@ private:
 	// /** Follow camera */
 	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	// UCameraComponent* FollowCamera;
-
-	/** Cable component */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCableComponentBis* CableComponent;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UPhysicsConstraintComponent* PhysicsConstraintComponent;
 	
 #pragma region Inputs
 
@@ -177,13 +170,6 @@ protected:
 
 	/** Called to toggle rope*/
 	void ToggleRopeMode(const FInputActionValue& Value);
-
-	/**  */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool bIsConnectedToARope;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool bIsRopeFree;
 
 #pragma endregion Rope
 			

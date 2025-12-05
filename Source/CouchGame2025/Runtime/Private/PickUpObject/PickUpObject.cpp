@@ -61,8 +61,8 @@ bool APickUpObject::Interact(ACouchGame2025Character* Player)
    Mesh->BodyInstance.bLockXTranslation = true;
    Mesh->BodyInstance.bLockYTranslation = true;
    Mesh->BodyInstance.bLockZTranslation = true;
-   Mesh->SetSimulatePhysics(false);
-   Mesh->SetEnableGravity(false);
+   //Mesh->SetSimulatePhysics(false);
+   //Mesh->SetEnableGravity(false);
    Mesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector);
    Mesh->SetAllPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
 
@@ -118,8 +118,8 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
  SetActorEnableCollision(false);
 
  // Disable physics + gravity and zero velocities to prevent drift
- Mesh->SetSimulatePhysics(false);
- Mesh->SetEnableGravity(false);
+ //Mesh->SetSimulatePhysics(false);
+ //Mesh->SetEnableGravity(false);
  Mesh->SetAllPhysicsLinearVelocity(FVector::ZeroVector);
  Mesh->SetAllPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
 
@@ -145,8 +145,8 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
  SetActorEnableCollision(true);
 
  // Réactiver la simulation physique et la gravité
- Mesh->SetSimulatePhysics(true);
- Mesh->SetEnableGravity(true);
+ // Mesh->SetSimulatePhysics(true);
+ // Mesh->SetEnableGravity(true);
 
  // Déverrouiller translations/rotation
  Mesh->BodyInstance.bLockRotation = false;
@@ -194,8 +194,8 @@ void APickUpObject::ReleaseObjectFromOnePlayer(ACouchGame2025Character* PlayerRe
   PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_None);
 
   // Si un joueur reste, on lock encore l'objet pour qu'il reste fixé
-  Mesh->SetSimulatePhysics(false);
-  Mesh->SetEnableGravity(false);
+  // Mesh->SetSimulatePhysics(false);
+  // Mesh->SetEnableGravity(false);
   Mesh->BodyInstance.bLockRotation = true;
   Mesh->BodyInstance.bLockXTranslation = true;
   Mesh->BodyInstance.bLockYTranslation = true;
@@ -205,8 +205,8 @@ void APickUpObject::ReleaseObjectFromOnePlayer(ACouchGame2025Character* PlayerRe
  else
  {
   // Aucun joueur restant : réactiver la physique
-  Mesh->SetSimulatePhysics(true);
-  Mesh->SetEnableGravity(true);
+  // Mesh->SetSimulatePhysics(true);
+  // Mesh->SetEnableGravity(true);
   Mesh->BodyInstance.bLockRotation = false;
   bIsGrabbedByBoth = false;
  }
