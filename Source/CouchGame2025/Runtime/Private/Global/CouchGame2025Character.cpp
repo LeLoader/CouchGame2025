@@ -433,7 +433,7 @@ void ACouchGame2025Character::ThrowPlayer()
 	OtherPlayer->LaunchCharacter(FVector(
 		FrontLaunchForce * 500.f * FwdVector.X,
 		FrontLaunchForce * 500.f * FwdVector.Y,
-		UpLaunchForce * 500.f * FwdVector.Z),
+		FrontLaunchForce * 500.f * FwdVector.Z),
 		true,
 		true);
 	Move->BrakingFrictionFactor = CharacterMovementValues[0];

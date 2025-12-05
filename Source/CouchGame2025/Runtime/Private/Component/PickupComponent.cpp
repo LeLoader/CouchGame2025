@@ -60,12 +60,14 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UPickupComponent::TraceToFindNearestInteractable()
 {
-	if (Player->bIsGrabbedByAnotherPlayer) 
+	if (Player->bIsGrabbedByAnotherPlayer) {
 		if (IsValid(CurrentInteractionTarget)) {
-		OnNewInteractionTarget.Broadcast(nullptr, CurrentInteractionTarget);
+			OnNewInteractionTarget.Broadcast(nullptr, CurrentInteractionTarget);
+		}
+		CurrentInteractionTarget = nullptr;
+		return;
 	}
-	CurrentInteractionTarget = nullptr;
-	return;
+
 
 	TArray<FHitResult> Hits;
 	FVector StartLocation = GetOwner()->GetActorLocation();
