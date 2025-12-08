@@ -49,6 +49,9 @@ protected:
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FVector CalculateAveragePositions();
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void ToggleBlackHole();
+
 	UPROPERTY(EditAnywhere)
 	float LerpSpeed = 1.f;
 
@@ -56,7 +59,10 @@ protected:
 	float Angle = 45.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bisInverted;
+	bool bIsInverted;
+
+	UPROPERTY(EditAnywhere)
+	float InternDistance;
 
 private:
 	UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
