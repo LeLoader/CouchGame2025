@@ -6,6 +6,9 @@
 #include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/PlayerStart.h"
+#include "CouchGame2025/Runtime/Public/PickUpObject/Lamp.h"
+
+
 AABlackHole::AABlackHole()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -64,6 +67,10 @@ void AABlackHole::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 				DeadCharacter->SetVisibility(true);
 				DeadCharacter->ResetPlayer();
 			}), 3.f, false);
+	}
+	else if (ALamp* Lamp = Cast<ALamp>(OtherActor))
+	{
+		Lamp->RespawnLamp();
 	}
 	else
 	{
