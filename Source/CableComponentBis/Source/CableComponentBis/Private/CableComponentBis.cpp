@@ -787,12 +787,12 @@ FORCEINLINE void UCableComponentBis::SolveDistanceConstraint(FCableParticle& Par
 	}
 	else if (ParticleB.bFree) // Character
 	{
-		ParticleB.Position -= VectorCorrection;
-		// if (CanStretch && GetAttachedActor() != nullptr) {
-		// 	if (ACharacter* Character = Cast<ACharacter>(GetOwner())) {
-		// 		Character->GetCharacterMovement()->Velocity = Character->GetCharacterMovement()->Velocity + VectorCorrection;
-		// 	}
-		// }
+		ParticleB.Position -= 0.5 * VectorCorrection;
+		if (CanStretch && GetAttachedActor() != nullptr) {
+			if (ACharacter* Character = Cast<ACharacter>(GetOwner())) {
+				Character->GetCharacterMovement()->Velocity = Character->GetCharacterMovement()->Velocity + VectorCorrection;
+			}
+		}
 	}
 }
 
