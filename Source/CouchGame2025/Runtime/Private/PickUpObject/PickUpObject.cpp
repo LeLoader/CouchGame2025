@@ -148,7 +148,7 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 
 	// Réactiver la simulation physique et la gravité
 	Mesh->SetSimulatePhysics(true);
-	SetActorEnableCollision(false);
+	//SetActorEnableCollision(false);
 
 	// Déverrouiller translations/rotation
 	Mesh->BodyInstance.bLockRotation = false;
@@ -162,12 +162,12 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 	FVector FwdVector = Player->GetActorForwardVector();
 
 	Mesh->AddImpulse(FVector(
-		Player->FrontLaunchForce * FwdVector.X / 2,
-		Player->FrontLaunchForce * FwdVector.Y / 2,
-		Player->UpLaunchForce) * LaunchForce * 1000.f);
+		Player->FrontLaunchForce * FwdVector.X * 500,
+		Player->FrontLaunchForce * FwdVector.Y * 500,
+		Player->FrontLaunchForce * FwdVector.Z * 500) * LaunchForce * 100.f);
 
 	FTimerHandle TimerHandle;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &APickUpObject::EnableCollision, 2.f, false);
+	//GetWorldTimerManager().SetTimer(TimerHandle, this, &APickUpObject::EnableCollision, .2f, false);
 	
 	Player->bIsGrabbing = false;
 }
