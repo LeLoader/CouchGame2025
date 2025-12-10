@@ -228,7 +228,7 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
-	// CableComponent->TryToggleRope();
+	// CableComponent->TryToggleRope(this);
 }
 
 void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)

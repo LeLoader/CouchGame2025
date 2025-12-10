@@ -181,11 +181,23 @@ public:
 
 #pragma region Gameplay
 
-	UFUNCTION()
-	void TryToggleRope();
+	UFUNCTION(BlueprintCallable)
+	bool TryToggleRope(ACharacter* Instigator);
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsAttached = false;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ACharacter* CharacterStart;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	ACharacter* CharacterEnd;
+
+	UFUNCTION(BlueprintCallable)
+	bool AttachCableToCharacters(ACharacter* WantedCharacterStart, ACharacter* WantedCharacterEnd);
+
+	UPROPERTY(EditAnywhere, meta=(ClampMin=0, ClampMax=1, UIMin=0, UIMax=1))
+	float CharacterReceivingForceRatio = 0.5;
 
 #pragma endregion Gameplay
 
