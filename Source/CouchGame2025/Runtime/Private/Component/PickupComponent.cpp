@@ -125,6 +125,7 @@ void UPickupComponent::TryPickUp()
 			PickedUpPlayer->GrabbedByOtherPlayer(Player);
 		}
 	}
+	
 }
 
 void UPickupComponent::StartUse() {
