@@ -130,6 +130,7 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	Mesh->BodyInstance.bLockYTranslation = true;
 	Mesh->BodyInstance.bLockZTranslation = true;
 	Mesh->BodyInstance.bLockRotation = true;
+	TriggerParticule();
 }
 
 // StopPickUp - déverrouille la physique et restaure le comportement précédent
@@ -170,6 +171,7 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 	//GetWorldTimerManager().SetTimer(TimerHandle, this, &APickUpObject::EnableCollision, .2f, false);
 	
 	Player->bIsGrabbing = false;
+	TriggerParticule();
 }
 
 // ReleaseObjectFromOnePlayer - déverrouille également quand un joueur relâche et un autre reste
