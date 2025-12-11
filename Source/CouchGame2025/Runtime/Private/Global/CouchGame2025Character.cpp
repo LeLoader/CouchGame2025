@@ -226,6 +226,11 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 	}
 }
 
+void ACouchGame2025Character::HandlePlanetaryJumped()
+{
+	//
+}
+
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
 	// CableComponent->TryToggleRope(this);
@@ -291,7 +296,10 @@ void ACouchGame2025Character::BeginPlay()
 	Super::BeginPlay();
 	Camera = ACouchCameraActor::CurrentCamera;
 	SetRespawnLocation(GetActorLocation());
-
+	if (UPlanetaryMovementComponent* PMC = Cast<UPlanetaryMovementComponent>(GetMovementComponent()))
+	{
+		PMC->OnPlanetaryJumped.AddDynamic(this, &ACouchGame2025Character::HandlePlanetaryJumped);
+	}
 }
 
 void ACouchGame2025Character::Tick(float DeltaTime)
