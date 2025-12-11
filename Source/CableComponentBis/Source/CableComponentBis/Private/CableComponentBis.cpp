@@ -22,6 +22,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include <Kismet/GameplayStatics.h>
+#include <CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h>
 
 DEFINE_RENDER_COMMAND_PIPE(CableBis, ERenderCommandPipeFlags::None);
 
@@ -736,7 +737,7 @@ void UCableComponentBis::VerletIntegrate(float InSubstepTime, const FVector& Gra
 	}
 }
 
-bool UCableComponentBis::TryToggleRope(ACharacter* Instigator)
+bool UCableComponentBis::TryToggleRope(ACouchGame2025Character* Instigator)
 {
 	if (IsVisible()) { // Detach
 		SetVisibility(false);
@@ -745,10 +746,9 @@ bool UCableComponentBis::TryToggleRope(ACharacter* Instigator)
 	}
 	else { // Try attach
 		for (int i = 0; i < UGameplayStatics::GetNumPlayerControllers(GetWorld()); i++) {
-
 			if (Instigator != UGameplayStatics::GetPlayerCharacter(GetWorld(), i)) {
 				ACharacter* Target = UGameplayStatics::GetPlayerCharacter(GetWorld(), i);
-				if (AttachCableToCharacters(Instigator, Target)) {
+				if (AttachCableToCharacters(Instigator, Cast<ACouchGame2025Character>(Target))) {
 					SetVisibility(true);
 					bIsAttached = true;
 					return true;
@@ -762,7 +762,7 @@ bool UCableComponentBis::TryToggleRope(ACharacter* Instigator)
 	}
 }
 
-bool UCableComponentBis::AttachCableToCharacters(ACharacter* WantedCharacterStart, ACharacter* WantedCharacterEnd)
+bool UCableComponentBis::AttachCableToCharacters(ACouchGame2025Character* WantedCharacterStart, ACouchGame2025Character* WantedCharacterEnd)
 {
 	CharacterStart = WantedCharacterStart;
 	CharacterEnd = WantedCharacterEnd;

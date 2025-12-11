@@ -9,6 +9,7 @@
 class FPrimitiveSceneProxy;
 class USphereComponent;
 class UPhysicsConstraintComponent;
+class ACouchGame2025Character;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogCableComponentBis, Log, All);
 
@@ -182,19 +183,19 @@ public:
 #pragma region Gameplay
 
 	UFUNCTION(BlueprintCallable)
-	bool TryToggleRope(ACharacter* Instigator);
+	bool TryToggleRope(ACouchGame2025Character* Instigator);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 	bool bIsAttached = false;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ACharacter* CharacterStart;
+	ACouchGame2025Character* CharacterStart;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	ACharacter* CharacterEnd;
+	ACouchGame2025Character* CharacterEnd;
 
 	UFUNCTION(BlueprintCallable)
-	bool AttachCableToCharacters(ACharacter* WantedCharacterStart, ACharacter* WantedCharacterEnd);
+	bool AttachCableToCharacters(ACouchGame2025Character* WantedCharacterStart, ACouchGame2025Character* WantedCharacterEnd);
 
 	UPROPERTY(EditAnywhere, meta=(ClampMin=0, ClampMax=1, UIMin=0, UIMax=1))
 	float CharacterReceivingForceRatio = 0.5;
