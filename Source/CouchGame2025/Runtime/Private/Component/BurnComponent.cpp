@@ -5,6 +5,7 @@
 
 #include "Interface/Burnable.h"
 #include "Global/CouchGame2025Character.h"
+#include "Gameplay/Iceseed.h"
 
 
 // Sets default values for this component's properties
@@ -15,11 +16,18 @@ UBurnComponent::UBurnComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-
 void UBurnComponent::StartBurn(ACouchGame2025Character* Instigator)
 {
 	BurnInstigators.Add(Instigator);
+	if (BurnInstigators.Num() >= NumOfSourceToBurn) {
+		if (AActor* OwnerActor = GetOwner()) {
+			if (AIceSeed* Ice = Cast<AIceSeed>(OwnerActor)) {
+				Ice->OnBurnStarted();
+			}
+		}
+	}
 }
+
 
 void UBurnComponent::StopBurn(ACouchGame2025Character* Instigator)
 {
