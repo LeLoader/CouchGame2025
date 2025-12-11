@@ -446,3 +446,8 @@ void ACouchGame2025Character::ThrowPlayer()
 	PickupComponent->PickedUpPlayer = nullptr;
 	bIsGrabbingPlayer = false;
 }
+
+void ACouchGame2025Character::SetVisibility(bool IsVisible)
+{
+	GetMesh()->SetVisibility(IsVisible);
+}

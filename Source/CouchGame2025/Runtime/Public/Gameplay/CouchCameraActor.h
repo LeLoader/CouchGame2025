@@ -5,7 +5,33 @@
 #include "CouchCameraActor.generated.h"
 
 class USpringArmComponent;
-class AInterestPoint;
+
+USTRUCT()
+struct FPolar {
+
+	GENERATED_BODY()
+
+	float Theta;
+	float Phi;
+	float Radius;
+
+	FPolar()
+	{
+
+	}
+
+	FPolar(float InTheta, float InPhi, float InRadius)
+	{
+		Theta = InTheta;
+		Phi = InPhi;
+		Radius = InRadius;
+	}
+
+	~FPolar()
+	{
+
+	}
+};
 
 UCLASS()
 class COUCHGAME2025_API ACouchCameraActor : public ACameraActor
@@ -14,9 +40,6 @@ class COUCHGAME2025_API ACouchCameraActor : public ACameraActor
 
 public:
 	ACouchCameraActor(const FObjectInitializer& ObjectInitializer);
-
-	UFUNCTION(BlueprintCallable)
-	void SetCharacters(AActor* FirstCharacter, AActor* SecondCharacter);
 
 	UFUNCTION(BlueprintCallable)
 	void InvertCamera();
@@ -42,21 +65,18 @@ protected:
 	void Zoom(float Input);
 
 	virtual void BeginPlay() override;
-	
-	UFUNCTION()
-	void ChangeDestination(AInterestPoint* NewInterestPoint);
 
-	UFUNCTION(BlueprintCallable, BlueprintPure)
-	FVector CalculateAveragePositions();
+	UFUNCTION(BlueprintImplementableEvent)
+	void ToggleBlackHole();
 
 	UPROPERTY(EditAnywhere)
 	float LerpSpeed = 1.f;
 
-	UPROPERTY(EditAnywhere, Category = "CouchGameCamera", meta = (Units = "deg"))
-	float Angle = 45.f;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	bool bisInverted;
+	bool bIsInverted;
+
+	UPROPERTY(EditAnywhere)
+	float InternDistance;
 
 private:
 	UPROPERTY(Category = CameraActor, VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
@@ -65,9 +85,8 @@ private:
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY()
-	TObjectPtr<AInterestPoint> CurrentInterestPoint;
+	FPolar TargetPositionPolar;
 
 	UPROPERTY()
-	TArray<AActor*> Characters;
-
+	FPolar CurrentPositionPolar;
 };

@@ -27,10 +27,15 @@ public:
 	void Use() override;
 	void StopUse() override;
 
+	void BeginPlay() override;
+
 	UFUNCTION(BlueprintNativeEvent)
 	void EnableLamp();
 	UFUNCTION(BlueprintNativeEvent)
 	void DisableLamp();
+
+	UFUNCTION()
+	void RespawnLamp();
 
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -49,4 +54,5 @@ protected:
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	bool bIsActive = false;
 
+	FVector RespawnLocation;
 };
