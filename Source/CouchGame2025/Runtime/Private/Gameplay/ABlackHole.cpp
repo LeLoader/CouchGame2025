@@ -38,6 +38,7 @@ void AABlackHole::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 	if (ACouchGame2025Character* DeadCharacter = Cast<ACouchGame2025Character>(OtherActor))
 	{
 		DeadCharacter->SetActorLocation(DeadCharacter->RespawnPoint);
+		BP_OnCharaRespawn();
 		DeadCharacter->ResetPlayer();
 	}
 	else

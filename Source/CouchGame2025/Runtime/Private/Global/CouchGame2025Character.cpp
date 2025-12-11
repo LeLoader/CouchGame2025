@@ -284,14 +284,17 @@ void ACouchGame2025Character::StopMove()
 {
 	InputMovement = FVector2D::ZeroVector;
 }
-
 void ACouchGame2025Character::BeginPlay()
 {
-	TransfertSettings = GetDefault<UTransfertSettings>();
-	Super::BeginPlay();
-	Camera = ACouchCameraActor::CurrentCamera;
-	SetRespawnLocation(GetActorLocation());
+    TransfertSettings = GetDefault<UTransfertSettings>();
+    Super::BeginPlay();
+    Camera = ACouchCameraActor::CurrentCamera;
+    SetRespawnLocation(GetActorLocation());
 
+    if (UPlanetaryMovementComponent* PMC = Cast<UPlanetaryMovementComponent>(GetMovementComponent()))
+    {
+        PMC->OnPlanetaryJumped.AddDynamic(this, &ACouchGame2025Character::HandlePlanetaryJumped);
+    }
 }
 
 void ACouchGame2025Character::Tick(float DeltaTime)
@@ -445,4 +448,9 @@ void ACouchGame2025Character::ThrowPlayer()
 
 	PickupComponent->PickedUpPlayer = nullptr;
 	bIsGrabbingPlayer = false;
+}
+
+void ACouchGame2025Character::HandlePlanetaryJumped()
+{
+
 }
