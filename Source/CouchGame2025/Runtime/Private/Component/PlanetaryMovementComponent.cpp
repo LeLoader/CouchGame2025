@@ -27,16 +27,15 @@ void UPlanetaryMovementComponent::InvertGravity()
 
 bool UPlanetaryMovementComponent::DoJump(bool bReplayingMoves)
 {
-
     if (IsMovingOnGround() && !UseExternalGravityDirection)
     {
-		SetGravityDirection(-GetGravityDirection());
-        UpdateGravityDirection(GetGravityDirection());
-		UseExternalGravityDirection = true;
+        UseExternalGravityDirection = true;
+        OnPlanetaryJumped.Broadcast();
     }
 
     return Super::DoJump(bReplayingMoves);
 }
+
 
 void UPlanetaryMovementComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -51,6 +50,7 @@ void UPlanetaryMovementComponent::TickComponent(float DeltaTime, enum ELevelTick
     {
         GravityDir *= -1;
     }
+    DrawDebugDirectionalArrow(GetWorld(), CharacterPosition, CharacterPosition + GravityDir * 200, 32, FColor::Red);
 
     UpdateGravityDirection(GravityDir);
 }

@@ -29,6 +29,10 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void BP_OnCharaRespawn();	
+
+
 private:
 	UPROPERTY(VisibleAnywhere, Category = "Components")
 	UStaticMeshComponent* BlackHoleMesh;
@@ -40,4 +44,7 @@ private:
 	void OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, 
 	                    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, 
 	                    bool bFromSweep, const FHitResult& SweepResult);
+
+	UPROPERTY()
+	FTimerHandle Handle;
 };

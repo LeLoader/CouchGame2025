@@ -8,6 +8,8 @@
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "PickUpObject.generated.h"
 
+class ACouchGame2025Character;
+
 UCLASS()
 class COUCHGAME2025_API APickUpObject : public AActor, public IInteractable
 {
@@ -22,6 +24,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void StartPickUp(ACouchGame2025Character* Player);
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void TriggerParticule();
+
 	UFUNCTION(BlueprintCallable)
 	void StopPickUp(ACouchGame2025Character* Player);
 	
@@ -30,6 +35,9 @@ public:
 
 
 	int GetPriority() override;
+
+
+	bool CanBeInteractWithSomethingInHand() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -75,5 +83,8 @@ private:
 
 	UPROPERTY()
 	FVector2D PlayersAverageInput;
+
+	UFUNCTION()
+	void EnableCollision();
 #pragma endregion
 };

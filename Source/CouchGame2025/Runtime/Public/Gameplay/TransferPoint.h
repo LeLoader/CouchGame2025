@@ -8,6 +8,7 @@
 class UBoxComponent;
 class USplineComponent;
 class UCameraComponent;
+class UTransfertSettings;
 
 UCLASS()
 class COUCHGAME2025_API ATransfertPoint : public AActor, public IInteractable
@@ -22,6 +23,9 @@ public:
 
 
     int GetPriority() override;
+
+
+    bool CanBeInteractWithSomethingInHand() override;
 
 protected:
     virtual void BeginPlay() override;
@@ -67,4 +71,7 @@ private:
 
     UFUNCTION()
     void OnMovementAlongSplineOver();
+
+    UPROPERTY()
+    const UTransfertSettings* TransfertSettings;
 };

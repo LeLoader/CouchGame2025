@@ -10,15 +10,15 @@
  * 
  */
 UCLASS(Config = Game, DefaultConfig, meta = (DisplayName = "Transfert Settings"), BlueprintType)
-class COUCHGAME2025_API UTranfertSettings : public UDeveloperSettings
+class COUCHGAME2025_API UTransfertSettings : public UDeveloperSettings
 {
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly)
 	int CharacterTransfertTime;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(Config, EditAnywhere, BlueprintReadOnly)
 	TEnumAsByte<EViewTargetBlendFunction> CameraBlendType;
 	
 };

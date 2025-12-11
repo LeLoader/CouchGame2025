@@ -1,6 +1,7 @@
 #include "CouchGame2025/Runtime/Public/Component/RessourceContainerComponent.h"
 
 
+
 // Sets default values for this component's properties
 URessourceContainerComponent::URessourceContainerComponent()
 {
@@ -16,8 +17,8 @@ URessourceContainerComponent::URessourceContainerComponent()
 void URessourceContainerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
-	// ...
+	
+	
 
 }
 
@@ -41,6 +42,7 @@ float URessourceContainerComponent::AddRessource(float Amount)
 	float OldRessourceAmount = CurrentRessourceAmount;
 	CurrentRessourceAmount = FMath::Clamp(CurrentRessourceAmount + Amount, 0, MaxRessourceAmount);
 	OnRessourceUpdated.Broadcast(CurrentRessourceAmount, OldRessourceAmount);
+	
 	if (IsContainerFull()) {
 		OnContainerFull.Broadcast();
 		OnContainerFullBP.Broadcast();
@@ -73,7 +75,7 @@ float URessourceContainerComponent::InstantMoveRessource(float DeltaTime, UResso
 		float RessourceAdded = Target->AddRessource(RessourceRemoved);
 		float OverflowDuringTransaction = RessourceRemoved - RessourceAdded;
 		AddRessource(OverflowDuringTransaction);
-
+		OnRessourceMoveInstantBP.Broadcast();
 		return RessourceAdded;
 	}
 	// Target is not valid, destroy ressource
@@ -88,6 +90,7 @@ void URessourceContainerComponent::StartMovingRessource(URessourceContainerCompo
 {
 	if (Target->RessourceType == RessourceType) {
 		TargetContainers.AddUnique(Target);
+		OnRessourceStartMovingBP.Broadcast();
 	}
 }
 
@@ -95,6 +98,7 @@ void URessourceContainerComponent::StopMovingRessource(URessourceContainerCompon
 {
 	if (Target->RessourceType == RessourceType) {
 		TargetContainers.Remove(Target);
+		OnRessourceStopMovingBP.Broadcast();
 	}
 }
 

@@ -42,5 +42,5 @@ protected:
 
 	UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly)
 	TArray<ACouchGame2025Character*> BurnInstigators;
-
+	
 };

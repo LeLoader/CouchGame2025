@@ -17,12 +17,15 @@ class UInputMappingContext;
 class UInputAction;
 class ACouchCameraActor;
 class USplineComponent;
+class UTransfertSettings;
 struct FInputActionValue;
+class UCableComponentBis;
+class UPhysicsConstraintComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ACouchGame2025Character : public ACharacter, public IInteractable
+class COUCHGAME2025_API ACouchGame2025Character : public ACharacter, public IInteractable
 {
 private:
 	GENERATED_BODY()
@@ -30,19 +33,17 @@ private:
 	void BeginPlay() override;
 	void Tick(float DeltaTime) override;
 
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USceneComponent* CameraBoomRoot;
-
-	/** Camera boom positioning the camera behind the character */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	USpringArmComponent* CameraBoom;
-
-	/** Follow camera */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	UCameraComponent* FollowCamera;
-
-
+	// /** Camera boom positioning the camera behind the character */
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	// USceneComponent* CameraBoomRoot;
+	// 
+	// /** Camera boom positioning the camera behind the character */
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	// USpringArmComponent* CameraBoom;
+	// 
+	// /** Follow camera */
+	// UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	// UCameraComponent* FollowCamera;
 	
 #pragma region Inputs
 
@@ -99,6 +100,15 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	UPickupComponent* PickupComponent;
 
+	UPROPERTY(EditDefaultsOnly)
+	bool bHidePickupComponent;
+
+	UPROPERTY()
+	FVector RespawnPoint;
+
+	UFUNCTION()
+	void SetRespawnLocation(FVector InLocation);
+
 #pragma region Transfert
 
 	UFUNCTION(BlueprintImplementableEvent)
@@ -121,12 +131,17 @@ public:
 	UFUNCTION()
 	void InvertCamera();
 
-protected:
-	UPROPERTY(EditAnywhere)
-	TEnumAsByte<EViewTargetBlendFunction> BlendType;
+	UFUNCTION()
+	void Wait();
+
+	UFUNCTION()
+	void StopWait();
 #pragma endregion
 
 	int GetPriority() override;
+
+
+	bool CanBeInteractWithSomethingInHand() override;
 
 protected:
 
@@ -159,13 +174,6 @@ protected:
 	/** Called to toggle rope*/
 	void ToggleRopeMode(const FInputActionValue& Value);
 
-	/**  */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool bIsConnectedToARope;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	bool bIsRopeFree;
-
 #pragma endregion Rope
 			
 
@@ -176,19 +184,25 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
-	/** Returns CameraBoom subobject **/
-	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
-	/** Returns FollowCamera subobject **/
-	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+	// /** Returns CameraBoom subobject **/
+	// FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
+	// /** Returns FollowCamera subobject **/
+	// FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	UPROPERTY(BlueprintReadWrite)
 	bool bIsWaiting;
 
+	UPROPERTY(BlueprintReadOnly)
+	const UTransfertSettings* TransfertSettings;
+
+	UFUNCTION()
+	void ResetPlayer();
+
+	void SetVisibility(bool IsVisible);
+
 private:
 	UFUNCTION(BlueprintCallable)
 	void InvertCharacter();
-
-
 
 #pragma region Water
 
@@ -206,6 +220,9 @@ public:
 
 	UPROPERTY()
 	FVector2D InputMovement;
+
+	UPROPERTY(VisibleAnywhere)
+	bool bIsGrabbedByAnotherPlayer;
 
 	UPROPERTY(VisibleAnywhere)
 	bool bIsGrabbing;
@@ -262,5 +279,9 @@ protected:
 	virtual bool Interact(ACouchGame2025Character* A) override;
 	
 #pragma endregion Grab
+
+private:
+	UFUNCTION()
+	void HandlePlanetaryJumped();
 };
 

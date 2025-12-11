@@ -1,4 +1,5 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+// Language: cpp
+// File: `Source/CouchGame2025/Runtime/Public/Component/PlanetaryMovementComponent.h`
 
 #pragma once
 
@@ -6,9 +7,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "PlanetaryMovementComponent.generated.h"
 
-/**
- * 
- */
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnPlanetaryJumped);
+
 UCLASS()
 class COUCHGAME2025_API UPlanetaryMovementComponent : public UCharacterMovementComponent
 {
@@ -18,10 +18,10 @@ public:
 	UPlanetaryMovementComponent();
 
 	UFUNCTION(BlueprintCallable)
-		void UpdateGravityDirection(const FVector& NewGravityDirection);
+	void UpdateGravityDirection(const FVector& NewGravityDirection);
 
 	UFUNCTION(BlueprintCallable)
-		void InvertGravity();
+	void InvertGravity();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool UseExternalGravityDirection = true;
@@ -30,6 +30,9 @@ public:
 	FVector PlanetCenter = FVector::ZeroVector;
 
 	virtual bool DoJump(bool bReplayingMoves) override;
+
+	UPROPERTY(BlueprintAssignable, Category = "Planetary")
+	FOnPlanetaryJumped OnPlanetaryJumped;
 
 protected:
 	virtual void BeginPlay() override;
