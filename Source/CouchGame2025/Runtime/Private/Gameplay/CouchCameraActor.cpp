@@ -94,22 +94,20 @@ void ACouchCameraActor::Zoom(float Input)
 
 void ACouchCameraActor::InvertCamera()
 {
-	float R;
-	float Theta;
-	float Phi;
-	CartesianToPolar(GetActorLocation(), R, Theta, Phi);
 	if (bIsInverted)
 	{
-		R = 8000.f;
+		CurrentPositionPolar.Radius = 8000.f;
+		TargetPositionPolar.Radius = 8000.f;
 		ToggleBlackHole();
 	}
 	else
 	{
-		R = InternDistance;
+		CurrentPositionPolar.Radius = InternDistance;
+		TargetPositionPolar.Radius = InternDistance;
 		ToggleBlackHole();
 	}
 	FVector NewPosition;
-	PolarToCartesian(R, Theta, Phi, NewPosition);
+	PolarToCartesian(CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi, NewPosition);
 	SetActorLocation(NewPosition);
 	bIsInverted = !bIsInverted;
 }
