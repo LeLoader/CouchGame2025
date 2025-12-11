@@ -204,9 +204,6 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void InvertCharacter();
 
-
-
-
 #pragma region Water
 
 public:
@@ -282,5 +279,9 @@ protected:
 	virtual bool Interact(ACouchGame2025Character* A) override;
 	
 #pragma endregion Grab
+
+private:
+	UFUNCTION()
+	void HandlePlanetaryJumped();
 };
 
