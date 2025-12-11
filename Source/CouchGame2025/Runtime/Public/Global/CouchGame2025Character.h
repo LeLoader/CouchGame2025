@@ -25,7 +25,7 @@ class UPhysicsConstraintComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ACouchGame2025Character : public ACharacter, public IInteractable
+class COUCHGAME2025_API ACouchGame2025Character : public ACharacter, public IInteractable
 {
 private:
 	GENERATED_BODY()
@@ -197,6 +197,8 @@ public:
 
 	UFUNCTION()
 	void ResetPlayer();
+
+	void SetVisibility(bool IsVisible);
 
 private:
 	UFUNCTION(BlueprintCallable)

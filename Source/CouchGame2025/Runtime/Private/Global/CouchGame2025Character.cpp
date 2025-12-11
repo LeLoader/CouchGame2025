@@ -226,9 +226,14 @@ void ACouchGame2025Character::Interact(const FInputActionValue& Value)
 	}
 }
 
+void ACouchGame2025Character::HandlePlanetaryJumped()
+{
+	//
+}
+
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
-	// CableComponent->TryToggleRope();
+	// CableComponent->TryToggleRope(this);
 }
 
 void ACouchGame2025Character::MoveWhenGrabbing(FVector2D Movement)
@@ -284,17 +289,17 @@ void ACouchGame2025Character::StopMove()
 {
 	InputMovement = FVector2D::ZeroVector;
 }
+
 void ACouchGame2025Character::BeginPlay()
 {
-    TransfertSettings = GetDefault<UTransfertSettings>();
-    Super::BeginPlay();
-    Camera = ACouchCameraActor::CurrentCamera;
-    SetRespawnLocation(GetActorLocation());
-
-    if (UPlanetaryMovementComponent* PMC = Cast<UPlanetaryMovementComponent>(GetMovementComponent()))
-    {
-        PMC->OnPlanetaryJumped.AddDynamic(this, &ACouchGame2025Character::HandlePlanetaryJumped);
-    }
+	TransfertSettings = GetDefault<UTransfertSettings>();
+	Super::BeginPlay();
+	Camera = ACouchCameraActor::CurrentCamera;
+	SetRespawnLocation(GetActorLocation());
+	if (UPlanetaryMovementComponent* PMC = Cast<UPlanetaryMovementComponent>(GetMovementComponent()))
+	{
+		PMC->OnPlanetaryJumped.AddDynamic(this, &ACouchGame2025Character::HandlePlanetaryJumped);
+	}
 }
 
 void ACouchGame2025Character::Tick(float DeltaTime)
@@ -450,7 +455,7 @@ void ACouchGame2025Character::ThrowPlayer()
 	bIsGrabbingPlayer = false;
 }
 
-void ACouchGame2025Character::HandlePlanetaryJumped()
+void ACouchGame2025Character::SetVisibility(bool IsVisible)
 {
-
+	GetMesh()->SetVisibility(IsVisible);
 }
