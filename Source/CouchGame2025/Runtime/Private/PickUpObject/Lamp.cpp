@@ -86,15 +86,3 @@ void ALamp::StopPickUp(ACouchGame2025Character* Player)
 
 	DisableLamp();
 }
-
-void ALamp::BeginPlay()
-{
-	Super::BeginPlay();
-	RespawnLocation = GetActorLocation();
-}
-
-void ALamp::RespawnLamp()
-{
-	SetActorLocation(RespawnLocation);
-	DisableLamp();
-}

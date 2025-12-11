@@ -22,7 +22,6 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/CapsuleComponent.h"
 #include <Kismet/GameplayStatics.h>
-#include <CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h>
 
 DEFINE_RENDER_COMMAND_PIPE(CableBis, ERenderCommandPipeFlags::None);
 
@@ -737,51 +736,34 @@ void UCableComponentBis::VerletIntegrate(float InSubstepTime, const FVector& Gra
 	}
 }
 
-bool UCableComponentBis::TryToggleRope(ACouchGame2025Character* Instigator)
+void UCableComponentBis::TryToggleRope()
 {
-	if (IsVisible()) { // Detach
+	if (bIsAttached) { // Detached
 		SetVisibility(false);
+		//SetAttachEndTo(nullptr, FName(NAME_None));
 		bIsAttached = false;
-		return true;
 	}
 	else { // Try attach
 		for (int i = 0; i < UGameplayStatics::GetNumPlayerControllers(GetWorld()); i++) {
-			if (Instigator != UGameplayStatics::GetPlayerCharacter(GetWorld(), i)) {
+			if (GetOwner() != UGameplayStatics::GetPlayerCharacter(GetWorld(), i)) {
 				ACharacter* Target = UGameplayStatics::GetPlayerCharacter(GetWorld(), i);
-				if (AttachCableToCharacters(Instigator, Cast<ACouchGame2025Character>(Target))) {
-					SetVisibility(true);
-					bIsAttached = true;
-					return true;
-				}
-				else {
-					return false;
-				}
+				SetVisibility(true);
+				SetAttachEndToComponent(Target->GetMesh(), FName("RopeSocket"));
+				bIsAttached = true;
+				break;
 			}
 		}
-		return false;
 	}
 }
 
-bool UCableComponentBis::AttachCableToCharacters(ACouchGame2025Character* WantedCharacterStart, ACouchGame2025Character* WantedCharacterEnd)
-{
-	CharacterStart = WantedCharacterStart;
-	CharacterEnd = WantedCharacterEnd;
-
-	if (CharacterStart == nullptr || CharacterEnd == nullptr) return false;
-
-	AttachToComponent(CharacterStart->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RopeSocket"));
-	SetAttachEndToComponent(CharacterEnd->GetMesh(), FName("RopeSocket"));
-	return true;
-}
-
 /** Solve a single distance constraint between a pair of particles */
-void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance)
+FORCEINLINE void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance)
 {
 	// Find current vector between particles
 	FVector Delta = ParticleB.Position - ParticleA.Position;
 	float CurrentDistance = Delta.Size();
 	bool bNormalizedOK = Delta.Normalize();
-	bool CanStretch = CurrentDistance - DesiredDistance > FMath::Abs(DesiredDistance) / 2;
+	bool CanStretch = CurrentDistance - DesiredDistance > FMath::Abs(DesiredDistance) / 2; 
 
 	// If particles are right on top of each other, separate with an abitrarily-chosen direction
 
@@ -794,24 +776,23 @@ void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCab
 		ParticleA.Position += 0.5f * VectorCorrection;
 		ParticleB.Position -= 0.5f * VectorCorrection;
 	}
-	else if (ParticleA.bFree) // CharacterEnd
+	else if (ParticleA.bFree) // Target
 	{
-		ParticleA.Position += 0.5 * VectorCorrection;
+		ParticleA.Position += VectorCorrection;
 		//if (AActor* EndActor = GetAttachedActor()) {
 		//	if (CanStretch) {
 		//		EndActor->SetActorLocation(EndActor->GetActorLocation() - 0.5f * VectorCorrection);
 		//	}
 		//}
-		if (CanStretch && IsValid(CharacterEnd)) {
-			CharacterEnd->GetCharacterMovement()->Velocity = CharacterEnd->GetCharacterMovement()->Velocity - VectorCorrection * CharacterReceivingForceRatio;
-		}
 	}
-	else if (ParticleB.bFree) // CharacterStart
+	else if (ParticleB.bFree) // Character
 	{
-		ParticleB.Position -= 0.5 * VectorCorrection;
-		if (CanStretch && IsValid(CharacterStart)) {
-			CharacterStart->GetCharacterMovement()->Velocity = CharacterStart->GetCharacterMovement()->Velocity + VectorCorrection * CharacterReceivingForceRatio;
-		}
+		ParticleB.Position -= VectorCorrection;
+		// if (CanStretch && GetAttachedActor() != nullptr) {
+		// 	if (ACharacter* Character = Cast<ACharacter>(GetOwner())) {
+		// 		Character->GetCharacterMovement()->Velocity = Character->GetCharacterMovement()->Velocity + VectorCorrection;
+		// 	}
+		// }
 	}
 }
 

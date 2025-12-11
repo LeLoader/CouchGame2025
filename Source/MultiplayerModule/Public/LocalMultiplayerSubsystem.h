@@ -47,10 +47,10 @@ protected:
 	UPROPERTY(BlueprintReadOnly)
 	uint8 LastAssignedPlayerIndex = -1;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY()
 	TMap<int, int> PlayerIndexFromKeyboardProfileIndex;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY()
 	TMap<int, int> PlayerIndexFromGamepadProfileIndex;
 
 	UPROPERTY(BlueprintReadOnly)

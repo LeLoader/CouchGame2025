@@ -24,9 +24,6 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void StartPickUp(ACouchGame2025Character* Player);
 
-	UFUNCTION(BlueprintImplementableEvent)
-	void TriggerParticule();
-
 	UFUNCTION(BlueprintCallable)
 	void StopPickUp(ACouchGame2025Character* Player);
 	
