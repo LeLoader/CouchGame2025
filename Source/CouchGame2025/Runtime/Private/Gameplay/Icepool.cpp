@@ -57,6 +57,7 @@ void AIcepool::OnWaterBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AA
 
 void AIcepool::Burn(float DeltaTime)
 {
+	BP_OnIceMelt();
 	IceContainer->InstantMoveRessource(DeltaTime, nullptr);
 }
 

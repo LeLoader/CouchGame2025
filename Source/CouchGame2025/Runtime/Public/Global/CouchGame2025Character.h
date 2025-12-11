@@ -25,7 +25,7 @@ class UPhysicsConstraintComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
 UCLASS(config=Game)
-class ACouchGame2025Character : public ACharacter, public IInteractable
+class COUCHGAME2025_API ACouchGame2025Character : public ACharacter, public IInteractable
 {
 private:
 	GENERATED_BODY()
@@ -204,9 +204,6 @@ private:
 	UFUNCTION(BlueprintCallable)
 	void InvertCharacter();
 
-
-
-
 #pragma region Water
 
 public:
@@ -282,5 +279,9 @@ protected:
 	virtual bool Interact(ACouchGame2025Character* A) override;
 	
 #pragma endregion Grab
+
+private:
+	UFUNCTION()
+	void HandlePlanetaryJumped();
 };
 
