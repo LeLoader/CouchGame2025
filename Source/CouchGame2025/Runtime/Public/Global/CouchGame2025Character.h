@@ -198,6 +198,8 @@ public:
 	UFUNCTION()
 	void ResetPlayer();
 
+	void SetVisibility(bool IsVisible);
+
 private:
 	UFUNCTION(BlueprintCallable)
 	void InvertCharacter();
