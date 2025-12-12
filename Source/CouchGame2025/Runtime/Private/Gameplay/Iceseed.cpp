@@ -37,6 +37,7 @@ AIceSeed::AIceSeed()
 }
 
 // Called when the game starts or when spawned
+
 void AIceSeed::BeginPlay()
 {
 	Super::BeginPlay();
@@ -48,7 +49,12 @@ void AIceSeed::BeginPlay()
 		WaterContainer->AddRessource(WaterContainer->GetMaxRessourceAmount());
 		IceContainer->OnContainerEmpty.Remove(Handle);
 		});
+
+	if (BurnComponent) {
+		BurnComponent->OnBurnStarted.AddDynamic(this, &AIceSeed::HandleMelting);
+	}
 }
+
 
 // Called every frame
 void AIceSeed::Tick(float DeltaTime)
@@ -84,3 +90,7 @@ UBurnComponent* AIceSeed::GetBurnComponent()
 	return BurnComponent;
 }
 
+void AIceSeed::HandleMelting()
+{
+	UE_LOG(LogTemp, Warning, TEXT("Ice Seed is melting"));
+}

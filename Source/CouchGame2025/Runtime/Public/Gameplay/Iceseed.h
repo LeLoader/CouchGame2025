@@ -13,6 +13,7 @@ class URessourceContainerComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnIceSeedPickableSignature);
 
+
 UCLASS()
 class COUCHGAME2025_API AIceSeed : public APickUpObject, public IBurnable
 
@@ -59,8 +60,8 @@ public:
 	void OnWaterBoxEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 
-public:
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void OnBurnStarted();
+private:
+	UFUNCTION()
+	void HandleMelting();
 
 };

@@ -50,6 +50,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float LaunchForce;
 
+	UFUNCTION(BlueprintImplementableEvent)
+	void OnLaunched();
+
 
 #pragma region MultiPlayerHolding
 

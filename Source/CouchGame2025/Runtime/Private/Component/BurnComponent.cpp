@@ -16,18 +16,14 @@ UBurnComponent::UBurnComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
+
 void UBurnComponent::StartBurn(ACouchGame2025Character* Instigator)
 {
 	BurnInstigators.Add(Instigator);
 	if (BurnInstigators.Num() >= NumOfSourceToBurn) {
-		if (AActor* OwnerActor = GetOwner()) {
-			if (AIceSeed* Ice = Cast<AIceSeed>(OwnerActor)) {
-				Ice->OnBurnStarted();
-			}
-		}
+		OnBurnStarted.Broadcast();
 	}
 }
-
 
 void UBurnComponent::StopBurn(ACouchGame2025Character* Instigator)
 {
@@ -37,6 +33,9 @@ void UBurnComponent::StopBurn(ACouchGame2025Character* Instigator)
 void UBurnComponent::AddFakeBurnSource()
 {
 	BurnInstigators.Add(nullptr);
+	if (BurnInstigators.Num() >= NumOfSourceToBurn) {
+	OnBurnStarted.Broadcast();
+	}
 }
 
 void UBurnComponent::RemoveFakeBurnSource()
@@ -63,5 +62,4 @@ void UBurnComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		Owner->Burn(DeltaTime);
 	}
 }
-
 

@@ -165,6 +165,7 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 		Player->FrontLaunchForce * FwdVector.X / 2,
 		Player->FrontLaunchForce * FwdVector.Y / 2,
 		Player->UpLaunchForce) * LaunchForce * 1000.f);
+	OnLaunched();
 	
 	FTimerHandle TimerHandle;
 	GetWorldTimerManager().SetTimer(TimerHandle, this, &APickUpObject::EnableCollision, 2.f, false);

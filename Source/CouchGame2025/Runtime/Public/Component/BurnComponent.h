@@ -8,6 +8,10 @@
 
 class IBurnable;
 
+#pragma once
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnBurnStarted);
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class COUCHGAME2025_API UBurnComponent : public UActorComponent
@@ -31,6 +35,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, CallInEditor)
 	void RemoveFakeBurnSource();
+	
+	UPROPERTY(BlueprintAssignable, Category = "Burn") 
+	FOnBurnStarted OnBurnStarted;
 
 protected:
 	virtual void BeginPlay() override;

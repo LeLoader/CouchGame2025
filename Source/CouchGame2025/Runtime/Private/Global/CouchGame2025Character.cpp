@@ -452,5 +452,5 @@ void ACouchGame2025Character::ThrowPlayer()
 
 void ACouchGame2025Character::HandlePlanetaryJumped()
 {
-
+	
 }
