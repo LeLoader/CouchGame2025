@@ -103,19 +103,34 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	Interactor->bIsGrabbing = true;
 	Interactor->PickupComponent->PickedUpObject = this;
 	PlayersHolding.Add(Player);
-
+	if (Cast<ALamp>(this))
+	{
+		this->AttachToComponent(
+			Player->GetMesh(),
+			FAttachmentTransformRules
+			(
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::KeepWorld,
+				EAttachmentRule::KeepWorld,
+				true
+			),
+			"Throw_Pos"
+		);
+	}
+	else {
+		this->AttachToComponent(
+			Player->GetMesh(),
+			FAttachmentTransformRules
+			(
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::KeepWorld,
+				true
+			),
+			"Throw_Pos"
+		);
+	}
 	// Attach and snap location, rotation and scale to the socket
-	this->AttachToComponent(
-		Player->GetMesh(),
-		FAttachmentTransformRules
-		(
-			EAttachmentRule::SnapToTarget,
-			EAttachmentRule::SnapToTarget,
-			EAttachmentRule::KeepWorld,
-			true
-		),
-		"Throw_Pos"
-	);
 
 	// Disable collision/physics and lock translations + rotation to keep relative transform fixed
 	SetActorEnableCollision(false);
@@ -138,9 +153,9 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 {
 	if (PlayersHolding.IsEmpty() || PlayersHolding.Num() == 2 || PlayersHolding.Num() == 0) return;
-	if (Cast<ALamp>(this))
+	if (ALamp* Lamp = Cast<ALamp>(this))
 	{
-		Cast<ALamp>(this)->DisableLamp();
+		Lamp->DisableLamp();
 		this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		// Réactiver collision et physique
 		SetActorEnableCollision(true);
@@ -149,7 +164,10 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 		Mesh->SetSimulatePhysics(true);
 
 		Player->bIsGrabbing = false;
+		PlayersHolding.Empty();
 		TriggerParticule();
+		Player->PickupComponent->PickedUpObject = nullptr;
+
 		return;
 	}
 	Player->PickupComponent->PickedUpObject = nullptr;
@@ -184,13 +202,13 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 
 
 	
-	Mesh->AddImpulseAtLocation((FVector(
-		Player->FrontLaunchForce * FwdVector.X,
-		Player->FrontLaunchForce * FwdVector.Y,
-		Player->FrontLaunchForce * FwdVector.Z) * LaunchForce),
-		GetActorLocation());
-
-	FTimerHandle TimerHandle;
+	//Mesh->AddImpulseAtLocation((FVector(
+	//	Player->FrontLaunchForce * FwdVector.X,
+	//	Player->FrontLaunchForce * FwdVector.Y,
+	//	Player->FrontLaunchForce * FwdVector.Z) * LaunchForce),
+	//	GetActorLocation());
+	//
+	//FTimerHandle TimerHandle;
 	//GetWorldTimerManager().SetTimer(TimerHandle, this, &APickUpObject::EnableCollision, .2f, false);
 	
 	Player->bIsGrabbing = false;

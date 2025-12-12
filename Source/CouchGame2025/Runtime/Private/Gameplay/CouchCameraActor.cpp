@@ -31,10 +31,6 @@ void ACouchCameraActor::CartesianToPolar(FVector Vector, float& OutR, float& Out
 	OutR = Vector.Length();
 	OutTheta = FMath::Acos(Vector.Z / OutR);
 	OutPhi = FMath::Atan2(Vector.Y, Vector.X);
-	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::White, TEXT("Theta : ") + FString::SanitizeFloat(OutTheta));
-	GEngine->AddOnScreenDebugMessage(2, 3.f, FColor::White, TEXT("Phi : ") + FString::SanitizeFloat(OutPhi));
-	GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::White, TEXT("Y : ") + FString::SanitizeFloat(Vector.Y));
-	GEngine->AddOnScreenDebugMessage(4, 3.f, FColor::White, TEXT("X : ") + FString::SanitizeFloat(Vector.X));
 }
 
 void ACouchCameraActor::Tick(float DeltaTime)
