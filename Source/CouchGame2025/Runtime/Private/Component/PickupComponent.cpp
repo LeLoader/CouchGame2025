@@ -114,7 +114,10 @@ void UPickupComponent::TryPickUp()
 	{
 		if (PickupObject->Interact(Player))
 		{
-			PickedUpObject = Cast<APickUpObject>(CurrentInteractionTarget);
+			if (APickUpObject* TempObject = Cast<APickUpObject>(PickupObject))
+			{
+				PickedUpObject = TempObject;
+			}
 			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, CurrentInteractionTarget->GetName());
 			//PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
 			//PhysicsHandle->Activate();
