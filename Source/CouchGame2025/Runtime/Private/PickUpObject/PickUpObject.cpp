@@ -126,10 +126,10 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	Mesh->SetAllPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
 
 	// Lock translations and rotation on the body instance
-	Mesh->BodyInstance.bLockXTranslation = true;
-	Mesh->BodyInstance.bLockYTranslation = true;
-	Mesh->BodyInstance.bLockZTranslation = true;
-	Mesh->BodyInstance.bLockRotation = true;
+	// Mesh->BodyInstance.bLockXTranslation = true;
+	// Mesh->BodyInstance.bLockYTranslation = true;
+	// Mesh->BodyInstance.bLockZTranslation = true;
+	// Mesh->BodyInstance.bLockRotation = true;
 	TriggerParticule();
 }
 
@@ -149,23 +149,31 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 
 	// Réactiver la simulation physique et la gravité
 	Mesh->SetSimulatePhysics(true);
+	//Mesh->WakeAllRigidBodies();
+	FVector FwdVector = Player->GetActorForwardVector();
+	Mesh->SetAllPhysicsLinearVelocity(FVector(
+		Player->FrontLaunchForce * FwdVector.X,
+		Player->FrontLaunchForce * FwdVector.Y,
+		Player->FrontLaunchForce * FwdVector.Z) * LaunchForce);
 	//SetActorEnableCollision(false);
 
 	// Déverrouiller translations/rotation
-	Mesh->BodyInstance.bLockRotation = false;
-	Mesh->BodyInstance.bLockXTranslation = false;
-	Mesh->BodyInstance.bLockYTranslation = false;
-	Mesh->BodyInstance.bLockZTranslation = false;
+	// Mesh->SetConstraintMode(EDOFMode::Type::SixDOF);
+	// Mesh->BodyInstance.bLockRotation = false;
+	// Mesh->BodyInstance.bLockXTranslation = false;
+	// Mesh->BodyInstance.bLockYTranslation = false;
+	// Mesh->BodyInstance.bLockZTranslation = false;
 
 	bIsGrabbedByBoth = false;
 	bIsAPlayerHolding = false;
 
-	FVector FwdVector = Player->GetActorForwardVector();
 
-	Mesh->AddImpulse(FVector(
-		Player->FrontLaunchForce * FwdVector.X * 500,
-		Player->FrontLaunchForce * FwdVector.Y * 500,
-		Player->FrontLaunchForce * FwdVector.Z * 500) * LaunchForce * 100.f);
+	
+	Mesh->AddImpulseAtLocation((FVector(
+		Player->FrontLaunchForce * FwdVector.X,
+		Player->FrontLaunchForce * FwdVector.Y,
+		Player->FrontLaunchForce * FwdVector.Z) * LaunchForce),
+		GetActorLocation());
 
 	FTimerHandle TimerHandle;
 	//GetWorldTimerManager().SetTimer(TimerHandle, this, &APickUpObject::EnableCollision, .2f, false);
