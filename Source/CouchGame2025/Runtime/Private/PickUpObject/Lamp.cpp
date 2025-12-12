@@ -78,6 +78,7 @@ void ALamp::Tick(float DeltaTime)
 void ALamp::StartPickUp(ACouchGame2025Character* Player)
 {
 	Super::StartPickUp(Player);
+	Mesh->SetRelativeRotation(LampRotation);
 }
 
 void ALamp::StopPickUp(ACouchGame2025Character* Player)
