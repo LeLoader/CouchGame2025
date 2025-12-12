@@ -12,6 +12,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Logging/StructuredLog.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "PickUpObject/Lamp.h"
 
 
 // Sets default values
@@ -136,7 +137,20 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 // StopPickUp - déverrouille la physique et restaure le comportement précédent
 void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 {
-	if (PlayersHolding.Num() == 2 || PlayersHolding.Num() == 0) return;
+	if (PlayersHolding.IsEmpty() || PlayersHolding.Num() == 2 || PlayersHolding.Num() == 0) return;
+	if (Cast<ALamp>(this))
+	{
+		this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		// Réactiver collision et physique
+		SetActorEnableCollision(true);
+
+		// Réactiver la simulation physique et la gravité
+		Mesh->SetSimulatePhysics(true);
+
+		Player->bIsGrabbing = false;
+		TriggerParticule();
+		return;
+	}
 	Player->PickupComponent->PickedUpObject = nullptr;
 
 	PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
