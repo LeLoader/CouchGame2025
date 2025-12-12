@@ -39,11 +39,11 @@
 			"Enabled": true
 		},
 		{
-			"Name": "CommonUI",
+			"Name": "NiagaraFluids",
 			"Enabled": true
 		},
 		{
-			"Name": "NiagaraFluids",
+			"Name": "CommonUI",
 			"Enabled": true
 		}
 	],
