@@ -40,7 +40,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float MaxRessourceAmount = 1.f;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite) // TO BE PUT BACK TO VISIBLEANYWHERE IF I FORGOR
 	float CurrentRessourceAmount = 0.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)

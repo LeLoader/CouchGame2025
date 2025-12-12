@@ -226,7 +226,7 @@ void APickUpObject::EnableCollision()
 
 int APickUpObject::GetPriority()
 {
-	return 1;
+	return 10;
 }
 
 bool APickUpObject::CanBeInteractWithSomethingInHand()
