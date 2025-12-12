@@ -31,17 +31,21 @@
 			"Enabled": false
 		},
 		{
-			"Name": "HDRIBackdrop",
+			"Name": "CableComponentBis",
 			"Enabled": true
 		},
 		{
-			"Name": "CommonUI",
+			"Name": "HDRIBackdrop",
 			"Enabled": true
 		},
 		{
 			"Name": "NiagaraFluids",
 			"Enabled": true
 		},
+		{
+			"Name": "CommonUI",
+			"Enabled": true
+		}
 	],
 	"AdditionalPluginDirectories": [
 		"Source"

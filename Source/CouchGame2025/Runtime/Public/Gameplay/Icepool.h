@@ -40,6 +40,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	URessourceContainerComponent* IceContainer;
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void BP_OnIceMelt();
+
 // Start of IBurnable implementation
 
 public:
