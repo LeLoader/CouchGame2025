@@ -140,6 +140,7 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 	if (PlayersHolding.IsEmpty() || PlayersHolding.Num() == 2 || PlayersHolding.Num() == 0) return;
 	if (Cast<ALamp>(this))
 	{
+		Cast<ALamp>(this)->DisableLamp();
 		this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 		// Réactiver collision et physique
 		SetActorEnableCollision(true);
