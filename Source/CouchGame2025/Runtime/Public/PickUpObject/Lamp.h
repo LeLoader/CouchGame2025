@@ -37,6 +37,9 @@ public:
 	UFUNCTION()
 	void RespawnLamp();
 
+	UPROPERTY(EditAnywhere)
+	FRotator LampRotation;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	float FlamethrowerLength = 250.f;

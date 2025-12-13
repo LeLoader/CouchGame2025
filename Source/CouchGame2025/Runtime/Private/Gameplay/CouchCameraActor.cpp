@@ -31,10 +31,6 @@ void ACouchCameraActor::CartesianToPolar(FVector Vector, float& OutR, float& Out
 	OutR = Vector.Length();
 	OutTheta = FMath::Acos(Vector.Z / OutR);
 	OutPhi = FMath::Atan2(Vector.Y, Vector.X);
-	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::White, TEXT("Theta : ") + FString::SanitizeFloat(OutTheta));
-	GEngine->AddOnScreenDebugMessage(2, 3.f, FColor::White, TEXT("Phi : ") + FString::SanitizeFloat(OutPhi));
-	GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::White, TEXT("Y : ") + FString::SanitizeFloat(Vector.Y));
-	GEngine->AddOnScreenDebugMessage(4, 3.f, FColor::White, TEXT("X : ") + FString::SanitizeFloat(Vector.X));
 }
 
 void ACouchCameraActor::Tick(float DeltaTime)
@@ -94,24 +90,21 @@ void ACouchCameraActor::Zoom(float Input)
 
 void ACouchCameraActor::InvertCamera()
 {
-	float R;
-	float Theta;
-	float Phi;
-	CartesianToPolar(GetActorLocation(), R, Theta, Phi);
 	if (bIsInverted)
 	{
-		R = 8000.f;
-		ToggleBlackHole();
+		CurrentPositionPolar.Radius = 8000.f;
+		TargetPositionPolar.Radius = 8000.f;
 	}
 	else
 	{
-		R = InternDistance;
-		ToggleBlackHole();
+		CurrentPositionPolar.Radius = InternDistance;
+		TargetPositionPolar.Radius = InternDistance;
 	}
 	FVector NewPosition;
-	PolarToCartesian(R, Theta, Phi, NewPosition);
+	PolarToCartesian(CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi, NewPosition);
 	SetActorLocation(NewPosition);
 	bIsInverted = !bIsInverted;
+	ToggleBlackHole();
 }
 
 ACouchCameraActor* ACouchCameraActor::GetCurrentCamera()
