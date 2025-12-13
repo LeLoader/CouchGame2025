@@ -94,18 +94,17 @@ void ACouchCameraActor::InvertCamera()
 	{
 		CurrentPositionPolar.Radius = 8000.f;
 		TargetPositionPolar.Radius = 8000.f;
-		ToggleBlackHole();
 	}
 	else
 	{
 		CurrentPositionPolar.Radius = InternDistance;
 		TargetPositionPolar.Radius = InternDistance;
-		ToggleBlackHole();
 	}
 	FVector NewPosition;
 	PolarToCartesian(CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi, NewPosition);
 	SetActorLocation(NewPosition);
 	bIsInverted = !bIsInverted;
+	ToggleBlackHole();
 }
 
 ACouchCameraActor* ACouchCameraActor::GetCurrentCamera()
