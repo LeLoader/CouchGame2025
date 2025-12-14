@@ -31,74 +31,40 @@ void ACouchCameraActor::CartesianToPolar(FVector Vector, float& OutR, float& Out
 	OutR = Vector.Length();
 	OutTheta = FMath::Acos(Vector.Z / OutR);
 	OutPhi = FMath::Atan2(Vector.Y, Vector.X);
-	GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::White, TEXT("Theta : ") + FString::SanitizeFloat(OutTheta));
-	GEngine->AddOnScreenDebugMessage(2, 3.f, FColor::White, TEXT("Phi : ") + FString::SanitizeFloat(OutPhi));
-	GEngine->AddOnScreenDebugMessage(3, 3.f, FColor::White, TEXT("Y : ") + FString::SanitizeFloat(Vector.Y));
-	GEngine->AddOnScreenDebugMessage(4, 3.f, FColor::White, TEXT("X : ") + FString::SanitizeFloat(Vector.X));
 }
 
 void ACouchCameraActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	CurrentPositionPolar.Theta = FMath::FInterpTo(CurrentPositionPolar.Theta, TargetPositionPolar.Theta, DeltaTime, LerpSpeed);
+	CurrentPositionPolar.Phi = FMath::FInterpTo(CurrentPositionPolar.Phi, TargetPositionPolar.Phi, DeltaTime, LerpSpeed);
+	FVector NewPosition;
+	PolarToCartesian(CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi, NewPosition);
+	SetActorLocation(NewPosition);
 }
 
 void ACouchCameraActor::BeginPlay()
 {
 	Super::BeginPlay();
 	ACouchCameraActor::CurrentCamera = this;
-	
+	CartesianToPolar(GetActorLocation(), CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi);
+	CartesianToPolar(GetActorLocation(), TargetPositionPolar.Radius, TargetPositionPolar.Theta, TargetPositionPolar.Phi);
 
-}
-
-void ACouchCameraActor::ChangeDestination(AInterestPoint* NewInterestPoint)
-{
-	CurrentInterestPoint = NewInterestPoint;
-}
-
-void ACouchCameraActor::SetCharacters(AActor* FirstCharacter, AActor* SecondCharacter)
-{
-	Characters.Add(FirstCharacter);
-	Characters.Add(SecondCharacter);
-}
-
-FVector ACouchCameraActor::CalculateAveragePositions()
-{
-	FVector FinalPosition = FVector::ZeroVector;
-	if (Characters.IsEmpty()) return GetActorLocation();
-	int TotalPoints = 0;
-	for (AActor* Character : Characters)
-	{
-		FinalPosition += Character->GetActorLocation();
-		TotalPoints++;
-	}
-	if (CurrentInterestPoint != nullptr)
-	{
-		FinalPosition += CurrentInterestPoint->GetActorLocation();
-		TotalPoints++;
-	}
-	return FinalPosition / TotalPoints;
 }
 
 void ACouchCameraActor::Move(FVector2D Input)
 {
-	float R = 0.f;
-	float Theta = 0.f;
-	float Phi = 0.f;
-	CartesianToPolar(GetActorLocation(), R, Theta, Phi);
-	if (bisInverted)
+	CartesianToPolar(GetActorLocation(), CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi);
+	if (bIsInverted)
 	{
-		Theta += Input.Y * PI / 180;
+		TargetPositionPolar.Theta = TargetPositionPolar.Theta + Input.Y * PI / 180;
 	}
 	else
 	{
-		Theta -= Input.Y * PI / 180;
+		TargetPositionPolar.Theta = TargetPositionPolar.Theta - Input.Y * PI / 180;
 	}
-	Theta = FMath::Clamp(Theta, 0.1f, PI - 0.1f);
-	Phi += Input.X * PI / 180;
-	FVector NewPosition;
-	PolarToCartesian(R, Theta, Phi, NewPosition);
-	SetActorLocation(NewPosition);
-	
+	TargetPositionPolar.Theta = FMath::Clamp(TargetPositionPolar.Theta, 0.1f, PI - 0.1f);
+	TargetPositionPolar.Phi = TargetPositionPolar.Phi + Input.X * PI / 180;
 }
 
 void ACouchCameraActor::Zoom(float Input)
@@ -107,7 +73,7 @@ void ACouchCameraActor::Zoom(float Input)
 	float Theta = 0.f;
 	float Phi = 0.f;
 	CartesianToPolar(GetActorLocation(), R, Theta, Phi);
-	if (bisInverted)
+	if (bIsInverted)
 	{
 		R += Input * 50.f;
 		R = FMath::Clamp(R, 2500.f, 3500.f);	
@@ -124,22 +90,21 @@ void ACouchCameraActor::Zoom(float Input)
 
 void ACouchCameraActor::InvertCamera()
 {
-	float R;
-	float Theta;
-	float Phi;
-	CartesianToPolar(GetActorLocation(), R, Theta, Phi);
-	if (bisInverted)
+	if (bIsInverted)
 	{
-		R = 8000.f;
+		CurrentPositionPolar.Radius = 8000.f;
+		TargetPositionPolar.Radius = 8000.f;
 	}
 	else
 	{
-		R = 3000.f;
+		CurrentPositionPolar.Radius = InternDistance;
+		TargetPositionPolar.Radius = InternDistance;
 	}
 	FVector NewPosition;
-	PolarToCartesian(R, Theta, Phi, NewPosition);
+	PolarToCartesian(CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi, NewPosition);
 	SetActorLocation(NewPosition);
-	bisInverted = !bisInverted;
+	bIsInverted = !bIsInverted;
+	ToggleBlackHole();
 }
 
 ACouchCameraActor* ACouchCameraActor::GetCurrentCamera()

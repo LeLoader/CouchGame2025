@@ -30,5 +30,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	virtual int GetPriority() = 0;
+
+	UFUNCTION(BlueprintCallable)
+	virtual bool CanBeInteractWithSomethingInHand() = 0;
 	
 };

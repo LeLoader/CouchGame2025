@@ -60,6 +60,15 @@ void UPickupComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 
 void UPickupComponent::TraceToFindNearestInteractable()
 {
+	if (Player->bIsGrabbedByAnotherPlayer) {
+		if (IsValid(CurrentInteractionTarget)) {
+			OnNewInteractionTarget.Broadcast(nullptr, CurrentInteractionTarget);
+		}
+		CurrentInteractionTarget = nullptr;
+		return;
+	}
+
+
 	TArray<FHitResult> Hits;
 	FVector StartLocation = GetOwner()->GetActorLocation();
 	FVector EndLocation = StartLocation + GetOwner()->GetActorForwardVector() * TraceLength;
@@ -94,7 +103,10 @@ void UPickupComponent::TraceToFindNearestInteractable()
 
 void UPickupComponent::TryPickUp()
 {
-	if ((IsValid(PickedUpObject) || IsValid(PickedUpPlayer) || CurrentInteractionTarget == GetOwner()) && CurrentInteractionTarget != nullptr) {
+	if (CurrentInteractionTarget == nullptr
+		|| (IsValid(PickedUpObject) && !Cast<IInteractable>(CurrentInteractionTarget)->CanBeInteractWithSomethingInHand())
+		|| IsValid(PickedUpPlayer)
+		|| CurrentInteractionTarget == GetOwner()){
 		return;
 	}
 
@@ -102,7 +114,10 @@ void UPickupComponent::TryPickUp()
 	{
 		if (PickupObject->Interact(Player))
 		{
-			PickedUpObject = Cast<APickUpObject>(CurrentInteractionTarget);
+			if (APickUpObject* TempObject = Cast<APickUpObject>(PickupObject))
+			{
+				PickedUpObject = TempObject;
+			}
 			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, CurrentInteractionTarget->GetName());
 			//PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
 			//PhysicsHandle->Activate();
@@ -113,6 +128,7 @@ void UPickupComponent::TryPickUp()
 			PickedUpPlayer->GrabbedByOtherPlayer(Player);
 		}
 	}
+	
 }
 
 void UPickupComponent::StartUse() {
