@@ -91,6 +91,10 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* TransfertAction;
 
+	/** Look At Player Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* LookAtPLayerAction;
+
 #pragma endregion Inputs
 
 public:
@@ -156,6 +160,10 @@ protected:
 
 	/** Called for Transfering */
 	void Transfert(const FInputActionValue& Value);
+
+	/** Called for looking at Player */
+	void LookAtPlayer(const FInputActionValue& Value);
+
 
 	void PolarToCartesian(float r, float theta, float phi, FVector& OutVector);
 	void CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi);
