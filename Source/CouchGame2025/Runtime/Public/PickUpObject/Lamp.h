@@ -19,6 +19,7 @@ class COUCHGAME2025_API ALamp : public APickUpObject, public IUsable
 
 public:
 	ALamp();
+	void BeginPlay() override;
 	void Tick(float DeltaTime) override;
 	virtual void StartPickUp(ACouchGame2025Character* Player);
 	virtual void StopPickUp(ACouchGame2025Character* Player);
@@ -27,7 +28,7 @@ public:
 	void Use() override;
 	void StopUse() override;
 
-	void BeginPlay() override;
+
 
 	UFUNCTION(BlueprintNativeEvent)
 	void EnableLamp();

@@ -12,6 +12,18 @@ ALamp::ALamp()
 
 }
 
+void ALamp::BeginPlay()
+{
+	Super::BeginPlay();
+	RespawnLocation = GetActorLocation();
+}
+
+void ALamp::RespawnLamp()
+{
+	SetActorLocation(RespawnLocation);
+	DisableLamp();
+}
+
 void ALamp::StartUse()
 {
 	if (bIsActive) DisableLamp();
