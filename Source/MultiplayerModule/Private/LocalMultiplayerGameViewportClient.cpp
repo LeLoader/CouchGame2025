@@ -40,6 +40,9 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 			return Super::InputKey(EventArgs);
 		}
 		FInputKeyParams params = FInputKeyParams(EventArgs.Key, EventArgs.Event, EventArgs.AmountDepressed);
+		if (GetWorld()->GetGameViewport()->IgnoreInput()) {
+			return Super::InputKey(EventArgs);
+		}
 		Controller->InputKey(params);
 		return true;
 		
