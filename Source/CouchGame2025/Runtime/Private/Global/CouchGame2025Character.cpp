@@ -140,6 +140,9 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(ThrowRightAction, ETriggerEvent::Started, this, &ACouchGame2025Character::CheckForThrowPlayer);
 		EnhancedInputComponent->BindAction(ThrowLeftAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ReleaseTrigger);
 		EnhancedInputComponent->BindAction(ThrowRightAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ReleaseTrigger);
+	
+		//Look at Player
+		EnhancedInputComponent->BindAction(LookAtPLayerAction, ETriggerEvent::Started, this, &ACouchGame2025Character::LookAtPlayer);
 	}
 	else
 	{
@@ -458,4 +461,9 @@ void ACouchGame2025Character::ThrowPlayer()
 void ACouchGame2025Character::SetVisibility(bool IsVisible)
 {
 	GetMesh()->SetVisibility(IsVisible);
+}
+
+void ACouchGame2025Character::LookAtPlayer(const FInputActionValue& Value)
+{
+	Camera->LookAtPosition(GetActorLocation());
 }

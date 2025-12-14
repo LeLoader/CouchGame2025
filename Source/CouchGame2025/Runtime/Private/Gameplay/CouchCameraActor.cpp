@@ -36,11 +36,29 @@ void ACouchCameraActor::CartesianToPolar(FVector Vector, float& OutR, float& Out
 void ACouchCameraActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	CurrentPositionPolar.Theta = FMath::FInterpTo(CurrentPositionPolar.Theta, TargetPositionPolar.Theta, DeltaTime, LerpSpeed);
-	CurrentPositionPolar.Phi = FMath::FInterpTo(CurrentPositionPolar.Phi, TargetPositionPolar.Phi, DeltaTime, LerpSpeed);
-	FVector NewPosition;
-	PolarToCartesian(CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi, NewPosition);
-	SetActorLocation(NewPosition);
+	FVector CurrentPosition;
+	FVector TargetPosition;
+	PolarToCartesian(CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi, CurrentPosition);
+	PolarToCartesian(TargetPositionPolar.Radius, TargetPositionPolar.Theta, TargetPositionPolar.Phi, TargetPosition);
+	CurrentPosition = FMath::VInterpTo(CurrentPosition, TargetPosition, DeltaTime, LerpSpeed);
+	CartesianToPolar(CurrentPosition, CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi);
+	if (bIsInverted)
+	{
+		CurrentPositionPolar.Radius = InternDistance;
+	}
+	else
+	{
+		CurrentPositionPolar.Radius = 8000.f;
+	}
+	PolarToCartesian(CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi, CurrentPosition);
+	SetActorLocation(CurrentPosition);
+	//CurrentPositionPolar.Theta = FMath::FInterpTo(CurrentPositionPolar.Theta, TargetPositionPolar.Theta, DeltaTime, LerpSpeed);
+	//CurrentPositionPolar.Phi = FMath::FInterpTo(CurrentPositionPolar.Phi, TargetPositionPolar.Phi, DeltaTime, LerpSpeed);
+	//FVector NewPosition;
+	//PolarToCartesian(CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi, NewPosition);
+	//SetActorLocation(NewPosition);
+	//GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::White, TEXT("Theta : ") + FString::SanitizeFloat(TargetPositionPolar.Theta));
+	//GEngine->AddOnScreenDebugMessage(2, 3.f, FColor::White, TEXT("Phi : ") + FString::SanitizeFloat(TargetPositionPolar.Phi));
 }
 
 void ACouchCameraActor::BeginPlay()
@@ -110,4 +128,19 @@ void ACouchCameraActor::InvertCamera()
 ACouchCameraActor* ACouchCameraActor::GetCurrentCamera()
 {
 	return ACouchCameraActor::CurrentCamera;
+}
+
+void ACouchCameraActor::LookAtPosition(FVector Position)
+{
+	Position.Normalize();
+	TargetPositionPolar = FPolar(Position);
+	TargetPositionPolar.Theta += FMath::DegreesToRadians(GetPitchValue()/2.f);
+	if (bIsInverted)
+	{
+		TargetPositionPolar.Radius = InternDistance;
+	}
+	else
+	{
+		TargetPositionPolar.Radius = 8000.f;
+	}
 }
