@@ -54,11 +54,13 @@ void ALamp::Tick(float DeltaTime)
 
 		GetWorld()->SweepMultiByChannel(Hits, StartLocation, EndLocation, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(FlamethrowerWidth));
 
+		CurrentBurnTarget.Empty();
+
 		// Check new burnable target
 		for (FHitResult Hit : Hits) {
 			if (IBurnable* Burnable = Cast<IBurnable>(Hit.GetActor())) {
-				if (!CurrentBurnTarget.Contains(Burnable)) {
-					CurrentBurnTarget.AddUnique(Burnable);
+				CurrentBurnTarget.AddUnique(Burnable);
+				if (!OldBurnTarget.Contains(Burnable)) { 
 					Burnable->GetBurnComponent()->StartBurn(Interactor);
 				}
 			}
@@ -68,6 +70,7 @@ void ALamp::Tick(float DeltaTime)
 		for (IBurnable* OldBurnable : OldBurnTarget) {
 			if (!CurrentBurnTarget.Contains(OldBurnable)) {
 				OldBurnable->GetBurnComponent()->StopBurn(Interactor);
+				CurrentBurnTarget.Remove(OldBurnable);
 			}
 		}
 
@@ -78,6 +81,7 @@ void ALamp::Tick(float DeltaTime)
 void ALamp::StartPickUp(ACouchGame2025Character* Player)
 {
 	Super::StartPickUp(Player);
+	Mesh->SetRelativeRotation(LampRotation);
 }
 
 void ALamp::StopPickUp(ACouchGame2025Character* Player)

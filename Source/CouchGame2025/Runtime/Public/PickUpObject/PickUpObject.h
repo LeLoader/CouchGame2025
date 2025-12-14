@@ -70,7 +70,7 @@ public:
 private:
 
 	UPROPERTY()
-	TArray<ACouchGame2025Character*> PlayersHolding;
+	TArray<ACouchGame2025Character*> PlayersHolding = TArray<ACouchGame2025Character*>();
 
 	UFUNCTION()
 	void ReleaseObjectFromOnePlayer(ACouchGame2025Character* PlayerReleasing);

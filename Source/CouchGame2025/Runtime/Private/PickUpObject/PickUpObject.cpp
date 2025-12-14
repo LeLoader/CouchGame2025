@@ -12,6 +12,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Logging/StructuredLog.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "PickUpObject/Lamp.h"
 
 
 // Sets default values
@@ -102,19 +103,34 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	Interactor->bIsGrabbing = true;
 	Interactor->PickupComponent->PickedUpObject = this;
 	PlayersHolding.Add(Player);
-
+	if (Cast<ALamp>(this))
+	{
+		this->AttachToComponent(
+			Player->GetMesh(),
+			FAttachmentTransformRules
+			(
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::KeepWorld,
+				EAttachmentRule::KeepWorld,
+				true
+			),
+			"Throw_Pos"
+		);
+	}
+	else {
+		this->AttachToComponent(
+			Player->GetMesh(),
+			FAttachmentTransformRules
+			(
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::KeepWorld,
+				true
+			),
+			"Throw_Pos"
+		);
+	}
 	// Attach and snap location, rotation and scale to the socket
-	this->AttachToComponent(
-		Player->GetMesh(),
-		FAttachmentTransformRules
-		(
-			EAttachmentRule::SnapToTarget,
-			EAttachmentRule::SnapToTarget,
-			EAttachmentRule::KeepWorld,
-			true
-		),
-		"Throw_Pos"
-	);
 
 	// Disable collision/physics and lock translations + rotation to keep relative transform fixed
 	SetActorEnableCollision(false);
@@ -126,16 +142,34 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 	Mesh->SetAllPhysicsAngularVelocityInDegrees(FVector::ZeroVector);
 
 	// Lock translations and rotation on the body instance
-	Mesh->BodyInstance.bLockXTranslation = true;
-	Mesh->BodyInstance.bLockYTranslation = true;
-	Mesh->BodyInstance.bLockZTranslation = true;
-	Mesh->BodyInstance.bLockRotation = true;
+	// Mesh->BodyInstance.bLockXTranslation = true;
+	// Mesh->BodyInstance.bLockYTranslation = true;
+	// Mesh->BodyInstance.bLockZTranslation = true;
+	// Mesh->BodyInstance.bLockRotation = true;
+	TriggerParticule();
 }
 
 // StopPickUp - déverrouille la physique et restaure le comportement précédent
 void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 {
-	if (PlayersHolding.Num() == 2 || PlayersHolding.Num() == 0) return;
+	if (PlayersHolding.IsEmpty() || PlayersHolding.Num() == 2 || PlayersHolding.Num() == 0) return;
+	if (ALamp* Lamp = Cast<ALamp>(this))
+	{
+		Lamp->DisableLamp();
+		this->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		// Réactiver collision et physique
+		SetActorEnableCollision(true);
+
+		// Réactiver la simulation physique et la gravité
+		Mesh->SetSimulatePhysics(true);
+
+		Player->bIsGrabbing = false;
+		PlayersHolding.Empty();
+		TriggerParticule();
+		Player->PickupComponent->PickedUpObject = nullptr;
+
+		return;
+	}
 	Player->PickupComponent->PickedUpObject = nullptr;
 
 	PlayersHolding[0]->GetCharacterMovement()->SetMovementMode(MOVE_Walking);
@@ -148,28 +182,37 @@ void APickUpObject::StopPickUp(ACouchGame2025Character* Player)
 
 	// Réactiver la simulation physique et la gravité
 	Mesh->SetSimulatePhysics(true);
-	SetActorEnableCollision(false);
+	//Mesh->WakeAllRigidBodies();
+	FVector FwdVector = Player->GetActorForwardVector();
+	Mesh->SetAllPhysicsLinearVelocity(FVector(
+		Player->FrontLaunchForce * FwdVector.X,
+		Player->FrontLaunchForce * FwdVector.Y,
+		Player->FrontLaunchForce * FwdVector.Z) * LaunchForce);
+	//SetActorEnableCollision(false);
 
 	// Déverrouiller translations/rotation
-	Mesh->BodyInstance.bLockRotation = false;
-	Mesh->BodyInstance.bLockXTranslation = false;
-	Mesh->BodyInstance.bLockYTranslation = false;
-	Mesh->BodyInstance.bLockZTranslation = false;
+	// Mesh->SetConstraintMode(EDOFMode::Type::SixDOF);
+	// Mesh->BodyInstance.bLockRotation = false;
+	// Mesh->BodyInstance.bLockXTranslation = false;
+	// Mesh->BodyInstance.bLockYTranslation = false;
+	// Mesh->BodyInstance.bLockZTranslation = false;
 
 	bIsGrabbedByBoth = false;
 	bIsAPlayerHolding = false;
 
-	FVector FwdVector = Player->GetActorForwardVector();
 
-	Mesh->AddImpulse(FVector(
-		Player->FrontLaunchForce * FwdVector.X / 2,
-		Player->FrontLaunchForce * FwdVector.Y / 2,
-		Player->UpLaunchForce) * LaunchForce * 1000.f);
 	
-	FTimerHandle TimerHandle;
-	GetWorldTimerManager().SetTimer(TimerHandle, this, &APickUpObject::EnableCollision, 2.f, false);
+	//Mesh->AddImpulseAtLocation((FVector(
+	//	Player->FrontLaunchForce * FwdVector.X,
+	//	Player->FrontLaunchForce * FwdVector.Y,
+	//	Player->FrontLaunchForce * FwdVector.Z) * LaunchForce),
+	//	GetActorLocation());
+	//
+	//FTimerHandle TimerHandle;
+	//GetWorldTimerManager().SetTimer(TimerHandle, this, &APickUpObject::EnableCollision, .2f, false);
 	
 	Player->bIsGrabbing = false;
+	TriggerParticule();
 }
 
 // ReleaseObjectFromOnePlayer - déverrouille également quand un joueur relâche et un autre reste
@@ -224,7 +267,7 @@ void APickUpObject::EnableCollision()
 
 int APickUpObject::GetPriority()
 {
-	return 1;
+	return 10;
 }
 
 bool APickUpObject::CanBeInteractWithSomethingInHand()
