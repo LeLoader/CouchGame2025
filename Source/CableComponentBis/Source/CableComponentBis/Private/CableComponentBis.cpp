@@ -775,7 +775,7 @@ bool UCableComponentBis::AttachCableToCharacters(ACouchGame2025Character* Wanted
 }
 
 /** Solve a single distance constraint between a pair of particles */
-void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance)
+void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance, bool& HasStreched)
 {
 	// Find current vector between particles
 	FVector Delta = ParticleB.Position - ParticleA.Position;
@@ -804,6 +804,7 @@ void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCab
 		//}
 		if (CanStretch && IsValid(CharacterEnd)) {
 			CharacterEnd->GetCharacterMovement()->Velocity = CharacterEnd->GetCharacterMovement()->Velocity - VectorCorrection * CharacterReceivingForceRatio;
+			HasStreched = true;
 		}
 	}
 	else if (ParticleB.bFree) // CharacterStart
@@ -811,6 +812,7 @@ void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCab
 		ParticleB.Position -= 0.5 * VectorCorrection;
 		if (CanStretch && IsValid(CharacterStart)) {
 			CharacterStart->GetCharacterMovement()->Velocity = CharacterStart->GetCharacterMovement()->Velocity + VectorCorrection * CharacterReceivingForceRatio;
+			HasStreched = true;
 		}
 	}
 }
@@ -819,6 +821,7 @@ void UCableComponentBis::SolveConstraints()
 {
 	SCOPE_CYCLE_COUNTER(STAT_Cable_SolveTime);
 	const float SegmentLength = CableLength / (float)NumSegments;
+	bool StrechingResult = false;
 
 	// For each iteration..
 	for (int32 IterationIdx = 0; IterationIdx < SolverIterations; IterationIdx++)
@@ -828,8 +831,9 @@ void UCableComponentBis::SolveConstraints()
 		{
 			FCableParticle& ParticleA = Particles[SegIdx];
 			FCableParticle& ParticleB = Particles[SegIdx + 1];
+
 			// Solve for this pair of particles
-			SolveDistanceConstraint(ParticleA, ParticleB, SegmentLength);
+			SolveDistanceConstraint(ParticleA, ParticleB, SegmentLength, StrechingResult);
 
 			if (bShowDebug) {
 				float distance = (ParticleB.Position - ParticleA.Position).Length();
@@ -845,11 +849,14 @@ void UCableComponentBis::SolveConstraints()
 			{
 				FCableParticle& ParticleA = Particles[SegIdx];
 				FCableParticle& ParticleB = Particles[SegIdx + 2];
-				SolveDistanceConstraint(ParticleA, ParticleB, 2.f * SegmentLength);
+				SolveDistanceConstraint(ParticleA, ParticleB, 2.f * SegmentLength, StrechingResult);
 			}
 		}
 	}
+
+	if (StrechingResult) OnStreched.Broadcast();
 }
+
 void UCableComponentBis::PerformCableCollision()
 {
 	SCOPE_CYCLE_COUNTER(STAT_Cable_CollisionTime);
