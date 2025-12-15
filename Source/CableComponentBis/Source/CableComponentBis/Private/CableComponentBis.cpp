@@ -740,6 +740,8 @@ void UCableComponentBis::VerletIntegrate(float InSubstepTime, const FVector& Gra
 bool UCableComponentBis::TryToggleRope(ACouchGame2025Character* Instigator)
 {
 	if (IsVisible()) { // Detach
+		CharacterStart->bIsAttachedToRope = false;
+		CharacterEnd->bIsAttachedToRope = false;
 		SetVisibility(false);
 		bIsAttached = false;
 		return true;
@@ -764,10 +766,18 @@ bool UCableComponentBis::TryToggleRope(ACouchGame2025Character* Instigator)
 
 bool UCableComponentBis::AttachCableToCharacters(ACouchGame2025Character* WantedCharacterStart, ACouchGame2025Character* WantedCharacterEnd)
 {
+
+	if (WantedCharacterStart == nullptr || WantedCharacterEnd == nullptr) {
+		CharacterStart = nullptr;
+		CharacterEnd = nullptr;
+		return false;
+	}
+
 	CharacterStart = WantedCharacterStart;
 	CharacterEnd = WantedCharacterEnd;
-
-	if (CharacterStart == nullptr || CharacterEnd == nullptr) return false;
+		
+	CharacterStart->bIsAttachedToRope = true;
+	CharacterEnd->bIsAttachedToRope = true;
 
 	AttachToComponent(CharacterStart->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RopeSocket"));
 	SetAttachEndToComponent(CharacterEnd->GetMesh(), FName("RopeSocket"));
