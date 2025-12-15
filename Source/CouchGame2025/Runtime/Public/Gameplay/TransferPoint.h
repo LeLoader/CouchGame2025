@@ -41,10 +41,16 @@ public:
     void SetSplineComponent(USplineComponent* InSpline);
 
     UFUNCTION(BlueprintCallable)
+    void SetRespawnLocation(FVector InLocation);
+
+    UFUNCTION(BlueprintCallable)
     void SetLinkedActor(AActor* InActor);
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     bool IsExtern;
+
+    UPROPERTY()
+    FVector RespawnPoint;
 
     DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartTransfert);
     UPROPERTY(BlueprintAssignable)
@@ -68,7 +74,7 @@ private:
     TObjectPtr<UCameraComponent> CameraComponent;
 
     UPROPERTY()
-    TObjectPtr<AActor> LinkedPoint;
+    TObjectPtr<ATransfertPoint> LinkedPoint;
 
     UFUNCTION()
     void OnMovementAlongSplineOver();
