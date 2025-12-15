@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "CableComponentBis.h"
 #include "GameFramework/Actor.h"
 #include "CouchGame2025/Runtime/Public/Interface/Interactable.h"
 #include "TransferPoint.generated.h"
@@ -74,4 +75,7 @@ private:
 
     UPROPERTY()
     const UTransfertSettings* TransfertSettings;
+
+    UPROPERTY()
+    UCableComponentBis* Cable;
 };

@@ -1,4 +1,6 @@
 ﻿#include "Gameplay/TransferPoint.h"
+
+#include "CableComponentBis.h"
 #include "Components/SphereComponent.h"
 #include "Engine/Engine.h"
 #include "Components/BoxComponent.h"
@@ -43,7 +45,6 @@ void ATransfertPoint::Tick(float DeltaTime)
 
 bool ATransfertPoint::Interact(ACouchGame2025Character* Player)
 {
-
 		if (!bOnePlayerHasAlreadyInteracted)
 		{
 			bOnePlayerHasAlreadyInteracted = true;
@@ -59,7 +60,7 @@ bool ATransfertPoint::Interact(ACouchGame2025Character* Player)
 				bOnePlayerHasAlreadyInteracted = false;
 				Player->SetGameplayCameraAsCamera(1.f);
 			}
-			else
+			else if (Player->bIsAttachedToRope)
 			{
 				Player->Wait();
 				FirstInstigator->MoveAlongSpline(Spline, IsExtern);
