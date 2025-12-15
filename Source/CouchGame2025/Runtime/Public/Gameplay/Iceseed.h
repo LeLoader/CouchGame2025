@@ -46,6 +46,9 @@ protected:
 #pragma endregion Components
 	
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bFirstTimeGrabbingIceSeed;
+
 	void Burn(float DeltaTime) override;
 	UBurnComponent* GetBurnComponent() override;
 

@@ -46,13 +46,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UStaticMeshComponent* Mesh;
 
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void Bp_OnIceHearthPick();
+
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float LaunchForce;
-
 
 #pragma region MultiPlayerHolding
 

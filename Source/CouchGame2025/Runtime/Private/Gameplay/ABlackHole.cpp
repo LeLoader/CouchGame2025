@@ -52,6 +52,7 @@ void AABlackHole::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 			SecondCharacter->ResetPlayer();
 			return;
 		}
+		Bp_OnCharaVacuum();
 		DeadCharacter->SetVisibility(false);
 		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
 		TimerManager.SetTimer(Handle, FTimerDelegate::CreateLambda([this, DeadCharacter]
@@ -64,6 +65,7 @@ void AABlackHole::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 				{
 					DeadCharacter->SetActorLocation(UGameplayStatics::GetPlayerPawn(this, 0)->GetActorLocation());
 				}
+				BP_OnCharaRespawn();
 				DeadCharacter->SetVisibility(true);
 				DeadCharacter->ResetPlayer();
 				GetWorld()->GetTimerManager().ClearTimer(Handle);
