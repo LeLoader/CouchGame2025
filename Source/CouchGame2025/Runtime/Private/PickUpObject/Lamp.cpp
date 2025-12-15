@@ -12,6 +12,18 @@ ALamp::ALamp()
 
 }
 
+void ALamp::BeginPlay()
+{
+	Super::BeginPlay();
+	RespawnLocation = GetActorLocation();
+}
+
+void ALamp::RespawnLamp()
+{
+	SetActorLocation(RespawnLocation);
+	DisableLamp();
+}
+
 void ALamp::StartUse()
 {
 	if (bIsActive) DisableLamp();
@@ -88,17 +100,5 @@ void ALamp::StopPickUp(ACouchGame2025Character* Player)
 {
 	Super::StopPickUp(Player);
 
-	DisableLamp();
-}
-
-void ALamp::BeginPlay()
-{
-	Super::BeginPlay();
-	RespawnLocation = GetActorLocation();
-}
-
-void ALamp::RespawnLamp()
-{
-	SetActorLocation(RespawnLocation);
 	DisableLamp();
 }

@@ -13,7 +13,7 @@ namespace UnrealBuildTool.Rules
 					"CoreUObject",
                     "Engine",
                     "RenderCore",
-                    "CouchGame2025",
+					"CouchGame2025",
                     "RHI"
 				}
 				);

@@ -762,26 +762,14 @@ bool UCableComponentBis::TryToggleRope(ACouchGame2025Character* Instigator)
 	}
 }
 
-bool UCableComponentBis::AttachCableToCharacters(ACouchGame2025Character* WantedCharacterStart, ACouchGame2025Character* WantedCharacterEnd)
-{
-	CharacterStart = WantedCharacterStart;
-	CharacterEnd = WantedCharacterEnd;
-
-	if (CharacterStart == nullptr || CharacterEnd == nullptr) return false;
-
-	AttachToComponent(CharacterStart->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RopeSocket"));
-	SetAttachEndToComponent(CharacterEnd->GetMesh(), FName("RopeSocket"));
-	return true;
-}
-
 /** Solve a single distance constraint between a pair of particles */
-void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance)
+FORCEINLINE void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance)
 {
 	// Find current vector between particles
 	FVector Delta = ParticleB.Position - ParticleA.Position;
 	float CurrentDistance = Delta.Size();
 	bool bNormalizedOK = Delta.Normalize();
-	bool CanStretch = CurrentDistance - DesiredDistance > FMath::Abs(DesiredDistance) / 2;
+	bool CanStretch = CurrentDistance - DesiredDistance > FMath::Abs(DesiredDistance) / 2; 
 
 	// If particles are right on top of each other, separate with an abitrarily-chosen direction
 
@@ -813,6 +801,18 @@ void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCab
 			CharacterStart->GetCharacterMovement()->Velocity = CharacterStart->GetCharacterMovement()->Velocity + VectorCorrection * CharacterReceivingForceRatio;
 		}
 	}
+}
+
+bool UCableComponentBis::AttachCableToCharacters(ACouchGame2025Character* WantedCharacterStart, ACouchGame2025Character* WantedCharacterEnd)
+{
+	CharacterStart = WantedCharacterStart;
+	CharacterEnd = WantedCharacterEnd;
+
+	if (CharacterStart == nullptr || CharacterEnd == nullptr) return false;
+
+	AttachToComponent(CharacterStart->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RopeSocket"));
+	SetAttachEndToComponent(CharacterEnd->GetMesh(), FName("RopeSocket"));
+	return true;
 }
 
 void UCableComponentBis::SolveConstraints()

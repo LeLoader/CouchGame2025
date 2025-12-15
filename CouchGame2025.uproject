@@ -31,10 +31,6 @@
 			"Enabled": false
 		},
 		{
-			"Name": "CableComponentBis",
-			"Enabled": true
-		},
-		{
 			"Name": "HDRIBackdrop",
 			"Enabled": true
 		},
@@ -45,7 +41,7 @@
 		{
 			"Name": "CommonUI",
 			"Enabled": true
-		}
+		},
 	],
 	"AdditionalPluginDirectories": [
 		"Source"
