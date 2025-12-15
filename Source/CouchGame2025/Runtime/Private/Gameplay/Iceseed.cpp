@@ -86,4 +86,3 @@ UBurnComponent* AIceSeed::GetBurnComponent()
 {
 	return BurnComponent;
 }
-

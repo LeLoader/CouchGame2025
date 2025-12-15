@@ -817,6 +817,7 @@ void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCab
 	}
 }
 
+// cpp
 void UCableComponentBis::SolveConstraints()
 {
 	SCOPE_CYCLE_COUNTER(STAT_Cable_SolveTime);
@@ -854,8 +855,19 @@ void UCableComponentBis::SolveConstraints()
 		}
 	}
 
-	if (StrechingResult) OnStreched.Broadcast();
+	if (StrechingResult)
+	{
+		bIsAtMaxDistance = true;
+		OnStreched.Broadcast();
+	}
+	else
+	{
+		bIsAtMaxDistance = false;
+		OnStreched.Broadcast();
+	}
+
 }
+
 
 void UCableComponentBis::PerformCableCollision()
 {
@@ -1021,9 +1033,11 @@ void UCableComponentBis::OnVisibilityChanged()
 	}
 }
 
+// cpp
 void UCableComponentBis::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
 
 	if (bSkipCableUpdateWhenNotVisible && !IsVisible())
 	{
@@ -1084,15 +1098,14 @@ void UCableComponentBis::TickComponent(float DeltaTime, enum ELevelTick TickType
 			TimeRemainder = 0.0f;
 		}
 	}
-
-	// UE_LOGFMT(LogCableComponentBis, Display, "Lenght: {0}", GetFullLength());
-
+	
 	// Need to send new data to render thread
 	MarkRenderDynamicDataDirty();
 
 	// Call this because bounds have changed
 	UpdateComponentToWorld();
 };
+
 
 void UCableComponentBis::CreateRenderState_Concurrent(FRegisterComponentContext* Context)
 {

@@ -225,6 +225,11 @@ private:
 	/** Array of cable particles */
 	TArray<FCableParticle>	Particles;
 
+public:
+    UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Cable")
+    bool bIsAtMaxDistance = false;
+	
+
 
 	friend class FCableSceneProxy;
 };
