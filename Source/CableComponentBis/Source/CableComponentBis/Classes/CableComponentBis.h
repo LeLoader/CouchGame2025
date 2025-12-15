@@ -4,6 +4,7 @@
 
 
 #include "Components/MeshComponent.h"
+#include "Delegates/Delegate.h"
 #include "CableComponentBis.generated.h"
 
 class FPrimitiveSceneProxy;
@@ -12,6 +13,8 @@ class UPhysicsConstraintComponent;
 class ACouchGame2025Character;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogCableComponentBis, Log, All);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStrechedSignature);
 
 /** Struct containing information about a point along the cable */
 struct FCableParticle
@@ -200,10 +203,13 @@ public:
 	UPROPERTY(EditAnywhere, meta=(ClampMin=0, ClampMax=1, UIMin=0, UIMax=1))
 	float CharacterReceivingForceRatio = 0.5;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnStrechedSignature OnStreched;
+
 #pragma endregion Gameplay
 
 private:
-	void SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance);
+	void SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance, bool& HasStreched);
 	/** Solve the cable spring constraints */
 	void SolveConstraints();
 	/** Integrate cable point positions */
