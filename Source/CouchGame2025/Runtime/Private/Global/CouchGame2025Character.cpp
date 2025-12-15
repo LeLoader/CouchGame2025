@@ -457,6 +457,7 @@ void ACouchGame2025Character::ThrowPlayer()
 	PickupComponent->PickedUpPlayer = nullptr;
 	bIsGrabbingPlayer = false;
 
+	Cast<UPlanetaryMovementComponent>(OtherPlayer->GetMovementComponent())->UseExternalGravityDirection = true;
 	OnThrowCharacter.Broadcast(OtherPlayer);
 }
 

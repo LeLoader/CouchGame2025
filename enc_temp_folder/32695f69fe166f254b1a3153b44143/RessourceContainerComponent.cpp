@@ -46,7 +46,6 @@ float URessourceContainerComponent::AddRessource(float Amount)
 	if (IsContainerFull()) {
 		OnContainerFull.Broadcast();
 		OnContainerFullBP.Broadcast();
-		OnRessourceStopReceivingBP.Broadcast();
 	}
 	return CurrentRessourceAmount - OldRessourceAmount;
 }
@@ -61,7 +60,6 @@ float URessourceContainerComponent::RemoveRessource(float Amount)
 	if (IsContainerEmpty()) {
 		OnContainerEmpty.Broadcast();
 		OnContainerEmptyBP.Broadcast();
-		OnRessourceStopMovingBP.Broadcast();
 	}
 	return OldRessourceAmount - CurrentRessourceAmount;
 }
