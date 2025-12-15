@@ -236,6 +236,7 @@ void ACouchGame2025Character::HandlePlanetaryJumped()
 
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "ToggleRopeMode"); 
 	// CableComponent->TryToggleRope(this);
 }
 
