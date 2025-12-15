@@ -68,8 +68,8 @@ bool ATransfertPoint::Interact(ACouchGame2025Character* Player)
 				bOnePlayerHasAlreadyInteracted = false;
 				BoxComponent->SetCollisionResponseToChannel(ECC_Interactable, ECollisionResponse::ECR_Ignore);
 				Player->SetSpecialCameraAsCamera(TransfertSettings->CharacterTransfertTime * 2, LinkedPoint);
-				FirstInstigator->SetRespawnLocation(LinkedPoint->GetActorLocation());
-				SecondInstigator->SetRespawnLocation(LinkedPoint->GetActorLocation());
+				FirstInstigator->SetRespawnLocation(LinkedPoint->RespawnPoint);
+				SecondInstigator->SetRespawnLocation(LinkedPoint->RespawnPoint);
 				return true;
 			}
 		}
@@ -79,6 +79,11 @@ bool ATransfertPoint::Interact(ACouchGame2025Character* Player)
 void ATransfertPoint::SetSplineComponent(USplineComponent* InSpline)
 {
 	Spline = InSpline;
+}
+
+void ATransfertPoint::SetRespawnLocation(FVector InLocation)
+{
+	RespawnPoint = InLocation;
 }
 
 void ATransfertPoint::OnMovementAlongSplineOver()
@@ -106,5 +111,8 @@ void ATransfertPoint::OnMovementAlongSplineOver()
 
 void ATransfertPoint::SetLinkedActor(AActor* InActor)
 {
-	LinkedPoint = InActor;
+	if (ATransfertPoint* Point = Cast<ATransfertPoint>(InActor))
+	{
+		LinkedPoint = Point;
+	}
 }
