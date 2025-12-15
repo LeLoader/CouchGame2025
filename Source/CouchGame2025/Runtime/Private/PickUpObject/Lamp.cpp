@@ -99,6 +99,7 @@ void ALamp::BeginPlay()
 
 void ALamp::RespawnLamp()
 {
-	SetActorLocation(RespawnLocation);
+	Mesh->SetAllPhysicsLinearVelocity(FVector(0, 0, 0));
+	SetActorLocation(RespawnLocation + GetActorUpVector() * 50.f);
 	DisableLamp();
 }
