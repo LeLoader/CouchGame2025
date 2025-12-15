@@ -46,6 +46,7 @@ ACouchGame2025Character::ACouchGame2025Character()
 	bIsGrabbingPlayer = false;
 	bIsAnyThrowTriggerToggled = false;
 	bAreBothTriggerToggled = false;
+	bIsAttachedToRope = false;
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
