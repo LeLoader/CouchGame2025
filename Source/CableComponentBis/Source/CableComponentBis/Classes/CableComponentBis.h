@@ -183,6 +183,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Cable Rendering", meta=(UIMin = "0.1", UIMax = "8"))
 	float TileMaterial;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	bool bIsAtMaxDistance;
+
+
 #pragma region Gameplay
 
 	UFUNCTION(BlueprintCallable)
@@ -224,6 +228,7 @@ private:
 	float TimeRemainder;
 	/** Array of cable particles */
 	TArray<FCableParticle>	Particles;
+
 
 
 	friend class FCableSceneProxy;

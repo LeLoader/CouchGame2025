@@ -854,9 +854,16 @@ void UCableComponentBis::SolveConstraints()
 		}
 	}
 
-	if (StrechingResult) OnStreched.Broadcast();
+	if (StrechingResult) {
+		bIsAtMaxDistance = true;
+		OnStreched.Broadcast();
+	} else
+	{
+		bIsAtMaxDistance = false;
+		OnStreched.Broadcast();
+	}
 }
-
+	
 void UCableComponentBis::PerformCableCollision()
 {
 	SCOPE_CYCLE_COUNTER(STAT_Cable_CollisionTime);
