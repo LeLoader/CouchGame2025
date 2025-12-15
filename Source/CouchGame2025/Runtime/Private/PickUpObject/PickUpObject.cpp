@@ -10,6 +10,7 @@
 #include "CouchGame2025/Runtime/Public/Component/PickupComponent.h"
 #include "CouchGame2025/Runtime/Public/Global/CouchGame2025Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Gameplay/Iceseed.h"
 #include "Logging/StructuredLog.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "PickUpObject/Lamp.h"
@@ -111,6 +112,26 @@ void APickUpObject::StartPickUp(ACouchGame2025Character* Player) {
 			(
 				EAttachmentRule::SnapToTarget,
 				EAttachmentRule::KeepWorld,
+				EAttachmentRule::KeepWorld,
+				true
+			),
+			"Throw_Pos"
+		);
+	}
+	else if (Cast<AIceSeed>(this))
+	{
+		AIceSeed* Ice = Cast<AIceSeed>(this);
+		if (Ice && Ice->bFirstTimeGrabbingIceSeed)
+		{
+			Bp_OnIceHearthPick();
+			Ice->bFirstTimeGrabbingIceSeed = false;
+		}
+		this->AttachToComponent(
+			Player->GetMesh(),
+			FAttachmentTransformRules
+			(
+				EAttachmentRule::SnapToTarget,
+				EAttachmentRule::SnapToTarget,
 				EAttachmentRule::KeepWorld,
 				true
 			),

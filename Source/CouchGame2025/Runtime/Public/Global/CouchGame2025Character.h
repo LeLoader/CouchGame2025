@@ -197,6 +197,9 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsAttachedToRope;
+	
 	// /** Returns CameraBoom subobject **/
 	// FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	// /** Returns FollowCamera subobject **/

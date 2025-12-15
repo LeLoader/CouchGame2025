@@ -34,6 +34,9 @@ AIceSeed::AIceSeed()
 	WaterContainer->SetRessourceType(FRessourceType::WATER);
 
 	bCanBePickedUp = false;
+
+	bFirstTimeGrabbingIceSeed = true;
+	
 }
 
 // Called when the game starts or when spawned
@@ -83,4 +86,3 @@ UBurnComponent* AIceSeed::GetBurnComponent()
 {
 	return BurnComponent;
 }
-

@@ -740,6 +740,8 @@ void UCableComponentBis::VerletIntegrate(float InSubstepTime, const FVector& Gra
 bool UCableComponentBis::TryToggleRope(ACouchGame2025Character* Instigator)
 {
 	if (IsVisible()) { // Detach
+		CharacterStart->bIsAttachedToRope = false;
+		CharacterEnd->bIsAttachedToRope = false;
 		SetVisibility(false);
 		bIsAttached = false;
 		return true;
@@ -764,10 +766,18 @@ bool UCableComponentBis::TryToggleRope(ACouchGame2025Character* Instigator)
 
 bool UCableComponentBis::AttachCableToCharacters(ACouchGame2025Character* WantedCharacterStart, ACouchGame2025Character* WantedCharacterEnd)
 {
+
+	if (WantedCharacterStart == nullptr || WantedCharacterEnd == nullptr) {
+		CharacterStart = nullptr;
+		CharacterEnd = nullptr;
+		return false;
+	}
+
 	CharacterStart = WantedCharacterStart;
 	CharacterEnd = WantedCharacterEnd;
-
-	if (CharacterStart == nullptr || CharacterEnd == nullptr) return false;
+		
+	CharacterStart->bIsAttachedToRope = true;
+	CharacterEnd->bIsAttachedToRope = true;
 
 	AttachToComponent(CharacterStart->GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, FName("RopeSocket"));
 	SetAttachEndToComponent(CharacterEnd->GetMesh(), FName("RopeSocket"));
@@ -775,7 +785,7 @@ bool UCableComponentBis::AttachCableToCharacters(ACouchGame2025Character* Wanted
 }
 
 /** Solve a single distance constraint between a pair of particles */
-void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance)
+void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCableParticle& ParticleB, float DesiredDistance, bool& HasStreched)
 {
 	// Find current vector between particles
 	FVector Delta = ParticleB.Position - ParticleA.Position;
@@ -804,6 +814,7 @@ void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCab
 		//}
 		if (CanStretch && IsValid(CharacterEnd)) {
 			CharacterEnd->GetCharacterMovement()->Velocity = CharacterEnd->GetCharacterMovement()->Velocity - VectorCorrection * CharacterReceivingForceRatio;
+			HasStreched = true;
 		}
 	}
 	else if (ParticleB.bFree) // CharacterStart
@@ -811,14 +822,17 @@ void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCab
 		ParticleB.Position -= 0.5 * VectorCorrection;
 		if (CanStretch && IsValid(CharacterStart)) {
 			CharacterStart->GetCharacterMovement()->Velocity = CharacterStart->GetCharacterMovement()->Velocity + VectorCorrection * CharacterReceivingForceRatio;
+			HasStreched = true;
 		}
 	}
 }
 
+// cpp
 void UCableComponentBis::SolveConstraints()
 {
 	SCOPE_CYCLE_COUNTER(STAT_Cable_SolveTime);
 	const float SegmentLength = CableLength / (float)NumSegments;
+	bool StrechingResult = false;
 
 	// For each iteration..
 	for (int32 IterationIdx = 0; IterationIdx < SolverIterations; IterationIdx++)
@@ -828,8 +842,9 @@ void UCableComponentBis::SolveConstraints()
 		{
 			FCableParticle& ParticleA = Particles[SegIdx];
 			FCableParticle& ParticleB = Particles[SegIdx + 1];
+
 			// Solve for this pair of particles
-			SolveDistanceConstraint(ParticleA, ParticleB, SegmentLength);
+			SolveDistanceConstraint(ParticleA, ParticleB, SegmentLength, StrechingResult);
 
 			if (bShowDebug) {
 				float distance = (ParticleB.Position - ParticleA.Position).Length();
@@ -845,11 +860,25 @@ void UCableComponentBis::SolveConstraints()
 			{
 				FCableParticle& ParticleA = Particles[SegIdx];
 				FCableParticle& ParticleB = Particles[SegIdx + 2];
-				SolveDistanceConstraint(ParticleA, ParticleB, 2.f * SegmentLength);
+				SolveDistanceConstraint(ParticleA, ParticleB, 2.f * SegmentLength, StrechingResult);
 			}
 		}
 	}
+
+	if (StrechingResult)
+	{
+		bIsAtMaxDistance = true;
+		OnStreched.Broadcast();
+	}
+	else
+	{
+		bIsAtMaxDistance = false;
+		OnStreched.Broadcast();
+	}
+
 }
+
+
 void UCableComponentBis::PerformCableCollision()
 {
 	SCOPE_CYCLE_COUNTER(STAT_Cable_CollisionTime);
@@ -1014,9 +1043,11 @@ void UCableComponentBis::OnVisibilityChanged()
 	}
 }
 
+// cpp
 void UCableComponentBis::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
 
 	if (bSkipCableUpdateWhenNotVisible && !IsVisible())
 	{
@@ -1077,15 +1108,14 @@ void UCableComponentBis::TickComponent(float DeltaTime, enum ELevelTick TickType
 			TimeRemainder = 0.0f;
 		}
 	}
-
-	// UE_LOGFMT(LogCableComponentBis, Display, "Lenght: {0}", GetFullLength());
-
+	
 	// Need to send new data to render thread
 	MarkRenderDynamicDataDirty();
 
 	// Call this because bounds have changed
 	UpdateComponentToWorld();
 };
+
 
 void UCableComponentBis::CreateRenderState_Concurrent(FRegisterComponentContext* Context)
 {
