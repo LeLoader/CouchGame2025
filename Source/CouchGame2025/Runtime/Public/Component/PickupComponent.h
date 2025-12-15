@@ -14,7 +14,8 @@
 #include "PickupComponent.generated.h"
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnNewInteractionTargetSignature, AActor*, NewInteractionTarget, AActor*, OldInteractionTarget);
-
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPickUpSignature, APickUpObject*, PickedUpObject);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnThrowSignature, APickUpObject*, PickedUpObject);
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class COUCHGAME2025_API UPickupComponent : public USceneComponent
@@ -41,6 +42,12 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnNewInteractionTargetSignature OnNewInteractionTarget;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnPickUpSignature OnPickUp;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnThrowSignature OnThrow;
 
 	UFUNCTION(BlueprintCallable)
 	void TryPickUp();
@@ -76,10 +83,10 @@ public:
 
 	bool bCanBeReleased = false;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	ACouchGame2025Character* PickedUpPlayer;
 	
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	APickUpObject* PickedUpObject;
 private:
 	UPROPERTY()

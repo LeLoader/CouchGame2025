@@ -8,8 +8,10 @@
 #include "CouchGame2025/Runtime/Public/PickUpObject/PickUpObject.h"
 #include <CouchGame2025/Runtime/Public/Interface/Usable.h>
 #include <Logging/StructuredLog.h>
+#include "Delegates/Delegate.h"
 
 #define ECC_Interactable ECC_GameTraceChannel2
+
 
 // Sets default values for this component's properties
 UPickupComponent::UPickupComponent()
@@ -117,6 +119,7 @@ void UPickupComponent::TryPickUp()
 			if (APickUpObject* TempObject = Cast<APickUpObject>(PickupObject))
 			{
 				PickedUpObject = TempObject;
+				OnPickUp.Broadcast(TempObject);
 			}
 			//GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Cyan, CurrentInteractionTarget->GetName());
 			//PhysicsHandle->GrabComponentAtLocation(Cast<UPrimitiveComponent>(PickedActor->GetRootComponent()), FName(), PickedActor->GetActorLocation());
@@ -149,6 +152,7 @@ void UPickupComponent::StopUse() {
 	}
 }
 
+// NOT USED
 void UPickupComponent::HandleInputCompleted(ACouchGame2025Character* Instigator) {
 	if (!bCanBeReleased)
 		bCanBeReleased = true;
@@ -158,12 +162,13 @@ void UPickupComponent::HandleInputCompleted(ACouchGame2025Character* Instigator)
 
 void UPickupComponent::StopPickUp(ACouchGame2025Character* Instigator)
 {
-	if (!IsValid(PickedUpObject) || !bCanBeReleased) {
+	if (!IsValid(PickedUpObject)) {
 		return;
 	}
 
 	if (PickedUpObject != nullptr)
 	{
+		OnThrow.Broadcast(PickedUpObject);
 		PickedUpObject->StopPickUp(Instigator);
 	}
 	//PhysicsHandle->ReleaseComponent();

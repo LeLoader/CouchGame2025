@@ -120,7 +120,7 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Pickup & release
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::TryPickUp);
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::HandleInputCompleted, this);
+		//EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::HandleInputCompleted, this);
 
 		// Use (Move everything in a specific imc that's added on pickup
 		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::StartUse);
@@ -393,7 +393,7 @@ void ACouchGame2025Character::CheckForThrowPlayer()
 		bAreBothTriggerToggled = true;
 
 		if (bIsGrabbing && !bIsGrabbingPlayer) {
-			PickupComponent->PickedUpObject->StopPickUp(this);
+			PickupComponent->StopPickUp(this);
 		}
 		ThrowPlayer();
 	} else
@@ -453,6 +453,8 @@ void ACouchGame2025Character::ThrowPlayer()
 
 	PickupComponent->PickedUpPlayer = nullptr;
 	bIsGrabbingPlayer = false;
+
+	OnThrowCharacter.Broadcast(OtherPlayer);
 }
 
 void ACouchGame2025Character::SetVisibility(bool IsVisible)

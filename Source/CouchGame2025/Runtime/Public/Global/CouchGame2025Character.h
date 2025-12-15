@@ -24,6 +24,8 @@ class UPhysicsConstraintComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnThrowCharacterSignature, ACouchGame2025Character*, Character);
+
 UCLASS(config=Game)
 class COUCHGAME2025_API ACouchGame2025Character : public ACharacter, public IInteractable
 {
@@ -95,6 +97,9 @@ private:
 
 public:
 	ACouchGame2025Character();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnThrowCharacterSignature OnThrowCharacter;
 
 	/** Pickup Component **/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -221,13 +226,13 @@ public:
 	UPROPERTY()
 	FVector2D InputMovement;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsGrabbedByAnotherPlayer;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsGrabbing;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsGrabbingPlayer;
 
 	UPROPERTY(VisibleAnywhere)
