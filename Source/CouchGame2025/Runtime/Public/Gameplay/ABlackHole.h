@@ -30,7 +30,10 @@ protected:
 	virtual void BeginPlay() override;
 
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-	void BP_OnCharaRespawn();	
+	void BP_OnCharaRespawn();
+
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+	void Bp_OnCharaVacuum();	
 
 
 private:
