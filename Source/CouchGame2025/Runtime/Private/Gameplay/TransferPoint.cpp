@@ -9,6 +9,7 @@
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "CouchGame2025/Editor/Public/TransfertSettings.h"
+#include "Gameplay/PlayerConstraint.h"
 
 
 #define ECC_Interactable ECC_GameTraceChannel2
