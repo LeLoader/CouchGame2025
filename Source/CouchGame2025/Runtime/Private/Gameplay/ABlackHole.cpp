@@ -68,6 +68,7 @@ void AABlackHole::OnOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActo
 				BP_OnCharaRespawn();
 				DeadCharacter->SetVisibility(true);
 				DeadCharacter->ResetPlayer();
+				GetWorld()->GetTimerManager().ClearTimer(Handle);
 			}), 3.f, false);
 	}
 	else if (ALamp* Lamp = Cast<ALamp>(OtherActor))
