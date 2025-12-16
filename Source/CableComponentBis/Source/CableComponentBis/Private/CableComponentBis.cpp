@@ -812,7 +812,7 @@ void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCab
 		//		EndActor->SetActorLocation(EndActor->GetActorLocation() - 0.5f * VectorCorrection);
 		//	}
 		//}
-		if (CanStretch && IsValid(CharacterEnd)) {
+		if (CanStretch && IsValid(CharacterEnd) && bIsAttached) {
 			CharacterEnd->GetCharacterMovement()->Velocity = CharacterEnd->GetCharacterMovement()->Velocity - VectorCorrection * CharacterReceivingForceRatio;
 			HasStreched = true;
 		}
@@ -820,7 +820,7 @@ void UCableComponentBis::SolveDistanceConstraint(FCableParticle& ParticleA, FCab
 	else if (ParticleB.bFree) // CharacterStart
 	{
 		ParticleB.Position -= 0.5 * VectorCorrection;
-		if (CanStretch && IsValid(CharacterStart)) {
+		if (CanStretch && IsValid(CharacterStart) && bIsAttached) {
 			CharacterStart->GetCharacterMovement()->Velocity = CharacterStart->GetCharacterMovement()->Velocity + VectorCorrection * CharacterReceivingForceRatio;
 			HasStreched = true;
 		}

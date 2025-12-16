@@ -1,8 +1,8 @@
 
 
 
-#include "Bench.h"
-#include "../Global/CouchGame2025Character.h"
+#include "Gameplay/Bench.h"
+#include "Global/CouchGame2025Character.h"
 
 
 // Sets default values
