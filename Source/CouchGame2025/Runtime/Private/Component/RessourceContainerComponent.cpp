@@ -46,6 +46,7 @@ float URessourceContainerComponent::AddRessource(float Amount)
 	if (IsContainerFull()) {
 		OnContainerFull.Broadcast();
 		OnContainerFullBP.Broadcast();
+		OnRessourceStopReceivingBP.Broadcast();
 	}
 	return CurrentRessourceAmount - OldRessourceAmount;
 }
@@ -60,6 +61,7 @@ float URessourceContainerComponent::RemoveRessource(float Amount)
 	if (IsContainerEmpty()) {
 		OnContainerEmpty.Broadcast();
 		OnContainerEmptyBP.Broadcast();
+		OnRessourceStopMovingBP.Broadcast();
 	}
 	return OldRessourceAmount - CurrentRessourceAmount;
 }
@@ -91,6 +93,7 @@ void URessourceContainerComponent::StartMovingRessource(URessourceContainerCompo
 	if (Target->RessourceType == RessourceType) {
 		TargetContainers.AddUnique(Target);
 		OnRessourceStartMovingBP.Broadcast();
+		Target->OnRessourceStartReceivingBP.Broadcast();
 	}
 }
 
@@ -99,6 +102,7 @@ void URessourceContainerComponent::StopMovingRessource(URessourceContainerCompon
 	if (Target->RessourceType == RessourceType) {
 		TargetContainers.Remove(Target);
 		OnRessourceStopMovingBP.Broadcast();
+		Target->OnRessourceStopReceivingBP.Broadcast();
 	}
 }
 

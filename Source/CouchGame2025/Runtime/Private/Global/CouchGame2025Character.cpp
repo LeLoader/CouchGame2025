@@ -46,6 +46,7 @@ ACouchGame2025Character::ACouchGame2025Character()
 	bIsGrabbingPlayer = false;
 	bIsAnyThrowTriggerToggled = false;
 	bAreBothTriggerToggled = false;
+	bIsAttachedToRope = false;
 
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
@@ -120,7 +121,7 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 
 		// Pickup & release
 		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::TryPickUp);
-		EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::HandleInputCompleted, this);
+		//EnhancedInputComponent->BindAction(InteractAction, ETriggerEvent::Completed, PickupComponent, &UPickupComponent::HandleInputCompleted, this);
 
 		// Use (Move everything in a specific imc that's added on pickup
 		EnhancedInputComponent->BindAction(UseAction, ETriggerEvent::Started, PickupComponent, &UPickupComponent::StartUse);
@@ -140,6 +141,9 @@ void ACouchGame2025Character::SetupPlayerInputComponent(UInputComponent* PlayerI
 		EnhancedInputComponent->BindAction(ThrowRightAction, ETriggerEvent::Started, this, &ACouchGame2025Character::CheckForThrowPlayer);
 		EnhancedInputComponent->BindAction(ThrowLeftAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ReleaseTrigger);
 		EnhancedInputComponent->BindAction(ThrowRightAction, ETriggerEvent::Completed, this, &ACouchGame2025Character::ReleaseTrigger);
+	
+		//Look at Player
+		EnhancedInputComponent->BindAction(LookAtPLayerAction, ETriggerEvent::Started, this, &ACouchGame2025Character::LookAtPlayer);
 	}
 	else
 	{
@@ -233,6 +237,7 @@ void ACouchGame2025Character::HandlePlanetaryJumped()
 
 void ACouchGame2025Character::ToggleRopeMode(const FInputActionValue& Value)
 {
+	GEngine->AddOnScreenDebugMessage(-1, 3.f, FColor::Red, "ToggleRopeMode"); 
 	// CableComponent->TryToggleRope(this);
 }
 
@@ -393,7 +398,7 @@ void ACouchGame2025Character::CheckForThrowPlayer()
 		bAreBothTriggerToggled = true;
 
 		if (bIsGrabbing && !bIsGrabbingPlayer) {
-			PickupComponent->PickedUpObject->StopPickUp(this);
+			PickupComponent->StopPickUp(this);
 		}
 		ThrowPlayer();
 	} else
@@ -453,9 +458,17 @@ void ACouchGame2025Character::ThrowPlayer()
 
 	PickupComponent->PickedUpPlayer = nullptr;
 	bIsGrabbingPlayer = false;
+
+	Cast<UPlanetaryMovementComponent>(OtherPlayer->GetMovementComponent())->UseExternalGravityDirection = true;
+	OnThrowCharacter.Broadcast(OtherPlayer);
 }
 
 void ACouchGame2025Character::SetVisibility(bool IsVisible)
 {
 	GetMesh()->SetVisibility(IsVisible);
+}
+
+void ACouchGame2025Character::LookAtPlayer(const FInputActionValue& Value)
+{
+	Camera->LookAtPosition(GetActorLocation());
 }

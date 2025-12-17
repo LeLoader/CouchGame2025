@@ -13,6 +13,10 @@ void ULocalMultiplayerGameViewportClient::PostInitProperties()
 
 bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& EventArgs)
 {
+	if (IgnoreInput()) {
+		return Super::InputKey(EventArgs);
+	}
+
 	FString OutError;
 	const ULocalMultiplayerSettings* settings = GetDefault<ULocalMultiplayerSettings>();
 	if (GameInstance == nullptr)
@@ -66,6 +70,9 @@ bool ULocalMultiplayerGameViewportClient::InputKey(const FInputKeyEventArgs& Eve
 
 bool ULocalMultiplayerGameViewportClient::InputAxis(FViewport* InViewport, FInputDeviceId InputDevice, FKey Key, float Delta, float DeltaTime, int32 NumSamples, bool bGamepad)
 {
+	if (IgnoreInput()) {
+		return Super::InputAxis(InViewport, InputDevice, Key, Delta, DeltaTime, NumSamples, bGamepad);
+	}
 
 	const ULocalMultiplayerSettings* settings = GetDefault<ULocalMultiplayerSettings>();
 	if (GameInstance == nullptr)

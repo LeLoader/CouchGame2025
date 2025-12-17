@@ -14,6 +14,8 @@ DECLARE_MULTICAST_DELEGATE(FOnContainerFullSignature);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnContainerFullSignatureBP);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRessourceStartMovingSignatureBP);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRessourceStopMovingSignatureBP);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRessourceStartReceivingSignatureBP);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRessourceStopReceivingSignatureBP);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnRessourceMoveInstantSignatureBP);
 
 UENUM(BlueprintType)
@@ -77,7 +79,13 @@ public:
 	FOnRessourceStartMovingSignatureBP OnRessourceStartMovingBP;
 
 	UPROPERTY(BlueprintAssignable)
+	FOnRessourceStartReceivingSignatureBP OnRessourceStartReceivingBP;
+
+	UPROPERTY(BlueprintAssignable)
 	FOnRessourceStopMovingSignatureBP OnRessourceStopMovingBP;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnRessourceStopReceivingSignatureBP OnRessourceStopReceivingBP;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnRessourceMoveInstantSignatureBP OnRessourceMoveInstantBP;

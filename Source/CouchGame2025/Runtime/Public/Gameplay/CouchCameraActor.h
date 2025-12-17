@@ -27,6 +27,13 @@ struct FPolar {
 		Radius = InRadius;
 	}
 
+	FPolar(FVector InVector)
+	{
+		Radius = InVector.Length();
+		Theta = FMath::Acos(InVector.Z / Radius);
+		Phi = FMath::Atan2(InVector.Y, InVector.X);
+	}
+
 	~FPolar()
 	{
 
@@ -47,7 +54,13 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void Move(FVector2D Input);
 
+	UFUNCTION()
+	void LookAtPosition(FVector Position);
+
 	static ACouchCameraActor* CurrentCamera;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	float GetPitchValue();
 
 	UFUNCTION()
 	static ACouchCameraActor* GetCurrentCamera();

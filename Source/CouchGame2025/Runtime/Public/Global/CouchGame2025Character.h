@@ -24,6 +24,8 @@ class UPhysicsConstraintComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogTemplateCharacter, Log, All);
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnThrowCharacterSignature, ACouchGame2025Character*, Character);
+
 UCLASS(config=Game)
 class COUCHGAME2025_API ACouchGame2025Character : public ACharacter, public IInteractable
 {
@@ -91,10 +93,17 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* TransfertAction;
 
+	/** Look At Player Input Action */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UInputAction* LookAtPLayerAction;
+
 #pragma endregion Inputs
 
 public:
 	ACouchGame2025Character();
+
+	UPROPERTY(BlueprintAssignable)
+	FOnThrowCharacterSignature OnThrowCharacter;
 
 	/** Pickup Component **/
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
@@ -157,6 +166,10 @@ protected:
 	/** Called for Transfering */
 	void Transfert(const FInputActionValue& Value);
 
+	/** Called for looking at Player */
+	void LookAtPlayer(const FInputActionValue& Value);
+
+
 	void PolarToCartesian(float r, float theta, float phi, FVector& OutVector);
 	void CartesianToPolar(FVector Vector, float& OutR, float& OutTheta, float& OutPhi);
 
@@ -184,6 +197,9 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool bIsAttachedToRope;
+	
 	// /** Returns CameraBoom subobject **/
 	// FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	// /** Returns FollowCamera subobject **/
@@ -221,13 +237,13 @@ public:
 	UPROPERTY()
 	FVector2D InputMovement;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsGrabbedByAnotherPlayer;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsGrabbing;
 
-	UPROPERTY(VisibleAnywhere)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	bool bIsGrabbingPlayer;
 
 	UPROPERTY(VisibleAnywhere)
