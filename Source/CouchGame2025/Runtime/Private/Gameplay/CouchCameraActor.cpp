@@ -52,13 +52,6 @@ void ACouchCameraActor::Tick(float DeltaTime)
 	}
 	PolarToCartesian(CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi, CurrentPosition);
 	SetActorLocation(CurrentPosition);
-	//CurrentPositionPolar.Theta = FMath::FInterpTo(CurrentPositionPolar.Theta, TargetPositionPolar.Theta, DeltaTime, LerpSpeed);
-	//CurrentPositionPolar.Phi = FMath::FInterpTo(CurrentPositionPolar.Phi, TargetPositionPolar.Phi, DeltaTime, LerpSpeed);
-	//FVector NewPosition;
-	//PolarToCartesian(CurrentPositionPolar.Radius, CurrentPositionPolar.Theta, CurrentPositionPolar.Phi, NewPosition);
-	//SetActorLocation(NewPosition);
-	//GEngine->AddOnScreenDebugMessage(1, 3.f, FColor::White, TEXT("Theta : ") + FString::SanitizeFloat(TargetPositionPolar.Theta));
-	//GEngine->AddOnScreenDebugMessage(2, 3.f, FColor::White, TEXT("Phi : ") + FString::SanitizeFloat(TargetPositionPolar.Phi));
 }
 
 void ACouchCameraActor::BeginPlay()

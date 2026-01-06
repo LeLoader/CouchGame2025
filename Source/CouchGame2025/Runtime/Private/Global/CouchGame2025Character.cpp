@@ -177,7 +177,7 @@ bool ACouchGame2025Character::CanBeInteractWithSomethingInHand()
 
 void ACouchGame2025Character::Move(const FInputActionValue& Value)
 {
-	if (bIsWaiting) return;
+	if (bIsWaiting || IsCineCameraEnabled()) return;
 	// input is a Vector2D
 	FVector2D MovementVector = Value.Get<FVector2D>();
 	InputMovement = MovementVector;
@@ -206,6 +206,7 @@ void ACouchGame2025Character::Move(const FInputActionValue& Value)
 
 void ACouchGame2025Character::Look(const FInputActionValue& Value)
 {
+	if (IsCineCameraEnabled()) return;
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();
 	Camera->Move(LookAxisVector);

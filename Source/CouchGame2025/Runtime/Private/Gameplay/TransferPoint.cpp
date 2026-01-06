@@ -37,7 +37,7 @@ void ATransfertPoint::BeginPlay()
 {
 	Super::BeginPlay();
 	TransfertSettings = GetDefault<UTransfertSettings>();
-}
+}	
 
 void ATransfertPoint::Tick(float DeltaTime)
 {
