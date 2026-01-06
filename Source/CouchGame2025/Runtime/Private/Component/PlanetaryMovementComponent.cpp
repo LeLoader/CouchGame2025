@@ -50,7 +50,7 @@ void UPlanetaryMovementComponent::TickComponent(float DeltaTime, enum ELevelTick
     {
         GravityDir *= -1;
     }
-    DrawDebugDirectionalArrow(GetWorld(), CharacterPosition, CharacterPosition + GravityDir * 200, 32, FColor::Red);
+    // DrawDebugDirectionalArrow(GetWorld(), CharacterPosition, CharacterPosition + GravityDir * 200, 32, FColor::Red);
 
     UpdateGravityDirection(GravityDir);
 }
