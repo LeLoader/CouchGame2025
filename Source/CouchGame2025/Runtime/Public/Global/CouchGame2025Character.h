@@ -178,8 +178,11 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bIsInverted;
 
-	UPROPERTY()
+	UPROPERTY(BlueprintReadOnly)
 	TObjectPtr<ACouchCameraActor> Camera;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	bool IsCineCameraEnabled();
 
 
 #pragma region Rope
